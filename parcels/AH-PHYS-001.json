@@ -1,0 +1,11 @@
+{
+  "parcel_id": "AH-PHYS-001",
+  "function": "lowercase",
+  "function_version": "1",
+  "input": "CAT",
+  "expected_output": "cat",
+  "policy_version": "AH-PHYS-1",
+  "verifier_version": "exact-match-1",
+  "effect_class": "PURE",
+  "destination": "S20"
+}
