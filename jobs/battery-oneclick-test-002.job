@@ -1,0 +1,3 @@
+JOB_ID=battery-oneclick-test-002
+WORKER=S20
+FUNCTION=battery
