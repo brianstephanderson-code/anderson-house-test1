@@ -1,0 +1,5 @@
+JOB_ID=battery-road-test-001
+WORKER=S20
+FUNCTION=battery
+STATUS=DONE
+OUTPUT=S20 battery: 93% — Charging
