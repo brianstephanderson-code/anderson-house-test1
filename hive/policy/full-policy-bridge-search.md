@@ -50,6 +50,24 @@ Shorthand:
 Rule:
 **Do not make Brian choose between answers to questions he did not ask.**
 
+## Full Policy Gate Sequence
+A Full Policy Bridge Search is a gate sequence, not a menu. Applicable gates may not be cherry-picked.
+
+Before RETURN, run the sequence in order:
+**QUESTION -> DONE -> FULL MEADOW -> OFFICIAL FUNNEL -> END-USER FUNNEL -> BRIDGE -> VERIFY HORSE -> ANSWER -> STOP**
+
+Rules:
+1. Every applicable gate must be completed before RETURN.
+2. If a gate does not apply, mark it N/A internally and continue.
+3. If an applicable gate is incomplete, do not return yet; continue the work under CAN DO -> DO.
+4. Later presentation gates never cancel earlier research or verification gates.
+5. In particular, SHOW THE HORSE -> STOP controls presentation only after the research sequence is complete.
+6. Before RETURN, perform an internal receipt check: each gate = PASS, N/A, or bounded UNKNOWN with the required action/substitute logic applied.
+7. A missed gate means NOT DONE: return to that gate, complete it, reconcile any changed result, then rerun downstream gates.
+
+Shorthand:
+**NO CHERRY-PICKING. RUN THE WHOLE LINE.**
+
 ## Core
 STATE -> TRANSFORM -> DONE.
 
