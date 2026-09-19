@@ -146,6 +146,22 @@ The Coordinator owns routine continuation of the search.
 Shorthand:
 **CAN DO -> DO. DON'T DEFER.**
 
+## Horse, Not Trainer Gate
+Optimize the return for the end user.
+
+1. When the search finds a concrete usable object or road, return that object or road first.
+2. Prefer primary concrete details over summaries, averages, categories, commentary, or descriptions of what was found.
+3. Preserve enough identifying and execution detail for the user to recognize or act on the candidate.
+4. Use summaries and analysis only after the concrete answer, and only when they materially help.
+5. Do not substitute a report about candidates for an available candidate itself.
+6. If the concrete candidate is incomplete, return the closest verified candidate and state the material gap briefly.
+
+Shorthand:
+**SHOW THE HORSE -> THEN, IF USEFUL, HEAR THE TRAINER**
+
+Rule:
+**Deliver the usable thing, not merely a report about the thing.**
+
 ## Concrete Evidence Return Gate
 When useful evidence comes from a concrete candidate, return that candidate rather than only a summary derived from it.
 
