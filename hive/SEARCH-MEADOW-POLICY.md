@@ -86,7 +86,6 @@ Search is complete when the actual starting STATE has been transformed into the 
 
 The objective is not to build something impressive. The objective is to reach the required STATE with the smallest sufficient proven road.
 
-
 ## OPEN THE YES — answer-debugging rule
 
 A promising YES is evidence, not automatically DONE.
@@ -126,3 +125,65 @@ This does not promise to eliminate all bugs. It moves useful checking earlier, w
 OPEN THE NO finds hidden roads.
 OPEN THE YES finds hidden assumptions.
 VERIFY decides whether the bridge is ready.
+
+## OPEN THE PARENT — whole-production-line rule
+
+The production line currently visible may be only a child inside a larger production line.
+
+Before treating an important DONE as complete, ask:
+"What larger system does this DONE become STATE for?"
+
+Open upward only as far as consequence requires.
+
+A child DONE is not sufficient if its resulting STATE damages, blocks, or contradicts a required parent DONE.
+
+CHILD DONE -> RESULTING STATE -> PARENT SYSTEM -> PARENT DONE
+
+Examples:
+- extracting ore can be a mining DONE without being a land, water, community, or generational DONE;
+- creating a recreational fishery can be a human-use DONE without being an ecological-restoration DONE;
+- catching fish can be an angler DONE while damaging the future fishery.
+
+Do not confuse a useful replacement state with restoration of the previous ecosystem. If restoration is impossible or not the actual objective, name the new target STATE honestly and verify it against the relevant parent requirements.
+
+## Ecological introduction rule
+
+Adding a species, process, resource, or function to solve a local problem creates a new transformation and must be opened.
+
+Do not assume:
+"Something useful now exists" = "the ecosystem is restored."
+
+Ask:
+- Did it belong in the relevant system?
+- What does it consume, compete with, support, or displace?
+- What new dependencies and downstream effects does it create?
+- What happens after repeated generations or long time periods?
+- Does the resulting STATE remain acceptable to the parent DONE?
+
+The local product and the continuing health of its production line must both be considered where the parent DONE requires both.
+
+## Long-lived local knowledge / Country knowledge rule
+
+Long-lived local and Indigenous ecological knowledge can be a high-value evidence universe because repeated observation of the same Country may preserve relationships between visible indicators and larger hidden STATE.
+
+Publicly shared knowledge may reveal compressed indicators such as changes in plants, animals, weather, water, season, or landscape that coincide with useful transitions elsewhere in the system.
+
+Treat such knowledge with respect and attribution:
+- identify the people/Country/source where known;
+- use knowledge that custodians have chosen to make public;
+- do not treat culturally restricted, sacred, or private knowledge as an Anderson House resource;
+- do not strip observations from their local context and assume they are universal.
+
+Bridge Search the observation rather than romanticizing or dismissing it:
+
+LOCAL OBSERVATION -> WHAT DOES IT INDICATE? -> WHAT ELSE CHANGES? -> INDEPENDENT EVIDENCE -> VERIFIED USEFUL SIGN
+
+An indicator may be a proxy rather than a cause. Search for the deeper STATE that makes the relationship reliable and identify conditions under which it may stop being reliable.
+
+## Complexity-behind-the-answer rule
+
+When a large evidence universe can be reduced to a reliable observable sign or small action rule, keep the complexity behind the answer.
+
+HUGE STATE -> VERIFIED RELEVANT CHARACTERISTICS -> SIMPLE RELIABLE SIGN -> ACTION
+
+The end user should receive the smallest sufficient instruction needed to reach DONE, while the evidence, assumptions, provenance, and deeper meadow remain available to reopen if reality produces a bug.
