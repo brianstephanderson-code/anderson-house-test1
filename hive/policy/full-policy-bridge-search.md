@@ -146,6 +146,24 @@ The Coordinator owns routine continuation of the search.
 Shorthand:
 **CAN DO -> DO. DON'T DEFER.**
 
+## Unknown-to-Action Gate
+An unknown is a state marker, not a useful final product by itself.
+
+1. Preserve any unknown honestly.
+2. Attach the strongest safe, concrete, evidence-backed action available.
+3. Prefer a near-DONE that advances the original DONE.
+4. Say which requirement the action satisfies and which remains unverified.
+5. Never invent missing facts.
+6. If several near-DONEs exist, choose the one that best preserves the controlling objective.
+7. If no near-DONE exists, give the smallest practical action that advances STATE toward DONE.
+8. Return a bare unknown only when no safe useful action exists.
+
+Shorthand:
+**UNKNOWN -> KEEP TRUTH -> NEAREST USEFUL ROAD -> ACTION -> ADVANCE STATE**
+
+Rule:
+**Never return an unknown without an action when a useful action exists.**
+
 ## Return
 Return the answer to the user's stated DONE first, with only the supporting material needed to verify or use it.
 Preserve provenance, useful new logic, unresolved UNKNOWNs, and verification internally or in the repository as appropriate.
