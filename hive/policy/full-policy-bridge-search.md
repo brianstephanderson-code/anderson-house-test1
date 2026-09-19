@@ -146,6 +146,19 @@ The Coordinator owns routine continuation of the search.
 Shorthand:
 **CAN DO -> DO. DON'T DEFER.**
 
+## Concrete Evidence Return Gate
+When useful evidence comes from a concrete candidate, return that candidate rather than only a summary derived from it.
+
+1. Preserve the candidate that produced a useful price, duration, feature, count, or other fact.
+2. Lead with the usable candidate.
+3. Attach the requested key facts.
+4. Do not turn known concrete evidence into a vague estimate and then call its underlying details unknown.
+5. If it is only a near-match, state the material gap briefly.
+6. Extra alternatives and analysis come after the usable answer.
+
+Shorthand:
+**FOUND EVIDENCE -> KEEP CANDIDATE -> RETURN ACTUAL THING -> KEY FACTS -> OPTIONAL BONUS**
+
 ## Unknown-to-Action Gate
 An unknown is a state marker, not a useful final product by itself.
 
