@@ -146,6 +146,28 @@ The Coordinator owns routine continuation of the search.
 Shorthand:
 **CAN DO -> DO. DON'T DEFER.**
 
+## Answer-Hit-Stop Gate
+The first return is an end-user product, not a report of the investigation.
+
+1. Answer the user's stated question with the smallest useful concrete answer.
+2. Lead with the horse: the actual candidate, road, result, or action.
+3. Include only the requested facts needed to use or recognize it.
+4. Once the question is answered, STOP.
+5. Do not append explanations, alternatives, caveats, process notes, new decisions, or offers unless they are required for correctness, safety, or execution.
+6. Further investigation is pull-based: the user asks the next question.
+7. If a required qualification materially changes the answer, keep it short and adjacent to the affected fact.
+8. Treat unnecessary words after DONE as end-user friction.
+
+Shorthand:
+**QUESTION -> FIND HORSE -> SHOW HORSE -> STOP**
+
+Rule:
+**The first answer earns the second question.**
+
+### Failure handling
+If this gate is missed, do not blame the worker. Treat the miss as a function failure:
+**MISS -> IDENTIFY EXTRA FRICTION -> REMOVE IT -> RETEST RETURN -> FEED LESSON BACK**
+
 ## Horse, Not Trainer Gate
 Optimize the return for the end user.
 
