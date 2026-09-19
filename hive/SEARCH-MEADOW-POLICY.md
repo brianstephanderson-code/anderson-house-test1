@@ -85,3 +85,44 @@ The purpose is to make the next search stronger, not merely to solve the current
 Search is complete when the actual starting STATE has been transformed into the required STATE through a lawful, tested road and the result is VERIFIED.
 
 The objective is not to build something impressive. The objective is to reach the required STATE with the smallest sufficient proven road.
+
+
+## OPEN THE YES — answer-debugging rule
+
+A promising YES is evidence, not automatically DONE.
+
+When an answer, road, tool, or source says a required function can be done, ask:
+"Show me. How? What must be true?"
+
+Open the YES only as far as useful:
+- expose the assumptions and required conditions underneath it;
+- Bridge Search any uncertain or consequential joint;
+- test the conditions that matter to the required DONE;
+- fold the detail back up once sufficient proof exists.
+
+A YES may therefore become a new local STATE A and start a smaller Bridge Search:
+
+YES -> HOW? -> WHAT MUST BE TRUE? -> TEST -> VERIFIED YES
+
+This process is recursive/fractal. Any important joint can be opened into a smaller STATE -> TRANSFORM -> DONE unit, and that unit can be opened again if needed.
+
+Do not fractalize for its own sake. Use progressive disclosure:
+- enough evidence to DO safely -> fold the meadow and act;
+- uncertainty, friction, contradiction, or consequence -> open that joint and Bridge Search it;
+- stop when the smallest sufficient proven road reaches the required STATE.
+
+## Debug the answer upstream
+
+Prefer:
+
+SEARCH -> ANSWER -> DEBUG THE ANSWER -> BUILD
+
+over discovering avoidable hidden assumptions only after implementation:
+
+SEARCH -> ANSWER -> BUILD -> BUG -> TROUBLESHOOT
+
+This does not promise to eliminate all bugs. It moves useful checking earlier, when changing a search question is cheaper than repairing a built system.
+
+OPEN THE NO finds hidden roads.
+OPEN THE YES finds hidden assumptions.
+VERIFY decides whether the bridge is ready.
