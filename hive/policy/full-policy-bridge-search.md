@@ -64,6 +64,25 @@ STATE -> TRANSFORM -> DONE.
 - Preserve provenance and distinguish evidence, inference, anecdote and unknowns.
 - Do not duplicate already harvested/search-tested mechanisms unless retesting is necessary.
 
+## Breadth / Full-Meadow Gate
+Do not confuse one search source with the searchable universe.
+
+1. From DONE, identify the materially different source classes that could contain a valid road.
+2. Search broadly across independent source classes before concluding that a road, price, answer, or item cannot be found.
+3. Use overlapping sources to discover candidates, but deliberately include sources with different inventories, methods, incentives, or blind spots.
+4. When a source says or implies its coverage is incomplete, treat that as a trigger to widen the meadow.
+5. Narrow searches may reveal roads hidden by one broad search; decompose and search narrower joints when useful.
+6. Reconcile duplicate candidates and conflicts across sources.
+7. Verify the winning candidate at the closest authoritative/transactional source available.
+8. Stop widening only when additional source classes are unlikely to materially change the answer, the requested DONE is verified, or the remaining universe is genuinely inaccessible.
+9. A failed source is not a failed search. Change source, search shape, or road and continue under CAN DO -> DO.
+
+Shorthand:
+**MAP THE MEADOW -> WIDEN SOURCE CLASSES -> SEARCH IN PARALLEL -> RECONCILE -> VERIFY WINNER -> DONE**
+
+Rule:
+**Search the useful universe, not merely the first place likely to contain an answer.**
+
 ## Recursive logic
 For each material YES, NO, assumption, contradiction, near miss or unexplained result ask HOW COME?
 Let useful answers generate the next material questions.
