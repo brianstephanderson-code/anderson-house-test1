@@ -57,6 +57,31 @@ Where humans are involved distinguish:
 - work-as-experienced.
 The official description is not automatically the real STATE.
 
+
+## Mandatory Two-Funnel Gate
+When real-world end-user/operator/practitioner evidence is applicable, the search MUST NOT advance to DONE or RETURN until all three checks are completed:
+
+1. OFFICIAL FUNNEL — authoritative/official/research evidence checked.
+2. END-USER FUNNEL — end-user/operator/practitioner experience checked.
+3. BRIDGE — agreements, conflicts, friction, failures, workarounds, and unknowns reconciled.
+
+If useful end-user evidence cannot be found, record **END-USER EVIDENCE = UNKNOWN**. UNKNOWN is acceptable; silently skipping the funnel is not.
+
+### Return gate
+Immediately before RETURN ask:
+
+**Were all required gates completed?**
+
+Minimum check when the two-funnel rule applies:
+- Official funnel: PASS / UNKNOWN
+- End-user funnel: PASS / UNKNOWN
+- Bridge reconciliation: PASS / UNKNOWN
+
+Any missing/unexamined required gate = **NOT DONE**. Return to search rather than presenting the road as verified.
+
+### NO -> substitute
+When a proposed road returns NO, use Aikido to preserve the user's DONE and search for the nearest lawful/practical substitute. Any substitute must pass the same required gates before RETURN.
+
 ## Security / legality
 GREEN ONLY.
 No phishing, credential theft, deception, secret collection, unauthorized access, or security bypass.
