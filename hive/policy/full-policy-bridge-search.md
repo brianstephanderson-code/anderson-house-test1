@@ -13,6 +13,21 @@ Before a Full Policy Bridge Search:
 3. State the known STATE and required DONE.
 4. Check Alexandria/repository for an already verified road before rediscovering it.
 
+## Question -> DONE Gate
+Treat the user's question/request as the first source of DONE.
+
+1. Extract the requested end state from the user's own words before searching.
+2. Preserve explicit constraints in the question as part of DONE (for example: what, when, where, who, method, cost, legality, availability, or other stated conditions).
+3. Do not silently replace the user's DONE with an easier or different DONE.
+4. Work backwards from DONE by asking: **What must be true for this DONE to exist?**
+5. Turn those required truths into preconditions/checks. Search and verify them before choosing or optimizing a road.
+6. Ask prospectively: **What required supply, condition, access, service, permission, capacity, or dependency could disappear or fail before DONE?**
+7. If a required precondition fails, DONE is not currently reachable by that road. Apply Aikido / NO -> substitute while preserving the original DONE as closely as possible.
+8. Only then investigate, compare, optimize, and verify the transformation.
+
+Shorthand:
+**QUESTION -> EXTRACT DONE -> WHAT MUST BE TRUE? -> VERIFY PRECONDITIONS -> FIND/TEST ROAD -> DONE**
+
 ## Core
 STATE -> TRANSFORM -> DONE.
 
