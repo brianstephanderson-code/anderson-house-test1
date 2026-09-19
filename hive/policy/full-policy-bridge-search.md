@@ -17,16 +17,38 @@ Before a Full Policy Bridge Search:
 Treat the user's question/request as the first source of DONE.
 
 1. Extract the requested end state from the user's own words before searching.
-2. Preserve explicit constraints in the question as part of DONE (for example: what, when, where, who, method, cost, legality, availability, or other stated conditions).
+2. Preserve explicit constraints in the question as part of DONE.
 3. Do not silently replace the user's DONE with an easier or different DONE.
-4. Work backwards from DONE by asking: **What must be true for this DONE to exist?**
-5. Turn those required truths into preconditions/checks. Search and verify them before choosing or optimizing a road.
-6. Ask prospectively: **What required supply, condition, access, service, permission, capacity, or dependency could disappear or fail before DONE?**
-7. If a required precondition fails, DONE is not currently reachable by that road. Apply Aikido / NO -> substitute while preserving the original DONE as closely as possible.
+4. Work backwards from DONE: **What must be true for this DONE to exist?**
+5. Turn required truths into preconditions/checks and verify them before optimizing a road.
+6. Ask: **What required supply, condition, access, service, permission, capacity, or dependency could disappear or fail before DONE?**
+7. If a required precondition fails, apply Aikido / NO -> substitute while preserving the original DONE as closely as possible.
 8. Only then investigate, compare, optimize, and verify the transformation.
 
 Shorthand:
 **QUESTION -> EXTRACT DONE -> WHAT MUST BE TRUE? -> VERIFY PRECONDITIONS -> FIND/TEST ROAD -> DONE**
+
+## Question Fidelity / Single-DONE Gate
+The user's question is the controlling specification.
+
+1. Extract the requested DONE from the user's own words.
+2. Separate requirements from merely mentioned, discovered, or potentially interesting attributes.
+3. Preserve every explicit requirement and constraint.
+4. Identify the controlling objective: what the user actually asked to optimize or achieve.
+5. Search and test roads against that objective.
+6. Reject roads that fail a required constraint.
+7. Rank surviving roads only by the controlling objective unless the user explicitly supplied additional priorities.
+8. Do not introduce a new decision criterion merely because evidence for it is available.
+9. Do not hand the user an unnecessary choice between answers to different questions.
+10. Return the answer to the stated question. Supporting facts belong only when they help verify, execute, or understand that DONE.
+11. If the user changes the objective or a constraint, update that dimension and rerun from the revised DONE.
+12. Before RETURN ask: **Does this answer the question the user actually asked, or did the investigation drift into a different question?** If drifted, correct it before returning.
+
+Shorthand:
+**QUESTION -> DONE -> REQUIRED CONSTRAINTS -> CONTROLLING OBJECTIVE -> TEST ROADS -> BEST MATCH TO THAT OBJECTIVE -> RETURN THAT ANSWER**
+
+Rule:
+**Do not make Brian choose between answers to questions he did not ask.**
 
 ## Core
 STATE -> TRANSFORM -> DONE.
@@ -54,15 +76,15 @@ Stop at verified, rejected, bounded UNKNOWN, or diminishing useful returns.
 - Kill the Riddick: attack apparent DONEs and assumptions.
 - Question the policy itself when failures survive transformation changes.
 - Check whether STATE is still true.
-- Test joints/handoffs: verified module + verified module does not automatically make a verified combined system.
+- Test joints/handoffs.
 - Treat near misses as evidence.
 - Prefer prevention/mistake-proofing over repeatedly repairing the same known failure.
 
 ## Contract / proof package
 Where useful, define:
-- Preconditions: what must be true before TRANSFORM.
-- Postconditions: what must be true at DONE.
-- Invariants: what must remain true throughout.
+- Preconditions.
+- Postconditions.
+- Invariants.
 A promoted DONE should carry WHY + EVIDENCE + ASSUMPTIONS + LIMITS + VERIFICATION.
 
 ## Reality check
@@ -72,27 +94,17 @@ Where humans are involved distinguish:
 - work-as-experienced.
 The official description is not automatically the real STATE.
 
-
 ## Mandatory Two-Funnel Gate
-When real-world end-user/operator/practitioner evidence is applicable, the search MUST NOT advance to DONE or RETURN until all three checks are completed:
-
-1. OFFICIAL FUNNEL — authoritative/official/research evidence checked.
-2. END-USER FUNNEL — end-user/operator/practitioner experience checked.
-3. BRIDGE — agreements, conflicts, friction, failures, workarounds, and unknowns reconciled.
+When real-world end-user/operator/practitioner evidence is applicable, the search MUST NOT advance to DONE or RETURN until:
+1. OFFICIAL FUNNEL checked.
+2. END-USER FUNNEL checked.
+3. BRIDGE reconciled.
 
 If useful end-user evidence cannot be found, record **END-USER EVIDENCE = UNKNOWN**. UNKNOWN is acceptable; silently skipping the funnel is not.
 
 ### Return gate
-Immediately before RETURN ask:
-
-**Were all required gates completed?**
-
-Minimum check when the two-funnel rule applies:
-- Official funnel: PASS / UNKNOWN
-- End-user funnel: PASS / UNKNOWN
-- Bridge reconciliation: PASS / UNKNOWN
-
-Any missing/unexamined required gate = **NOT DONE**. Return to search rather than presenting the road as verified.
+Immediately before RETURN ask: **Were all required gates completed?**
+Any missing/unexamined required gate = **NOT DONE**. Return to search.
 
 ### NO -> substitute
 When a proposed road returns NO, use Aikido to preserve the user's DONE and search for the nearest lawful/practical substitute. Any substitute must pass the same required gates before RETURN.
@@ -104,31 +116,21 @@ Search logic never overrides authorization, safety, law, or policy.
 
 ## DO, Don't Defer Gate
 The Coordinator owns routine continuation of the search.
-
 - If the next step is available, authorized, safe, and does not require a consequential user choice: **DO IT NOW.**
-- Do not end a response with "next step", "next move", "I can check", or a request for routine approval when the Coordinator can perform that step.
-- Missing evidence -> search for it.
-- Search road fails -> try another lawful road.
-- Data conflict -> reconcile it.
+- Do not end with a routine next step when the Coordinator can perform it.
+- Missing evidence -> search.
+- Search road fails -> another lawful road.
+- Data conflict -> reconcile.
 - Required gate fails -> repair/reroute/retest.
-- Continue until DONE, bounded UNKNOWN, a genuine tool/access limit, or a step that truly requires the user.
-- Only return an unfinished result when further progress genuinely requires Brian. State the blocking fact simply.
+- Continue until DONE, bounded UNKNOWN, genuine tool/access limit, or a step that truly requires the user.
 
 Shorthand:
 **CAN DO -> DO. DON'T DEFER.**
 
 ## Return
-Return:
-- the best-supported road(s);
-- new nectar/logic discovered;
-- unresolved UNKNOWNs;
-- attacks survived/failed;
-- provenance;
-- reusable policy candidates.
-
+Return the answer to the user's stated DONE first, with only the supporting material needed to verify or use it.
+Preserve provenance, useful new logic, unresolved UNKNOWNs, and verification internally or in the repository as appropriate.
 Promote new logic only after appropriate verification.
 
 ## Simple invocation
 "Run a Full Policy Bridge Search on [STATE/problem] -> [DONE]."
-
-The Coordinator should then pull the current GitHub policy set first and use it as the reasoning constitution for that search.
