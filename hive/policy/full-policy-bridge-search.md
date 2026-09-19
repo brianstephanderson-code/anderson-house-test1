@@ -240,3 +240,22 @@ Promote new logic only after appropriate verification.
 
 ## Simple invocation
 "Run a Full Policy Bridge Search on [STATE/problem] -> [DONE]."
+
+## Look Out the Window Gate
+Before choosing or optimizing a road, translate DONE into the real-world conditions that must be true at the requested time and place.
+
+1. Ask: **What must reality look like for this DONE to work?**
+2. Identify material conditions implied by the goal: date/season, weather, operating status, access, availability, transport, permission, supply, capacity, and dependencies where applicable.
+3. Verify those conditions before selecting the horse.
+4. Ask the opposite question: **What real condition could make this apparently good road fail to deliver DONE?**
+5. If a required condition fails, do not optimize that road. Apply Aikido and find the nearest practical substitute that preserves DONE.
+6. Only surviving candidates continue through the remaining Full Policy gates.
+
+Shorthand:
+**DONE -> WHAT MUST REALITY LOOK LIKE? -> LOOK OUT THE WINDOW -> TEST THE OPPOSITE -> THEN FIND THE HORSE**
+
+Examples:
+- Skiing on specific dates: verify skiable snow/open slopes and lessons before choosing accommodation.
+- Ferry trip: verify weather and operations allow sailing before optimizing fare or departure.
+
+Rule: **A road that exists on paper but cannot deliver DONE in reality is not a road.**
