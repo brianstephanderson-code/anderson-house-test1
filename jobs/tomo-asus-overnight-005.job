@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-overnight-005
+WORKER=CLASSICQUILL
+FUNCTION=wordcount
+DATA=state function done tomo github classicquill verify return
