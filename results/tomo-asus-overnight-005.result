@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-overnight-005
+WORKER=CLASSICQUILL
+FUNCTION=wordcount
+STATUS=DONE
+OUTPUT=8
