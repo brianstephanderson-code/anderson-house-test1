@@ -1,0 +1,5 @@
+JOB_ID=classicquill-bridge-test-001
+WORKER=CLASSICQUILL
+FUNCTION=wordcount
+STATUS=FAILED
+OUTPUT=Local worker timed out
