@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-campaign-001
+WORKER=CLASSICQUILL
+FUNCTION=campaign
+STATUS=FAILED
+OUTPUT=Function not allowed
