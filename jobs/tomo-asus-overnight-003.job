@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-overnight-003
+WORKER=CLASSICQUILL
+FUNCTION=wordcount
+DATA=many hands make light work while brian sleeps
