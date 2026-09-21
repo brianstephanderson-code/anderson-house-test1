@@ -1,0 +1,4 @@
+JOB_ID=classicquill-overnight-test-001
+WORKER=CLASSICQUILL
+FUNCTION=wordcount
+DATA=brainless productions works while brian sleeps
