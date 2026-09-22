@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-policy-audit-010
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+DATA=Run the deeper Anderson House policy audit: distinguish actionable TODOs from UNKNOWN state markers, identify repeated normalized rules, conflicts, repeated headings, and mailbox gaps.
