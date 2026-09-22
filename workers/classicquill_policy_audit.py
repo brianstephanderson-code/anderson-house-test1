@@ -69,6 +69,33 @@ result_ids={p.split("/")[-1][:-7] for p in result_files}
 orphan_jobs=sorted(job_ids-result_ids)
 orphan_results=sorted(result_ids-job_ids)
 
+# structural production mapping
+section_map={}
+term_counts=Counter()
+candidate_terms=[
+    "shredder","aikido","bridge search","two funnels","end-user","end user",
+    "verify","verification","unknown","done","state","transform","green only",
+    "policy gate","mailbox","worker","queue","retry","quarantine","oracle"
+]
+for path,text in docs.items():
+    hs=[clean(h) for h in heading_re.findall(text)]
+    section_map[path]=hs
+    low=text.lower()
+    for term in candidate_terms:
+        term_counts[term]+=low.count(term)
+
+function_candidates=[]
+candidate_rules=[
+    ("mailbox_gap_checker", len(orphan_jobs)+len(orphan_results)),
+    ("hard_rule_extractor", len(rules)),
+    ("unknown_state_indexer", len(unknown_mentions)),
+    ("heading_registry", sum(len(v) for v in section_map.values())),
+    ("policy_conflict_checker", len(conflicts)),
+    ("duplicate_rule_checker", len(duplicate_rules)),
+]
+for name,signal in candidate_rules:
+    function_candidates.append((name,signal))
+
 out=[]
 out.append("# CLASSICQUILL Anderson House Policy Audit")
 out.append("")
@@ -114,6 +141,22 @@ if duplicate_rules:
         for path,n,s in items[:10]: out.append(f"  - {path}:{n} — {s[:220]}")
 else:
     out.append("- None found")
+out.append("")
+
+out.append("## Structural map")
+for path in sorted(section_map):
+    out.append(f"- {path}: {len(section_map[path])} headings")
+    for h in section_map[path][:20]: out.append(f"  - {h[:180]}")
+out.append("")
+
+out.append("## Recurring policy concepts")
+for term,count in term_counts.most_common():
+    out.append(f"- {term}: {count}")
+out.append("")
+
+out.append("## Deterministic function candidates")
+for name,signal in function_candidates:
+    out.append(f"- {name}: evidence_signal={signal}")
 out.append("")
 
 out.append("## Repeated headings")
