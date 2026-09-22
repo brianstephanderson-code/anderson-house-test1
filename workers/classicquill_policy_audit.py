@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import base64, json, re, subprocess, hashlib, sys
+from pathlib import Path
 from collections import Counter, defaultdict
 
 REPO="brianstephanderson-code/anderson-house-test1"
@@ -123,4 +124,8 @@ else:
     out.append("- None")
 
 report="\n".join(out)
-print(report)
+report_path=Path(r"C:\\AH\\OUT\\classicquill_policy_audit_latest.txt")
+report_path.parent.mkdir(parents=True, exist_ok=True)
+report_path.write_text(report, encoding="utf-8")
+sys.stdout.write(report)
+sys.stdout.flush()
