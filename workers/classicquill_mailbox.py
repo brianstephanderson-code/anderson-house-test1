@@ -17,7 +17,7 @@ AH = Path(r"C:\AH")
 INBOX = AH / "IN"
 OUTBOX = AH / "OUT"
 JOB_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
-ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign", "policy_audit"}
+ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign", "policy_audit", "function_pack"}
 CAMPAIGN_FUNCS = {"uppercase", "lowercase", "wordcount"}
 
 def safe_text(value):
@@ -145,6 +145,18 @@ def run_policy_audit():
         raise RuntimeError("Policy audit returned empty output and no report file")
     return output
 
+
+def run_function_pack():
+    local_script = r"C:\\AH\\MAILROOM\\workers\\classicquill_function_pack.py"
+    sync_repo_worker("workers/classicquill_function_pack.py", local_script)
+    p = subprocess.run(["python", local_script], text=True, capture_output=True, timeout=7200)
+    if p.returncode != 0:
+        raise RuntimeError(safe_text(p.stderr or p.stdout)[:1000])
+    output = safe_text(p.stdout).strip()
+    if not output:
+        raise RuntimeError("Function pack returned empty output")
+    return output
+
 def process_once():
     for name in list_jobs():
         job = fetch_job(name)
@@ -163,7 +175,7 @@ def process_once():
             publish_result(job_id, function or "UNKNOWN", "FAILED", "Function not allowed")
             continue
         try:
-            output = run_campaign(job) if function == "campaign" else (run_policy_audit() if function == "policy_audit" else run_local(job_id, function, data))
+            output = run_campaign(job) if function == "campaign" else (run_policy_audit() if function == "policy_audit" else (run_function_pack() if function == "function_pack" else run_local(job_id, function, data)))
             publish_result(job_id, function, "DONE", output)
             print(f"DONE: {job_id} -> {output}", flush=True)
         except Exception as exc:
