@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-policy-structure-011
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+DATA=Production structure pass: map policy modules and headings, count recurring policy concepts, expose mailbox/repository structure, and identify reusable deterministic function candidates.
