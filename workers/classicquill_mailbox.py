@@ -121,11 +121,25 @@ def run_campaign(job):
     reason = "MAX_CYCLES" if cycle >= max_cycles else "MAX_HOURS"
     return f"DONE_{reason} cycles={cycle} elapsed={round(time.time()-started,2)}s output={current} trace={last_trace}"
 
+def sync_repo_worker(repo_path, local_path):
+    item = gh_json("api", f"repos/{REPO}/contents/{repo_path}")
+    raw = base64.b64decode(item["content"])
+    target = Path(local_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_suffix(target.suffix + ".tmp")
+    tmp.write_bytes(raw)
+    tmp.replace(target)
+
 def run_policy_audit():
-    p = subprocess.run(["python", r"C:\\AH\\MAILROOM\\workers\\classicquill_policy_audit.py"], text=True, capture_output=True, timeout=7200)
+    local_script = r"C:\\AH\\MAILROOM\\workers\\classicquill_policy_audit.py"
+    sync_repo_worker("workers/classicquill_policy_audit.py", local_script)
+    p = subprocess.run(["python", local_script], text=True, capture_output=True, timeout=7200)
     if p.returncode != 0:
         raise RuntimeError(safe_text(p.stderr or p.stdout)[:1000])
-    return safe_text(p.stdout).strip()
+    output = safe_text(p.stdout).strip()
+    if not output:
+        raise RuntimeError("Policy audit returned empty output")
+    return output
 
 def process_once():
     for name in list_jobs():
