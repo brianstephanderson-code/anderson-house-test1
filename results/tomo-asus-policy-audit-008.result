@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-policy-audit-008
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+STATUS=FAILED
+OUTPUT=Policy audit returned empty output
