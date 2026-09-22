@@ -138,7 +138,11 @@ def run_policy_audit():
         raise RuntimeError(safe_text(p.stderr or p.stdout)[:1000])
     output = safe_text(p.stdout).strip()
     if not output:
-        raise RuntimeError("Policy audit returned empty output")
+        report_path = Path(r"C:\\AH\\OUT\\classicquill_policy_audit_latest.txt")
+        if report_path.exists():
+            output = report_path.read_text(encoding="utf-8", errors="replace").strip()
+    if not output:
+        raise RuntimeError("Policy audit returned empty output and no report file")
     return output
 
 def process_once():
