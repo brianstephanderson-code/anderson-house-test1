@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-policy-audit-003
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+STATUS=FAILED
+OUTPUT=File "C:\\AH\\MAILROOM\\workers\\classicquill_policy_audit.py", line 5     REPO="brianstephanderson-code/anderson-house-test1"\ntry:\n    sys.stdout.reconfigure(encoding="utf-8")\nexcept Exception:\n    pass                                                         ^ SyntaxError: unexpected character after line continuation character
