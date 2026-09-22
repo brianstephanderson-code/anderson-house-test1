@@ -17,7 +17,7 @@ AH = Path(r"C:\AH")
 INBOX = AH / "IN"
 OUTBOX = AH / "OUT"
 JOB_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
-ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign"}
+ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign", "policy_audit"}
 CAMPAIGN_FUNCS = {"uppercase", "lowercase", "wordcount"}
 
 def gh(*args, check=True):
@@ -118,6 +118,12 @@ def run_campaign(job):
     reason = "MAX_CYCLES" if cycle >= max_cycles else "MAX_HOURS"
     return f"DONE_{reason} cycles={cycle} elapsed={round(time.time()-started,2)}s output={current} trace={last_trace}"
 
+def run_policy_audit():
+    p = subprocess.run(["python", r"C:\\AH\\MAILROOM\\workers\\classicquill_policy_audit.py"], text=True, capture_output=True, timeout=7200)
+    if p.returncode != 0:
+        raise RuntimeError((p.stderr or p.stdout).strip()[:1000])
+    return p.stdout.strip()
+
 def process_once():
     for name in list_jobs():
         job = fetch_job(name)
@@ -136,7 +142,7 @@ def process_once():
             publish_result(job_id, function or "UNKNOWN", "FAILED", "Function not allowed")
             continue
         try:
-            output = run_campaign(job) if function == "campaign" else run_local(job_id, function, data)
+            output = run_campaign(job) if function == "campaign" else (run_policy_audit() if function == "policy_audit" else run_local(job_id, function, data))
             publish_result(job_id, function, "DONE", output)
             print(f"DONE: {job_id} -> {output}", flush=True)
         except Exception as exc:
