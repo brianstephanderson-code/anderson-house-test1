@@ -8,6 +8,9 @@ try:
 except Exception:
     pass
 
+def clean(value):
+    return "" if value is None else str(value).strip()
+
 def gh_json(*args):
     p=subprocess.run(["gh",*args],text=True,capture_output=True,check=True)
     return json.loads(p.stdout)
@@ -30,13 +33,13 @@ todos=[]
 headings=defaultdict(list)
 for path,text in docs.items():
     for n,line in enumerate(text.splitlines(),1):
-        s=line.strip()
+        s=clean(line)
         if rule_re.search(s):
             rules.append((path,n,s))
         if todo_re.search(s):
             todos.append((path,n,s))
     for h in heading_re.findall(text):
-        headings[h.strip().lower()].append(path)
+        headings[clean(h).lower()].append(path)
 
 dupes={h:paths for h,paths in headings.items() if len(set(paths))>1}
 
@@ -44,7 +47,7 @@ dupes={h:paths for h,paths in headings.items() if len(set(paths))>1}
 norm_groups=defaultdict(list)
 for path,n,s in rules:
     norm=re.sub(r"\b(MUST|NEVER|ONLY|REQUIRED|ALWAYS|DO NOT|SHALL|NOT)\b","",s,flags=re.I)
-    norm=re.sub(r"[^a-z0-9]+"," ",norm.lower()).strip()
+    norm=clean(re.sub(r"[^a-z0-9]+"," ",norm.lower()))
     if norm:
         norm_groups[norm].append((path,n,s))
 conflicts=[]
