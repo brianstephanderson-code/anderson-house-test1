@@ -20,6 +20,9 @@ JOB_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign", "policy_audit"}
 CAMPAIGN_FUNCS = {"uppercase", "lowercase", "wordcount"}
 
+def safe_text(value):
+    return "" if value is None else str(value)
+
 def gh(*args, check=True):
     return subprocess.run(["gh", *args], text=True, capture_output=True, check=check)
 
@@ -121,8 +124,8 @@ def run_campaign(job):
 def run_policy_audit():
     p = subprocess.run(["python", r"C:\\AH\\MAILROOM\\workers\\classicquill_policy_audit.py"], text=True, capture_output=True, timeout=7200)
     if p.returncode != 0:
-        raise RuntimeError((p.stderr or p.stdout).strip()[:1000])
-    return p.stdout.strip()
+        raise RuntimeError(safe_text(p.stderr or p.stdout)[:1000])
+    return safe_text(p.stdout).strip()
 
 def process_once():
     for name in list_jobs():
