@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-campaign-proof-003
+WORKER=CLASSICQUILL
+FUNCTION=campaign
+STATUS=DONE
+OUTPUT=DONE_STABLE cycles=3 elapsed=2.0s output=1 trace=cycle=3;function=wordcount;output=1
