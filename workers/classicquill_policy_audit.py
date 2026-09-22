@@ -2,7 +2,11 @@
 import base64, json, re, subprocess, hashlib, sys
 from collections import Counter, defaultdict
 
-REPO="brianstephanderson-code/anderson-house-test1"\ntry:\n    sys.stdout.reconfigure(encoding="utf-8")\nexcept Exception:\n    pass
+REPO="brianstephanderson-code/anderson-house-test1"
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 def gh_json(*args):
     p=subprocess.run(["gh",*args],text=True,capture_output=True,check=True)
