@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-policy-audit-005
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+DATA=Audit the Anderson House policy repository for hard rules, TODO/UNKNOWN gaps, repeated headings, conservative conflict candidates, and mailbox job/result gaps.
