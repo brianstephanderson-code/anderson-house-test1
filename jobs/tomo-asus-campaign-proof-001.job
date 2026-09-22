@@ -1,0 +1,9 @@
+JOB_ID=tomo-asus-campaign-proof-001
+WORKER=CLASSICQUILL
+FUNCTION=campaign
+DATA=many hands make light work
+STEPS=uppercase,lowercase,wordcount
+MAX_HOURS=0.05
+MAX_CYCLES=20
+SLEEP_SECONDS=1
+STOP_ON_STABLE=YES
