@@ -1,0 +1,163 @@
+JOB_ID=tomo-asus-policy-audit-009
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+STATUS=DONE
+OUTPUT=# CLASSICQUILL Anderson House Policy Audit
+
+Policy files scanned: 10
+Hard-rule lines found: 108
+TODO/UNKNOWN markers found: 13
+Repeated headings across files: 1
+Potential rule conflicts: 0
+Jobs without results: 1
+Results without jobs: 1
+
+## Policy files
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md
+- hive/CONTROL.md
+- hive/SEARCH-MEADOW-POLICY.md
+- hive/inbox/0001-bridge-handshake.md
+- hive/policy-history/ORIGINAL-REGISTRY-RECOVERY-TODO.md
+- hive/policy-history/README.md
+- hive/policy-history/RECOVERED-EARLY-POLICIES-2026-09-02-to-05.md
+- hive/policy-history/RECOVERED-POLICY-REGISTRY-2026-09-07.md
+- hive/policy/full-policy-bridge-search.md
+- hive/policy/recursive-logic-bridge-engine.md
+
+## Hard rules
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:4 — PURPOSE: Current consolidated policy checkpoint. Preserve earlier records and update forward; do not erase history.
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:7 — Reduce Brian's routine human touch, coordination, copying, checking, routing and intervention. When an authorized safe route/tool can obtain needed data or complete the next routine step, Coordinator/workers should use i
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:10 — Start with: “Something is not done. What must be true for it to be done?” Work backward from the parent DONE. Completion means: “DONE — and we can prove why.” Evidence/provenance travels with the result.
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:16 — The bee may work anywhere. Worker location, device, model or provider does not remove Anderson House policy. Never assume a subcontractor is aligned: qualify the worker by function, policy, permission and evidence, and c
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:22 — Use one useful work queue. Free workers take the next suitable parcel. Retry only failed parcels. Avoid duplicate harmful work. After three failures, quarantine. For stragglers, a spare may run the same safe parcel; firs
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:28 — Do not test the bridge while trucks are crossing it. Preserve proven production functions while R&D pressure-tests copies. Measure the ceiling and operate production in the comfort zone.
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:31 — While useful test surface remains, generate materially different pressure tests, dispatch across maximum useful independent lanes, feed discoveries back into the function, and move on when a test family reaches diminishi
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:37 — Shredder is available from the starting STATE, not only after blockage. It breaks tasks/DONEs into natural SVO/DONE joints and can turn DONE statements into survey questions.
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:40 — Catch faults; stop bad flow; locate where failure entered; preserve what still worked; redirect into a stronger route/handoff; feed the lesson back into the system. Do not treat failure as worker blame by default.
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:43 — Whenever applicable, search both sides: (1) official/company/source claims and (2) real end-user/independent evidence. Reconcile them at the bridge. Do not rely only on an organization’s description when useful end-user 
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:49 — Do not judge success only by local output. Check end-user desirability, usefulness, safety, consent/want and wider consequences/spillover. “Check the whole meadow, not just the honey.”
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:52 — A parent DONE may contain smaller nested DONE/STATE → TRANSFORM → DONE units only where more clarity is needed. Experienced workers can act from the higher level; open deeper bubbles only to resolve uncertainty.
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:55 — Activate governance at the smallest effective target level. Do not force unnecessary lower-level checks when the higher-level state is sufficient; open them when uncertainty or risk requires it.
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:67 — Before depending on a digital cell, consider its required SPACE, DOOR, BELL, LOCK, ELECTRICITY, ADDRESS, RECORDS, RENT and EVICTION conditions: where it exists, how work enters/exits, how it signals, security, power/runt
+- hive/ANDERSON-HOUSE-POLICY-2026-09-17.md:76 — Start from the desired product/end user: desired result → required purposes → suitable functions → production flow → verified product. For Reader Editions, preserve author text/tone/intent while adding the smallest suppo
+- hive/CONTROL.md:10 — - Stable parcel IDs. Do not duplicate completed parcels.
+- hive/SEARCH-MEADOW-POLICY.md:7 — The search is a bounded room or meadow. Its boundaries come from the actual starting STATE, the required DONE, and House policy. Search expands only as far as needed to find and prove a useful DO.
+- hive/SEARCH-MEADOW-POLICY.md:18 — Strengthen evidence. Check whether the road works in reality, satisfies policy, and actually reaches the required STATE. Use independent evidence/oracles and Bridge Search/two funnels where applicable.
+- hive/SEARCH-MEADOW-POLICY.md:23 — The meadow may expand outward for alternatives and implode inward for detail. Do not explore volume merely for its own sake. Stop when sufficient evidence supports a lawful, tested DO to the required STATE.
+- hive/SEARCH-MEADOW-POLICY.md:30 — If the road reaches and proves the required STATE -> DO it and stop searching.
+- hive/SEARCH-MEADOW-POLICY.md:38 — Open STATE progressively, only as far as needed to discover the next DO.
+- hive/SEARCH-MEADOW-POLICY.md:47 — "What lawful function or alternative road reaches the same required STATE?"
+- hive/SEARCH-MEADOW-POLICY.md:58 — 1. Preserve the warning. Do not ignore or bypass it.
+- hive/SEARCH-MEADOW-POLICY.md:60 — 3. Ask: "What must be true for this to become a lawful DO?"
+- hive/SEARCH-MEADOW-POLICY.md:67 — Do not stop at a general label when a smaller characteristic is the real blocker. Continue opening only the relevant part of STATE or TRANSFORM until the blocking condition is understood.
+- hive/SEARCH-MEADOW-POLICY.md:71 — If the required STATE cannot be reached within House policy after the useful search meadow has been exhausted -> return the verified boundary and evidence.
+- hive/SEARCH-MEADOW-POLICY.md:85 — Search is complete when the actual starting STATE has been transformed into the required STATE through a lawful, tested road and the result is VERIFIED.
+- hive/SEARCH-MEADOW-POLICY.md:87 — The objective is not to build something impressive. The objective is to reach the required STATE with the smallest sufficient proven road.
+- hive/SEARCH-MEADOW-POLICY.md:93 — When an answer, road, tool, or source says a required function can be done, ask:
+- hive/SEARCH-MEADOW-POLICY.md:94 — "Show me. How? What must be true?"
+- hive/SEARCH-MEADOW-POLICY.md:96 — Open the YES only as far as useful:
+- hive/SEARCH-MEADOW-POLICY.md:97 — - expose the assumptions and required conditions underneath it;
+- hive/SEARCH-MEADOW-POLICY.md:99 — - test the conditions that matter to the required DONE;
+- hive/SEARCH-MEADOW-POLICY.md:104 — YES -> HOW? -> WHAT MUST BE TRUE? -> TEST -> VERIFIED YES
+- hive/SEARCH-MEADOW-POLICY.md:108 — Do not fractalize for its own sake. Use progressive disclosure:
+- hive/SEARCH-MEADOW-POLICY.md:111 — - stop when the smallest sufficient proven road reaches the required STATE.
+- hive/SEARCH-MEADOW-POLICY.md:119 — over discovering avoidable hidden assumptions only after implementation:
+- hive/SEARCH-MEADOW-POLICY.md:131 — The production line currently visible may be only a child inside a larger production line.
+- hive/SEARCH-MEADOW-POLICY.md:136 — Open upward only as far as consequence requires.
+- hive/SEARCH-MEADOW-POLICY.md:138 — A child DONE is not sufficient if its resulting STATE damages, blocks, or contradicts a required parent DONE.
+- hive/SEARCH-MEADOW-POLICY.md:147 — Do not confuse a useful replacement state with restoration of the previous ecosystem. If restoration is impossible or not the actual objective, name the new target STATE honestly and verify it against the relevant parent
+- hive/SEARCH-MEADOW-POLICY.md:151 — Adding a species, process, resource, or function to solve a local problem creates a new transformation and must be opened.
+- hive/SEARCH-MEADOW-POLICY.md:153 — Do not assume:
+- hive/SEARCH-MEADOW-POLICY.md:163 — The local product and the continuing health of its production line must both be considered where the parent DONE requires both.
+- hive/SEARCH-MEADOW-POLICY.md:174 — - do not treat culturally restricted, sacred, or private knowledge as an Anderson House resource;
+- hive/SEARCH-MEADOW-POLICY.md:175 — - do not strip observations from their local context and assume they are universal.
+- hive/policy-history/README.md:12 — Rule: preserve history. New consolidated policy checkpoints do not erase earlier records.
+- hive/policy-history/RECOVERED-POLICY-REGISTRY-2026-09-07.md:15 — - “If one receipt changes, the chain must cry out.”
+- hive/policy-history/RECOVERED-POLICY-REGISTRY-2026-09-07.md:16 — - “The chain must know where it ended.”
+- hive/policy/full-policy-bridge-search.md:7 — A Full Policy Bridge Search applies the current Anderson House policy set as reasoning logic to find and verify a road from known STATE to required DONE.
+- hive/policy/full-policy-bridge-search.md:13 — 3. State the known STATE and required DONE.
+- hive/policy/full-policy-bridge-search.md:21 — 3. Do not silently replace the user's DONE with an easier or different DONE.
+- hive/policy/full-policy-bridge-search.md:22 — 4. Work backwards from DONE: **What must be true for this DONE to exist?**
+- hive/policy/full-policy-bridge-search.md:23 — 5. Turn required truths into preconditions/checks and verify them before optimizing a road.
+- hive/policy/full-policy-bridge-search.md:24 — 6. Ask: **What required supply, condition, access, service, permission, capacity, or dependency could disappear or fail before DONE?**
+- hive/policy/full-policy-bridge-search.md:25 — 7. If a required precondition fails, apply Aikido / NO -> substitute while preserving the original DONE as closely as possible.
+- hive/policy/full-policy-bridge-search.md:26 — 8. Only then investigate, compare, optimize, and verify the transformation.
+- hive/policy/full-policy-bridge-search.md:29 — **QUESTION -> EXTRACT DONE -> WHAT MUST BE TRUE? -> VERIFY PRECONDITIONS -> FIND/TEST ROAD -> DONE**
+- hive/policy/full-policy-bridge-search.md:39 — 6. Reject roads that fail a required constraint.
+- hive/policy/full-policy-bridge-search.md:40 — 7. Rank surviving roads only by the controlling objective unless the user explicitly supplied additional priorities.
+- hive/policy/full-policy-bridge-search.md:41 — 8. Do not introduce a new decision criterion merely because evidence for it is available.
+- hive/policy/full-policy-bridge-search.md:42 — 9. Do not hand the user an unnecessary choice between answers to different questions.
+- hive/policy/full-policy-bridge-search.md:43 — 10. Return the answer to the stated question. Supporting facts belong only when they help verify, execute, or understand that DONE.
+- hive/policy/full-policy-bridge-search.md:48 — **QUESTION -> DONE -> REQUIRED CONSTRAINTS -> CONTROLLING OBJECTIVE -> TEST ROADS -> BEST MATCH TO THAT OBJECTIVE -> RETURN THAT ANSWER**
+- hive/policy/full-policy-bridge-search.md:51 — **Do not make Brian choose between answers to questions he did not ask.**
+- hive/policy/full-policy-bridge-search.md:60 — 1. Every applicable gate must be completed before RETURN.
+- hive/policy/full-policy-bridge-search.md:62 — 3. If an applicable gate is incomplete, do not return yet; continue the work under CAN DO -> DO.
+- hive/policy/full-policy-bridge-search.md:63 — 4. Later presentation gates never cancel earlier research or verification gates.
+- hive/policy/full-policy-bridge-search.md:64 — 5. In particular, SHOW THE HORSE -> STOP controls presentation only after the research sequence is complete.
+- hive/policy/full-policy-bridge-search.md:65 — 6. Before RETURN, perform an internal receipt check: each gate = PASS, N/A, or bounded UNKNOWN with the required action/substitute logic applied.
+- hive/policy/full-policy-bridge-search.md:83 — - Do not duplicate already harvested/search-tested mechanisms unless retesting is necessary.
+- hive/policy/full-policy-bridge-search.md:86 — Do not confuse one search source with the searchable universe.
+- hive/policy/full-policy-bridge-search.md:95 — 8. Stop widening only when additional source classes are unlikely to materially change the answer, the requested DONE is verified, or the remaining universe is genuinely inaccessible.
+- hive/policy/full-policy-bridge-search.md:135 — When real-world end-user/operator/practitioner evidence is applicable, the search MUST NOT advance to DONE or RETURN until:
+- hive/policy/full-policy-bridge-search.md:143 — Immediately before RETURN ask: **Were all required gates completed?**
+- hive/policy/full-policy-bridge-search.md:144 — Any missing/unexamined required gate = **NOT DONE**. Return to search.
+- hive/policy/full-policy-bridge-search.md:147 — When a proposed road returns NO, use Aikido to preserve the user's DONE and search for the nearest lawful/practical substitute. Any substitute must pass the same required gates before RETURN.
+- hive/policy/full-policy-bridge-search.md:150 — GREEN ONLY.
+- hive/policy/full-policy-bridge-search.md:152 — Search logic never overrides authorization, safety, law, or policy.
+- hive/policy/full-policy-bridge-search.md:157 — - Do not end with a routine next step when the Coordinator can perform it.
+- hive/policy/full-policy-bridge-search.md:161 — - Required gate fails -> repair/reroute/retest.
+- hive/policy/full-policy-bridge-search.md:172 — 3. Include only the requested facts needed to use or recognize it.
+- hive/policy/full-policy-bridge-search.md:174 — 5. Do not append explanations, alternatives, caveats, process notes, new decisions, or offers unless they are required for correctness, safety, or execution.
+- hive/policy/full-policy-bridge-search.md:176 — 7. If a required qualification materially changes the answer, keep it short and adjacent to the affected fact.
+- hive/policy/full-policy-bridge-search.md:186 — If this gate is missed, do not blame the worker. Treat the miss as a function failure:
+- hive/policy/full-policy-bridge-search.md:195 — 4. Use summaries and analysis only after the concrete answer, and only when they materially help.
+- hive/policy/full-policy-bridge-search.md:196 — 5. Do not substitute a report about candidates for an available candidate itself.
+- hive/policy/full-policy-bridge-search.md:206 — When useful evidence comes from a concrete candidate, return that candidate rather than only a summary derived from it.
+- hive/policy/full-policy-bridge-search.md:211 — 4. Do not turn known concrete evidence into a vague estimate and then call its underlying details unknown.
+- hive/policy/full-policy-bridge-search.md:212 — 5. If it is only a near-match, state the material gap briefly.
+- hive/policy/full-policy-bridge-search.md:225 — 5. Never invent missing facts.
+- hive/policy/full-policy-bridge-search.md:228 — 8. Return a bare unknown only when no safe useful action exists.
+- hive/policy/full-policy-bridge-search.md:234 — **Never return an unknown without an action when a useful action exists.**
+- hive/policy/full-policy-bridge-search.md:237 — Return the answer to the user's stated DONE first, with only the supporting material needed to verify or use it.
+- hive/policy/full-policy-bridge-search.md:239 — Promote new logic only after appropriate verification.
+- hive/policy/full-policy-bridge-search.md:245 — Before choosing or optimizing a road, translate DONE into the real-world conditions that must be true at the requested time and place.
+- hive/policy/full-policy-bridge-search.md:247 — 1. Ask: **What must reality look like for this DONE to work?**
+- hive/policy/full-policy-bridge-search.md:251 — 5. If a required condition fails, do not optimize that road. Apply Aikido and find the nearest practical substitute that preserves DONE.
+- hive/policy/full-policy-bridge-search.md:252 — 6. Only surviving candidates continue through the remaining Full Policy gates.
+- hive/policy/full-policy-bridge-search.md:255 — **DONE -> WHAT MUST REALITY LOOK LIKE? -> LOOK OUT THE WINDOW -> TEST THE OPPOSITE -> THEN FIND THE HORSE**
+- hive/policy/recursive-logic-bridge-engine.md:18 — 4. Open new questions/petals only when they could materially change the transformation or DONE.
+- hive/policy/recursive-logic-bridge-engine.md:22 — Do not recurse forever. Stop when further questions are immaterial to the parent DONE or evidence cannot presently resolve them.
+- hive/policy/recursive-logic-bridge-engine.md:60 — The Bridge/Search engine seeks the best-supported logical road from known STATE to required DONE.
+- hive/policy/recursive-logic-bridge-engine.md:63 — It must not force an answer merely because a question was asked. "Unknown with current evidence" is a valid logical result.
+- hive/policy/recursive-logic-bridge-engine.md:66 — Research logic must never override security or authorization boundaries.
+- hive/policy/recursive-logic-bridge-engine.md:67 — Do not solicit, expose, transmit, or use passwords, private keys, tokens, recovery codes, or other secrets.
+- hive/policy/recursive-logic-bridge-engine.md:68 — Do not imitate trusted parties or use deceptive collection methods.
+- hive/policy/recursive-logic-bridge-engine.md:72 — A useful discovery becomes reusable policy only after it survives appropriate verification. Store the road plus its logic/provenance so later bees can inspect WHY it was accepted.
+
+## TODO / UNKNOWN gaps
+- hive/policy/full-policy-bridge-search.md:65 — 6. Before RETURN, perform an internal receipt check: each gate = PASS, N/A, or bounded UNKNOWN with the required action/substitute logic applied.
+- hive/policy/full-policy-bridge-search.md:108 — Stop at verified, rejected, bounded UNKNOWN, or diminishing useful returns.
+- hive/policy/full-policy-bridge-search.md:140 — If useful end-user evidence cannot be found, record **END-USER EVIDENCE = UNKNOWN**. UNKNOWN is acceptable; silently skipping the funnel is not.
+- hive/policy/full-policy-bridge-search.md:162 — - Continue until DONE, bounded UNKNOWN, genuine tool/access limit, or a step that truly requires the user.
+- hive/policy/full-policy-bridge-search.md:211 — 4. Do not turn known concrete evidence into a vague estimate and then call its underlying details unknown.
+- hive/policy/full-policy-bridge-search.md:218 — ## Unknown-to-Action Gate
+- hive/policy/full-policy-bridge-search.md:219 — An unknown is a state marker, not a useful final product by itself.
+- hive/policy/full-policy-bridge-search.md:221 — 1. Preserve any unknown honestly.
+- hive/policy/full-policy-bridge-search.md:228 — 8. Return a bare unknown only when no safe useful action exists.
+- hive/policy/full-policy-bridge-search.md:231 — **UNKNOWN -> KEEP TRUTH -> NEAREST USEFUL ROAD -> ACTION -> ADVANCE STATE**
+- hive/policy/full-policy-bridge-search.md:234 — **Never return an unknown without an action when a useful action exists.**
+- hive/policy/recursive-logic-bridge-engine.md:19 — 5. Continue until material branches are verified, rejected, bounded as unknown, or reach diminishing useful returns.
+- hive/policy/recursive-logic-bridge-engine.md:63 — It must not force an answer merely because a question was asked. "Unknown with current evidence" is a valid logical result.
+
+## Repeated headings
+- preservation note: hive/policy-history/RECOVERED-EARLY-POLICIES-2026-09-02-to-05.md, hive/policy-history/RECOVERED-POLICY-REGISTRY-2026-09-07.md
+
+## Potential rule conflicts
+- None detected by conservative text heuristic
+
+## Mailbox gaps
+Jobs without results:
+- tomo-asus-policy-audit-009
+
+Results without jobs:
+- tomo-asus-campaign-001
