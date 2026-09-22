@@ -26,11 +26,13 @@ for item in policy_paths:
     docs[item["path"]]=text
 
 rule_re=re.compile(r"\b(MUST|NEVER|ONLY|REQUIRED|ALWAYS|DO NOT|SHALL)\b",re.I)
-todo_re=re.compile(r"\b(TODO|UNKNOWN|TBD|FIXME|\?\?\?)\b",re.I)
+todo_re=re.compile(r"\b(TODO|TBD|FIXME)\b|\?\?\?",re.I)
+unknown_re=re.compile(r"\bUNKNOWN\b",re.I)
 heading_re=re.compile(r"^#{1,6}\s+(.+)$",re.M)
 
 rules=[]
 todos=[]
+unknown_mentions=[]
 headings=defaultdict(list)
 for path,text in docs.items():
     for n,line in enumerate(text.splitlines(),1):
@@ -39,6 +41,8 @@ for path,text in docs.items():
             rules.append((path,n,s))
         if todo_re.search(s):
             todos.append((path,n,s))
+        if unknown_re.search(s):
+            unknown_mentions.append((path,n,s))
     for h in heading_re.findall(text):
         headings[clean(h).lower()].append(path)
 
@@ -51,6 +55,7 @@ for path,n,s in rules:
     norm=clean(re.sub(r"[^a-z0-9]+"," ",norm.lower()))
     if norm:
         norm_groups[norm].append((path,n,s))
+duplicate_rules={norm:items for norm,items in norm_groups.items() if len(items)>1}
 conflicts=[]
 for norm,items in norm_groups.items():
     joined=" ".join(x[2].lower() for x in items)
@@ -69,7 +74,9 @@ out.append("# CLASSICQUILL Anderson House Policy Audit")
 out.append("")
 out.append(f"Policy files scanned: {len(docs)}")
 out.append(f"Hard-rule lines found: {len(rules)}")
-out.append(f"TODO/UNKNOWN markers found: {len(todos)}")
+out.append(f"Actionable TODO/TBD/FIXME markers found: {len(todos)}")
+out.append(f"UNKNOWN mentions found: {len(unknown_mentions)}")
+out.append(f"Repeated normalized hard-rule groups: {len(duplicate_rules)}")
 out.append(f"Repeated headings across files: {len(dupes)}")
 out.append(f"Potential rule conflicts: {len(conflicts)}")
 out.append(f"Jobs without results: {len(orphan_jobs)}")
@@ -86,9 +93,25 @@ for path,n,s in rules[:250]:
 if len(rules)>250: out.append(f"- ... {len(rules)-250} more omitted")
 out.append("")
 
-out.append("## TODO / UNKNOWN gaps")
+out.append("## Actionable TODO / TBD / FIXME gaps")
 if todos:
     for path,n,s in todos[:150]: out.append(f"- {path}:{n} — {s[:220]}")
+else:
+    out.append("- None found")
+out.append("")
+
+out.append("## UNKNOWN mentions (policy state markers, not automatically defects)")
+if unknown_mentions:
+    for path,n,s in unknown_mentions[:100]: out.append(f"- {path}:{n} — {s[:220]}")
+else:
+    out.append("- None found")
+out.append("")
+
+out.append("## Repeated normalized hard-rule groups")
+if duplicate_rules:
+    for norm,items in list(sorted(duplicate_rules.items()))[:100]:
+        out.append(f"- {norm[:160]}")
+        for path,n,s in items[:10]: out.append(f"  - {path}:{n} — {s[:220]}")
 else:
     out.append("- None found")
 out.append("")
