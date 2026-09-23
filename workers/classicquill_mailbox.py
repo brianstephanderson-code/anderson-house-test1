@@ -12,6 +12,8 @@ RESULTS_API = f"repos/{REPO}/contents/results"
 WORKER = "CLASSICQUILL"
 INTERVAL = 15
 TIMEOUT = 120
+HEARTBEAT_INTERVAL = 300
+_last_heartbeat = 0
 
 AH = Path(r"C:\AH")
 INBOX = AH / "IN"
@@ -157,7 +159,32 @@ def run_function_pack():
         raise RuntimeError("Function pack returned empty output")
     return output
 
+def publish_heartbeat():
+    global _last_heartbeat
+    now=time.time()
+    if now-_last_heartbeat < HEARTBEAT_INTERVAL:
+        return
+    from datetime import datetime, timezone
+    stamp=datetime.now(timezone.utc).isoformat()
+    content=f"WORKER={WORKER}\nSTATUS=ALIVE\nUTC={stamp}\n"
+    encoded=base64.b64encode(content.encode()).decode()
+    path="hive/heartbeat/classicquill.txt"
+    cur=gh("api", f"repos/{REPO}/contents/{path}", check=False)
+    args=["api","--method","PUT",f"repos/{REPO}/contents/{path}",
+          "-f",f"message={WORKER} heartbeat {stamp}",
+          "-f",f"content={encoded}"]
+    if cur.returncode==0:
+        try:
+            item=json.loads(cur.stdout)
+            args += ["-f",f"sha={item['sha']}"]
+        except Exception:
+            pass
+    p=gh(*args, check=False)
+    if p.returncode==0:
+        _last_heartbeat=now
+
 def process_once():
+    publish_heartbeat()
     for name in list_jobs():
         job = fetch_job(name)
         job_id = job.get("JOB_ID", Path(name).stem)
