@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-function-pack-014
+WORKER=CLASSICQUILL
+FUNCTION=function_pack
+STATUS=FAILED
+OUTPUT=Traceback (most recent call last):   File "C:\\AH\\MAILROOM\\workers\\classicquill_function_pack.py", line 75, in <module>     main()     ~~~~^^   File "C:\\AH\\MAILROOM\\workers\\classicquill_function_pack.py", line 61, in main     for p,n,s in rules[:200]: print(f"- {p}:{n} — {s[:220]}")                               ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^   File "C:\Program Files\Python313\Lib\encodings\cp1252.py", line 19, in encode     return codecs.charmap_encode(input,self.errors,encoding_table)[
