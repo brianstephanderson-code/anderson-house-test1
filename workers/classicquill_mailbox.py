@@ -22,6 +22,7 @@ _atom_current = 0
 _atom_total = 0
 _packet_current = 0
 _packet_total = 0
+_job_started_at = 0.0
 
 AH = Path(r"C:\AH")
 INBOX = AH / "IN"
@@ -240,10 +241,18 @@ def publish_heartbeat(force=False):
     stamp=datetime.now(timezone.utc).isoformat()
     state="BUSY" if _busy_job else "FREE"
     health=health_snapshot()
+    elapsed_s = max(int(time.time() - _job_started_at), 0) if _busy_job and _job_started_at else 0
+    avg_packet_s = 0
+    eta_s = 0
+    if _busy_job and _packet_current > 0:
+        avg_packet_s = int(elapsed_s / _packet_current) if elapsed_s > 0 else 0
+        remaining_packets = max(_packet_total - _packet_current, 0)
+        eta_s = avg_packet_s * remaining_packets
     content=(f"WORKER={WORKER}\nSTATUS=ALIVE\nSTATE={state}\n"
              f"JOB_ID={_busy_job}\nFUNCTION={_busy_function}\n"
              f"ATOM_CURRENT={_atom_current}\nATOM_TOTAL={_atom_total}\n"
              f"PACKET_CURRENT={_packet_current}\nPACKET_TOTAL={_packet_total}\n"
+             f"ELAPSED_SECONDS={elapsed_s}\nAVG_PACKET_SECONDS={avg_packet_s}\nETA_SECONDS={eta_s}\n"
              f"CPU_PCT={health['CPU_PCT']}\nMEMORY_PCT={health['MEMORY_PCT']}\n"
              f"DISK_FREE_GB={health['DISK_FREE_GB']}\nUPTIME_HOURS={health['UPTIME_HOURS']}\n"
              f"TEMP_C={health['TEMP_C']}\nUTC={stamp}\n")
@@ -281,8 +290,9 @@ def process_once():
         if function not in ALLOWED:
             publish_result(job_id, function or "UNKNOWN", "FAILED", "Function not allowed")
             continue
-        global _busy_job, _busy_function
+        global _busy_job, _busy_function, _job_started_at
         _busy_job, _busy_function = job_id, function
+        _job_started_at = time.time()
         atom_total = int(job.get("ATOM_TOTAL", "0") or 0)
         packet_total = int(job.get("PACKET_TOTAL", "0") or 0)
         set_progress(0, atom_total, 0, packet_total, force=False)
@@ -297,6 +307,7 @@ def process_once():
             print(f"FAILED: {job_id} -> {message}", flush=True)
         finally:
             _busy_job, _busy_function = "", ""
+            _job_started_at = 0.0
             set_progress(0, 0, 0, 0, force=False)
             publish_heartbeat(force=True)
 
