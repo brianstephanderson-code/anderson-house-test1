@@ -4,6 +4,8 @@ import json
 import re
 import subprocess
 import time
+import shutil
+import ctypes
 from pathlib import Path
 
 REPO = "brianstephanderson-code/anderson-house-test1"
@@ -164,6 +166,50 @@ def run_function_pack():
         raise RuntimeError("Function pack returned empty output")
     return output
 
+def health_snapshot():
+    data = {"CPU_PCT":"NA","MEMORY_PCT":"NA","DISK_FREE_GB":"NA","UPTIME_HOURS":"NA","TEMP_C":"NA"}
+    try:
+        class MEMORYSTATUSEX(ctypes.Structure):
+            _fields_=[("dwLength",ctypes.c_ulong),("dwMemoryLoad",ctypes.c_ulong),
+                      ("ullTotalPhys",ctypes.c_ulonglong),("ullAvailPhys",ctypes.c_ulonglong),
+                      ("ullTotalPageFile",ctypes.c_ulonglong),("ullAvailPageFile",ctypes.c_ulonglong),
+                      ("ullTotalVirtual",ctypes.c_ulonglong),("ullAvailVirtual",ctypes.c_ulonglong),
+                      ("ullAvailExtendedVirtual",ctypes.c_ulonglong)]
+        mem=MEMORYSTATUSEX(); mem.dwLength=ctypes.sizeof(MEMORYSTATUSEX)
+        if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(mem)):
+            data["MEMORY_PCT"]=str(int(mem.dwMemoryLoad))
+    except Exception:
+        pass
+    try:
+        _,_,free=shutil.disk_usage(str(AH))
+        data["DISK_FREE_GB"]=f"{free/(1024**3):.1f}"
+    except Exception:
+        pass
+    try:
+        data["UPTIME_HOURS"]=f"{ctypes.windll.kernel32.GetTickCount64()/3600000:.1f}"
+    except Exception:
+        pass
+    try:
+        p=subprocess.run(["powershell","-NoProfile","-Command",
+            "(Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 1).CounterSamples.CookedValue"],
+            text=True,capture_output=True,timeout=8)
+        if p.returncode==0 and p.stdout.strip():
+            data["CPU_PCT"]=f"{float(p.stdout.strip()):.1f}"
+    except Exception:
+        pass
+    try:
+        cmd=("$t=Get-CimInstance -Namespace root/wmi -ClassName MSAcpi_ThermalZoneTemperature "
+             "-ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty CurrentTemperature; "
+             "if($t){[math]::Round(($t/10)-273.15,1)}")
+        p=subprocess.run(["powershell","-NoProfile","-Command",cmd],text=True,capture_output=True,timeout=8)
+        if p.returncode==0 and p.stdout.strip():
+            temp=float(p.stdout.strip())
+            if -20 <= temp <= 120:
+                data["TEMP_C"]=f"{temp:.1f}"
+    except Exception:
+        pass
+    return data
+
 def publish_heartbeat(force=False):
     global _last_heartbeat
     now=time.time()
@@ -171,7 +217,13 @@ def publish_heartbeat(force=False):
         return
     from datetime import datetime, timezone
     stamp=datetime.now(timezone.utc).isoformat()
-    content=f"WORKER={WORKER}\nSTATUS=ALIVE\nUTC={stamp}\n"
+    state="BUSY" if _busy_job else "FREE"
+    health=health_snapshot()
+    content=(f"WORKER={WORKER}\nSTATUS=ALIVE\nSTATE={state}\n"
+             f"JOB_ID={_busy_job}\nFUNCTION={_busy_function}\n"
+             f"CPU_PCT={health['CPU_PCT']}\nMEMORY_PCT={health['MEMORY_PCT']}\n"
+             f"DISK_FREE_GB={health['DISK_FREE_GB']}\nUPTIME_HOURS={health['UPTIME_HOURS']}\n"
+             f"TEMP_C={health['TEMP_C']}\nUTC={stamp}\n")
     encoded=base64.b64encode(content.encode()).decode()
     path="hive/heartbeat/classicquill.txt"
     cur=gh("api", f"repos/{REPO}/contents/{path}", check=False)
