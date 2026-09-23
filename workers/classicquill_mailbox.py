@@ -26,7 +26,10 @@ def safe_text(value):
     return "" if value is None else str(value)
 
 def gh(*args, check=True):
-    return subprocess.run(["gh", *args], text=True, capture_output=True, check=check)
+    try:
+        return subprocess.run(["gh", *args], text=True, capture_output=True, check=check, timeout=30)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError("GitHub call timed out; mailbox will retry") from exc
 
 def gh_json(*args):
     p = gh(*args)
