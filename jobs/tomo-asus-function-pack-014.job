@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-function-pack-014
+WORKER=CLASSICQUILL
+FUNCTION=function_pack
+DATA=Run the deterministic Anderson House one-monkey function pack and return the combined proof report.
