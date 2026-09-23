@@ -14,6 +14,8 @@ INTERVAL = 15
 TIMEOUT = 120
 HEARTBEAT_INTERVAL = 300
 _last_heartbeat = 0
+_busy_job = ""
+_busy_function = ""
 
 AH = Path(r"C:\AH")
 INBOX = AH / "IN"
@@ -162,10 +164,10 @@ def run_function_pack():
         raise RuntimeError("Function pack returned empty output")
     return output
 
-def publish_heartbeat():
+def publish_heartbeat(force=False):
     global _last_heartbeat
     now=time.time()
-    if now-_last_heartbeat < HEARTBEAT_INTERVAL:
+    if not force and now-_last_heartbeat < HEARTBEAT_INTERVAL:
         return
     from datetime import datetime, timezone
     stamp=datetime.now(timezone.utc).isoformat()
@@ -204,6 +206,9 @@ def process_once():
         if function not in ALLOWED:
             publish_result(job_id, function or "UNKNOWN", "FAILED", "Function not allowed")
             continue
+        global _busy_job, _busy_function
+        _busy_job, _busy_function = job_id, function
+        publish_heartbeat(force=True)
         try:
             output = run_campaign(job) if function == "campaign" else (run_policy_audit() if function == "policy_audit" else (run_function_pack() if function == "function_pack" else run_local(job_id, function, data)))
             publish_result(job_id, function, "DONE", output)
@@ -212,6 +217,9 @@ def process_once():
             message = str(exc).replace("\n", " ")[:500]
             publish_result(job_id, function, "FAILED", message)
             print(f"FAILED: {job_id} -> {message}", flush=True)
+        finally:
+            _busy_job, _busy_function = "", ""
+            publish_heartbeat(force=True)
 
 print("ANDERSON HOUSE — CLASSICQUILL MAILBOX")
 print("Road: GitHub API <-> CLASSICQUILL")
