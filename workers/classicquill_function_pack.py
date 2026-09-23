@@ -1,75 +1,127 @@
 #!/usr/bin/env python3
-import base64, json, re, subprocess, sys
+import base64, csv, hashlib, json, re, subprocess, time
 from collections import defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
 
 REPO="brianstephanderson-code/anderson-house-test1"
+RUN_SECONDS=6180          # 103 minutes; safely below mailbox 2-hour timeout
+HEARTBEAT_SECONDS=300     # 5 minutes
+PACKET_SIZES=(1,5,10,25,50,100)
+OUT=Path(r"C:\AH\OUT\classicquill_granularity_lab.csv")
 
 def gh_json(*args):
-    p=subprocess.run(["gh",*args],text=True,capture_output=True,check=True)
+    p=subprocess.run(["gh",*args],text=True,capture_output=True,check=True,timeout=60)
     return json.loads(p.stdout)
 
-def load_docs():
+def load_corpus():
     tree=gh_json("api",f"repos/{REPO}/git/trees/main?recursive=1")["tree"]
     policy=[x for x in tree if x.get("type")=="blob" and x["path"].startswith("hive/") and x["path"].endswith(".md")]
-    docs={}
+    lines=[]
     for item in policy:
         blob=gh_json("api",f"repos/{REPO}/git/blobs/{item['sha']}")
-        docs[item["path"]]=base64.b64decode(blob["content"]).decode("utf-8","replace")
-    return tree,docs
+        text=base64.b64decode(blob["content"]).decode("utf-8","replace")
+        lines.extend(text.splitlines())
+    return lines
 
-def hard_rules(docs):
-    rr=re.compile(r"\b(MUST|NEVER|ONLY|REQUIRED|ALWAYS|DO NOT|SHALL)\b",re.I)
-    out=[]
-    for path,text in docs.items():
-        for n,line in enumerate(text.splitlines(),1):
-            if rr.search(line): out.append((path,n,line.strip()))
-    return out
+def process_packet(packet):
+    rules=0
+    unknown=0
+    h=hashlib.sha256()
+    for line in packet:
+        b=line.encode("utf-8","replace")
+        h.update(b)
+        u=line.upper()
+        if any(k in u for k in ("MUST","NEVER","ONLY","REQUIRED","ALWAYS","DO NOT","SHALL")):
+            rules+=1
+        if "UNKNOWN" in u:
+            unknown+=1
+    return rules,unknown,h.digest()
 
-def headings(docs):
-    hr=re.compile(r"^#{1,6}\s+(.+)$",re.M)
-    out=[]
-    for path,text in docs.items():
-        for h in hr.findall(text): out.append((path,h.strip()))
-    return out
+def benchmark(lines, packet_size):
+    started=time.perf_counter()
+    atoms=0
+    packets=0
+    rules=0
+    unknown=0
+    for i in range(0,len(lines),packet_size):
+        packet=lines[i:i+packet_size]
+        r,u,_=process_packet(packet)
+        rules+=r; unknown+=u
+        atoms+=len(packet); packets+=1
+    elapsed=max(time.perf_counter()-started,1e-9)
+    return atoms,packets,rules,unknown,elapsed
 
-def unknowns(docs):
-    ur=re.compile(r"\bUNKNOWN\b",re.I)
-    out=[]
-    for path,text in docs.items():
-        for n,line in enumerate(text.splitlines(),1):
-            if ur.search(line): out.append((path,n,line.strip()))
-    return out
-
-def mailbox_gaps(tree):
-    jobs={x["path"].split("/")[-1][:-4] for x in tree if x.get("type")=="blob" and x["path"].startswith("jobs/") and x["path"].endswith(".job")}
-    results={x["path"].split("/")[-1][:-7] for x in tree if x.get("type")=="blob" and x["path"].startswith("results/") and x["path"].endswith(".result")}
-    return sorted(jobs-results), sorted(results-jobs)
+def publish_lab_heartbeat(started, round_no, packet_size, atoms_total):
+    elapsed=int(time.time()-started)
+    pct=min(100.0, elapsed/RUN_SECONDS*100.0)
+    eta=max(RUN_SECONDS-elapsed,0)
+    stamp=datetime.now(timezone.utc).isoformat()
+    content=(
+        "WORKER=CLASSICQUILL\nSTATUS=ALIVE\nSTATE=BUSY\n"
+        "FUNCTION=function_pack_granularity_lab\n"
+        f"LAB_ROUND={round_no}\nPACKET_SIZE={packet_size}\n"
+        f"ATOMS_IN_CORPUS={atoms_total}\n"
+        f"ELAPSED_SECONDS={elapsed}\nETA_SECONDS={eta}\n"
+        f"PROGRESS_PCT={pct:.1f}\nUTC={stamp}\n"
+    )
+    encoded=base64.b64encode(content.encode()).decode()
+    path="hive/heartbeat/classicquill.txt"
+    cur=subprocess.run(["gh","api",f"repos/{REPO}/contents/{path}"],text=True,capture_output=True)
+    args=["gh","api","--method","PUT",f"repos/{REPO}/contents/{path}",
+          "-f",f"message=CLASSICQUILL lab heartbeat {stamp}",
+          "-f",f"content={encoded}"]
+    if cur.returncode==0:
+        try:
+            args += ["-f",f"sha={json.loads(cur.stdout)['sha']}"]
+        except Exception:
+            pass
+    subprocess.run(args,text=True,capture_output=True,timeout=60)
 
 def main():
-    tree,docs=load_docs()
-    rules=hard_rules(docs)
-    heads=headings(docs)
-    unk=unknowns(docs)
-    oj,or_=mailbox_gaps(tree)
-    print("# CLASSICQUILL FUNCTION PACK")
-    print(f"HARD_RULES={len(rules)}")
-    print(f"HEADINGS={len(heads)}")
-    print(f"UNKNOWN_STATES={len(unk)}")
-    print(f"JOBS_WITHOUT_RESULTS={len(oj)}")
-    print(f"RESULTS_WITHOUT_JOBS={len(or_)}")
-    print("\n## HARD RULE EXTRACTOR")
-    for p,n,s in rules[:200]: print(f"- {p}:{n} — {s[:220]}")
-    print("\n## HEADING REGISTRY")
-    for p,h in heads[:200]: print(f"- {p} — {h[:180]}")
-    print("\n## UNKNOWN STATE INDEX")
-    for p,n,s in unk[:120]: print(f"- {p}:{n} — {s[:220]}")
-    print("\n## MAILBOX GAP CHECKER")
-    print("Jobs without results:")
-    for x in oj[:100]: print(f"- {x}")
-    if not oj: print("- None")
-    print("Results without jobs:")
-    for x in or_[:100]: print(f"- {x}")
-    if not or_: print("- None")
+    lines=load_corpus()
+    OUT.parent.mkdir(parents=True,exist_ok=True)
+    new_file=not OUT.exists()
+    fh=OUT.open("a",newline="",encoding="utf-8")
+    w=csv.writer(fh)
+    if new_file:
+        w.writerow(["utc","round","packet_size","atoms","packets","elapsed_s","atoms_per_s","rules","unknown"])
+        fh.flush()
+
+    started=time.time()
+    next_hb=0
+    round_no=0
+    measurements=0
+    last_packet=0
+    while time.time()-started < RUN_SECONDS:
+        round_no+=1
+        for packet_size in PACKET_SIZES:
+            if time.time()-started >= RUN_SECONDS:
+                break
+            atoms,packets,rules,unknown,elapsed=benchmark(lines,packet_size)
+            last_packet=packet_size
+            measurements+=1
+            w.writerow([
+                datetime.now(timezone.utc).isoformat(),round_no,packet_size,atoms,packets,
+                f"{elapsed:.6f}",f"{atoms/elapsed:.2f}",rules,unknown
+            ])
+            fh.flush()
+            now=time.time()
+            if now >= next_hb:
+                publish_lab_heartbeat(started,round_no,packet_size,len(lines))
+                next_hb=now+HEARTBEAT_SECONDS
+        time.sleep(2)
+
+    publish_lab_heartbeat(started,round_no,last_packet,len(lines))
+    fh.close()
+    print("# CLASSICQUILL GRANULARITY LAB")
+    print(f"STATUS=DONE")
+    print(f"DURATION_SECONDS={int(time.time()-started)}")
+    print(f"ROUNDS={round_no}")
+    print(f"MEASUREMENTS={measurements}")
+    print(f"ATOMS_IN_CORPUS={len(lines)}")
+    print(f"PACKET_SIZES={','.join(map(str,PACKET_SIZES))}")
+    print(f"REPORT={OUT}")
 
 if __name__=="__main__":
     main()
