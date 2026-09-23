@@ -27,6 +27,7 @@ _job_started_at = 0.0
 AH = Path(r"C:\AH")
 INBOX = AH / "IN"
 OUTBOX = AH / "OUT"
+CHECKPOINTS = AH / "WORK" / "checkpoints"
 JOB_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
 ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign", "policy_audit", "function_pack"}
 CAMPAIGN_FUNCS = {"uppercase", "lowercase", "wordcount"}
@@ -109,19 +110,54 @@ def apply_campaign_function(function, data):
         return str(len(str(data).split()))
     raise ValueError(f"Campaign function not allowed: {function}")
 
+def checkpoint_path(job_id):
+    CHECKPOINTS.mkdir(parents=True, exist_ok=True)
+    return CHECKPOINTS / f"{job_id}.json"
+
+def load_checkpoint(job_id):
+    path = checkpoint_path(job_id)
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+def save_checkpoint(job_id, cycle, current):
+    path = checkpoint_path(job_id)
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps({"cycle": cycle, "current": current}), encoding="utf-8")
+    tmp.replace(path)
+
+def clear_checkpoint(job_id):
+    path = checkpoint_path(job_id)
+    if path.exists():
+        path.unlink()
+
 def run_campaign(job):
+    job_id = job.get("JOB_ID", "campaign")
     funcs = [x.strip() for x in job.get("STEPS", "uppercase,wordcount").split(",") if x.strip()]
     if not funcs or any(f not in CAMPAIGN_FUNCS for f in funcs):
         raise ValueError("Invalid campaign STEPS")
     current = job.get("DATA", "")
+    checkpoint = load_checkpoint(job_id)
+    resumed = False
+    resume_cycle = 0
+    if checkpoint:
+        try:
+            resume_cycle = max(int(checkpoint.get("cycle", 0)), 0)
+            current = checkpoint.get("current", current)
+            resumed = resume_cycle > 0
+        except Exception:
+            resume_cycle = 0
     max_hours = min(max(float(job.get("MAX_HOURS", "10")), 0.01), 16.0)
     max_cycles = min(max(int(job.get("MAX_CYCLES", "1000")), 1), 10000)
     sleep_seconds = min(max(float(job.get("SLEEP_SECONDS", "1")), 0.0), 60.0)
     stop_on_stable = job.get("STOP_ON_STABLE", "YES").upper() not in {"NO", "FALSE", "0"}
     started = time.time()
     deadline = started + max_hours * 3600
-    cycle = 0
-    last_trace = ""
+    cycle = resume_cycle
+    last_trace = f"resumed_from={resume_cycle}" if resumed else ""
     packet_total = max(int(job.get("PACKET_TOTAL", "0") or 0), 0)
     pulse_every = max(int(job.get("PROGRESS_EVERY", "10") or 10), 1)
     while cycle < max_cycles and time.time() < deadline:
@@ -136,11 +172,15 @@ def run_campaign(job):
         for f in funcs:
             current = apply_campaign_function(f, current)
             last_trace = f"cycle={cycle};function={f};output={str(current)[:120]}"
+        save_checkpoint(job_id, cycle, current)
         if stop_on_stable and current == before:
+            clear_checkpoint(job_id)
             return f"DONE_STABLE cycles={cycle} elapsed={round(time.time()-started,2)}s output={current} trace={last_trace}"
         if sleep_seconds:
             time.sleep(sleep_seconds)
     reason = "MAX_CYCLES" if cycle >= max_cycles else "MAX_HOURS"
+    if cycle >= max_cycles:
+        clear_checkpoint(job_id)
     return f"DONE_{reason} cycles={cycle} elapsed={round(time.time()-started,2)}s output={current} trace={last_trace}"
 
 def sync_repo_worker(repo_path, local_path):
