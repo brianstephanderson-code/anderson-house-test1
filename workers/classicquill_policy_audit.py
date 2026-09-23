@@ -4,6 +4,22 @@ from pathlib import Path
 from collections import Counter, defaultdict
 
 REPO="brianstephanderson-code/anderson-house-test1"
+
+def write_heartbeat():
+    from datetime import datetime, timezone
+    stamp=datetime.now(timezone.utc).isoformat()
+    content=f"WORKER=CLASSICQUILL\nSTATUS=ALIVE\nUTC={stamp}\n"
+    encoded=base64.b64encode(content.encode()).decode()
+    path="hive/heartbeat/classicquill.txt"
+    current=subprocess.run(["gh","api",f"repos/{REPO}/contents/{path}"],text=True,capture_output=True)
+    args=["gh","api","--method","PUT",f"repos/{REPO}/contents/{path}",
+          "-f",f"message=CLASSICQUILL heartbeat {stamp}",
+          "-f",f"content={encoded}"]
+    if current.returncode==0:
+        item=json.loads(current.stdout)
+        args += ["-f",f"sha={item['sha']}"]
+    subprocess.run(args,text=True,capture_output=True,check=True)
+
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -16,6 +32,7 @@ def gh_json(*args):
     p=subprocess.run(["gh",*args],text=True,capture_output=True,check=True)
     return json.loads(p.stdout)
 
+write_heartbeat()
 tree=gh_json("api",f"repos/{REPO}/git/trees/main?recursive=1")["tree"]
 policy_paths=[x for x in tree if x.get("type")=="blob" and x["path"].startswith("hive/") and x["path"].endswith(".md")]
 
