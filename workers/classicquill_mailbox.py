@@ -18,6 +18,10 @@ HEARTBEAT_INTERVAL = 300
 _last_heartbeat = 0
 _busy_job = ""
 _busy_function = ""
+_atom_current = 0
+_atom_total = 0
+_packet_current = 0
+_packet_total = 0
 
 AH = Path(r"C:\AH")
 INBOX = AH / "IN"
@@ -119,6 +123,7 @@ def run_campaign(job):
     last_trace = ""
     while cycle < max_cycles and time.time() < deadline:
         cycle += 1
+        set_progress(cycle, max_cycles, cycle, max_cycles, force=False)
         before = current
         for f in funcs:
             current = apply_campaign_function(f, current)
@@ -210,6 +215,15 @@ def health_snapshot():
         pass
     return data
 
+def set_progress(atom_current=0, atom_total=0, packet_current=0, packet_total=0, force=False):
+    global _atom_current, _atom_total, _packet_current, _packet_total
+    _atom_current = max(int(atom_current or 0), 0)
+    _atom_total = max(int(atom_total or 0), 0)
+    _packet_current = max(int(packet_current or 0), 0)
+    _packet_total = max(int(packet_total or 0), 0)
+    if force:
+        publish_heartbeat(force=True)
+
 def publish_heartbeat(force=False):
     global _last_heartbeat
     now=time.time()
@@ -221,6 +235,8 @@ def publish_heartbeat(force=False):
     health=health_snapshot()
     content=(f"WORKER={WORKER}\nSTATUS=ALIVE\nSTATE={state}\n"
              f"JOB_ID={_busy_job}\nFUNCTION={_busy_function}\n"
+             f"ATOM_CURRENT={_atom_current}\nATOM_TOTAL={_atom_total}\n"
+             f"PACKET_CURRENT={_packet_current}\nPACKET_TOTAL={_packet_total}\n"
              f"CPU_PCT={health['CPU_PCT']}\nMEMORY_PCT={health['MEMORY_PCT']}\n"
              f"DISK_FREE_GB={health['DISK_FREE_GB']}\nUPTIME_HOURS={health['UPTIME_HOURS']}\n"
              f"TEMP_C={health['TEMP_C']}\nUTC={stamp}\n")
@@ -260,6 +276,9 @@ def process_once():
             continue
         global _busy_job, _busy_function
         _busy_job, _busy_function = job_id, function
+        atom_total = int(job.get("ATOM_TOTAL", "0") or 0)
+        packet_total = int(job.get("PACKET_TOTAL", "0") or 0)
+        set_progress(0, atom_total, 0, packet_total, force=False)
         publish_heartbeat(force=True)
         try:
             output = run_campaign(job) if function == "campaign" else (run_policy_audit() if function == "policy_audit" else (run_function_pack() if function == "function_pack" else run_local(job_id, function, data)))
@@ -271,6 +290,7 @@ def process_once():
             print(f"FAILED: {job_id} -> {message}", flush=True)
         finally:
             _busy_job, _busy_function = "", ""
+            set_progress(0, 0, 0, 0, force=False)
             publish_heartbeat(force=True)
 
 print("ANDERSON HOUSE — CLASSICQUILL MAILBOX")
