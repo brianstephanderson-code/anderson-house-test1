@@ -121,9 +121,16 @@ def run_campaign(job):
     deadline = started + max_hours * 3600
     cycle = 0
     last_trace = ""
+    packet_total = max(int(job.get("PACKET_TOTAL", "0") or 0), 0)
+    pulse_every = max(int(job.get("PROGRESS_EVERY", "10") or 10), 1)
     while cycle < max_cycles and time.time() < deadline:
         cycle += 1
-        set_progress(cycle, max_cycles, cycle, max_cycles, force=False)
+        packet_current = 0
+        if packet_total > 0 and max_cycles > 0:
+            packet_current = min(packet_total, ((cycle - 1) * packet_total // max_cycles) + 1)
+        set_progress(cycle, max_cycles, packet_current, packet_total, force=False)
+        if cycle == 1 or cycle % pulse_every == 0 or cycle == max_cycles:
+            publish_heartbeat(force=True)
         before = current
         for f in funcs:
             current = apply_campaign_function(f, current)
