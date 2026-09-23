@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-granularity-pilot-015
+WORKER=CLASSICQUILL
+FUNCTION=campaign
+STATUS=DONE
+OUTPUT=DONE_MAX_CYCLES cycles=120 elapsed=582.5s output=anderson house granularity pilot trace=cycle=120;function=lowercase;output=anderson house granularity pilot
