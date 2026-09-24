@@ -6,6 +6,7 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from hive_peer_bus import process_bus
 
 ROOT = Path.home() / "anderson-house-mailbox"
 JOBS = ROOT / "jobs"
@@ -634,6 +635,7 @@ print("Watching GitHub for jobs...", flush=True)
 while True:
     try:
         pull()
+        process_bus(WORKER, ROOT)
         publish_heartbeat()
         process_jobs()
     except Exception as exc:
