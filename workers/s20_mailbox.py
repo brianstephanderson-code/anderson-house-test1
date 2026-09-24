@@ -32,6 +32,26 @@ def run(*args, check=True):
 def pull():
     run("git", "pull", "--rebase", "--autostash", "origin", "main")
 
+
+def git_push_resilient(max_attempts=4):
+    """Push local commits while tolerating other hives advancing origin/main."""
+    last = ""
+    for attempt in range(1, max_attempts + 1):
+        p = run("git", "push", "origin", "main", check=False)
+        if p.returncode == 0:
+            return
+        last = (p.stderr or p.stdout or "").strip()
+        # Another hive may have advanced main. Rebase our local commit and retry.
+        run("git", "fetch", "origin")
+        r = run("git", "rebase", "origin/main", check=False)
+        if r.returncode != 0:
+            # Leave no half-rebase behind; next mailbox loop can retry cleanly.
+            run("git", "rebase", "--abort", check=False)
+            raise RuntimeError(f"git rebase failed during push retry: {(r.stderr or r.stdout).strip()}")
+        time.sleep(min(attempt, 3))
+    raise RuntimeError(f"git push failed after {max_attempts} attempts: {last}")
+
+
 def parse_job(path):
     data = {}
     for raw in path.read_text().splitlines():
@@ -216,7 +236,7 @@ def publish_heartbeat(force=False):
     if changed.returncode != 0:
         run("git", "commit", "-m", f"S20 heartbeat {stamp}")
         run("git", "pull", "--rebase", "origin", "main")
-        run("git", "push", "origin", "main")
+        git_push_resilient()
     _last_heartbeat = now
 
 def repo_policy_scan():
@@ -560,7 +580,7 @@ def publish_result(job_id, function, status, output):
         return
     run("git", "commit", "-m", f"S20 result {job_id}")
     run("git", "pull", "--rebase", "origin", "main")
-    run("git", "push", "origin", "main")
+    git_push_resilient()
 
 def process_jobs():
     global _busy_job, _busy_function, _job_started_at
