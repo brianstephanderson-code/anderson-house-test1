@@ -1,0 +1,4 @@
+JOB_ID=day-20260924-hotspot-03
+WORKER=HOTSPOT
+FUNCTION=hotspot_hive_campaign
+DATA=Day-shift light-duty production campaign 3; verify current Anderson House policy atoms and checkpoint results.
