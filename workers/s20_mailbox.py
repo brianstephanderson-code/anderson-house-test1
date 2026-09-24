@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+import json
 import shutil
 import subprocess
 import time
@@ -21,6 +22,9 @@ _workers_active = 0
 _batch_current = 0
 _batch_total = 0
 _progress_pct = 0.0
+_verified_atoms = 0
+_retry_count = 0
+_checkpoint_packet = 0
 
 def run(*args, check=True):
     return subprocess.run(args, cwd=ROOT, text=True, capture_output=True, check=check)
@@ -197,6 +201,8 @@ def publish_heartbeat(force=False):
         f"JOB_ID={_busy_job}\nFUNCTION={_busy_function}\n"
         f"PHASE={_phase}\nWORKERS_ACTIVE={_workers_active}\n"
         f"BATCH_CURRENT={_batch_current}\nBATCH_TOTAL={_batch_total}\n"
+        f"VERIFIED_ATOMS={_verified_atoms}\nRETRY_COUNT={_retry_count}\n"
+        f"CHECKPOINT_PACKET={_checkpoint_packet}\n"
         f"PROGRESS_PCT={_progress_pct:.1f}\n"
         f"ELAPSED_SECONDS={elapsed_s}\nETA_SECONDS={eta_s}\n"
         f"BATTERY_PCT={h['BATTERY_PCT']}\nCHARGE_STATE={h['CHARGE_STATE']}\n"
@@ -270,6 +276,7 @@ def _load_policy_docs():
 
 def four_worker_two_hour_test():
     global _phase, _workers_active, _batch_current, _batch_total, _progress_pct
+    global _verified_atoms, _retry_count, _checkpoint_packet
     from concurrent.futures import ProcessPoolExecutor
     docs = _load_policy_docs()
     if not docs:
@@ -343,6 +350,190 @@ def four_worker_two_hour_test():
         f"metrics={log}"
     )
 
+CHECKPOINTS = ROOT / "work" / "checkpoints"
+
+def _shred_policy_atoms(lines_per_atom=40):
+    """SHREDDER: deterministic STATE->ACTION->DONE atoms from policy markdown."""
+    atoms = []
+    atom_id = 0
+    for path, text in _load_policy_docs():
+        lines = text.splitlines()
+        for start in range(0, len(lines), lines_per_atom):
+            atom_id += 1
+            chunk = "\n".join(lines[start:start + lines_per_atom])
+            atoms.append({
+                "id": atom_id,
+                "source": path,
+                "start_line": start + 1,
+                "text": chunk,
+            })
+    return atoms
+
+def _hive_atom_work(atom):
+    import hashlib, re
+    text = atom["text"]
+    lines = text.splitlines()
+    return {
+        "id": atom["id"],
+        "source": atom["source"],
+        "start_line": atom["start_line"],
+        "lines": len(lines),
+        "hard_rules": sum(1 for line in lines if re.search(r"\b(MUST|NEVER|ONLY|REQUIRED|ALWAYS|DO NOT|SHALL)\b", line, re.I)),
+        "unknown": sum(1 for line in lines if re.search(r"\bUNKNOWN\b", line, re.I)),
+        "headings": sum(1 for line in lines if re.match(r"^#{1,6}\s+", line)),
+        "todos": sum(1 for line in lines if re.search(r"\b(TODO|TBD|FIXME)\b|\?\?\?", line, re.I)),
+        "sha256": hashlib.sha256(text.encode("utf-8", "replace")).hexdigest(),
+    }
+
+def _hive_packet_worker(packet):
+    return [_hive_atom_work(atom) for atom in packet]
+
+def _check_packet(packet, result):
+    """CHECKER: independently verify identity, completeness and content hash."""
+    import hashlib
+    if not isinstance(result, list) or len(result) != len(packet):
+        return False, "count_mismatch"
+    expected = {a["id"]: a for a in packet}
+    seen = set()
+    for row in result:
+        atom_id = row.get("id")
+        if atom_id not in expected or atom_id in seen:
+            return False, "identity_mismatch"
+        seen.add(atom_id)
+        atom = expected[atom_id]
+        digest = hashlib.sha256(atom["text"].encode("utf-8", "replace")).hexdigest()
+        if row.get("sha256") != digest:
+            return False, f"hash_mismatch_atom_{atom_id}"
+        if row.get("lines") != len(atom["text"].splitlines()):
+            return False, f"line_count_mismatch_atom_{atom_id}"
+    return True, "VERIFIED"
+
+def _checkpoint_path(job_id):
+    CHECKPOINTS.mkdir(parents=True, exist_ok=True)
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", job_id or "s20-hive")
+    return CHECKPOINTS / f"{safe}.json"
+
+def _load_checkpoint(job_id):
+    p = _checkpoint_path(job_id)
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+def _save_checkpoint(job_id, data):
+    p = _checkpoint_path(job_id)
+    tmp = p.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, sort_keys=True, indent=2), encoding="utf-8")
+    tmp.replace(p)
+
+def s20_hive_campaign():
+    """Local S20 hive: SHREDDER -> 4 workers -> CHECKER -> CHECKPOINT -> RETRY."""
+    global _phase, _workers_active, _batch_current, _batch_total, _progress_pct
+    global _verified_atoms, _retry_count, _checkpoint_packet
+
+    from concurrent.futures import ProcessPoolExecutor
+
+    atoms = _shred_policy_atoms(lines_per_atom=40)
+    if not atoms:
+        return "FAILED no atoms"
+
+    packet_size = 8
+    packets = [atoms[i:i + packet_size] for i in range(0, len(atoms), packet_size)]
+    total_packets = len(packets)
+    cp = _load_checkpoint(_busy_job)
+    next_packet = min(int(cp.get("next_packet", 0) or 0), total_packets)
+    verified_atoms = int(cp.get("verified_atoms", 0) or 0)
+    retries = int(cp.get("retries", 0) or 0)
+
+    _phase = "SHREDDED"
+    _workers_active = 4
+    _batch_total = total_packets
+    _batch_current = next_packet
+    _verified_atoms = verified_atoms
+    _retry_count = retries
+    _checkpoint_packet = next_packet
+    _progress_pct = 100.0 * next_packet / total_packets if total_packets else 100.0
+    publish_heartbeat(force=True)
+
+    totals = {"hard_rules": 0, "unknown": 0, "headings": 0, "todos": 0}
+    max_retries = 2
+
+    with ProcessPoolExecutor(max_workers=4) as pool:
+        packet_index = next_packet
+        while packet_index < total_packets:
+            wave_indexes = list(range(packet_index, min(packet_index + 4, total_packets)))
+            wave_packets = [packets[i] for i in wave_indexes]
+
+            _phase = "WORK"
+            futures = [pool.submit(_hive_packet_worker, pkt) for pkt in wave_packets]
+
+            for idx, pkt, fut in zip(wave_indexes, wave_packets, futures):
+                attempt = 0
+                while True:
+                    try:
+                        result = fut.result()
+                        _phase = "CHECK"
+                        ok, reason = _check_packet(pkt, result)
+                    except Exception as exc:
+                        ok, reason = False, f"worker_exception:{exc}"
+
+                    if ok:
+                        for row in result:
+                            totals["hard_rules"] += row["hard_rules"]
+                            totals["unknown"] += row["unknown"]
+                            totals["headings"] += row["headings"]
+                            totals["todos"] += row["todos"]
+
+                        verified_atoms += len(pkt)
+                        completed_packet = idx + 1
+                        _batch_current = completed_packet
+                        _verified_atoms = verified_atoms
+                        _checkpoint_packet = completed_packet
+                        _progress_pct = 100.0 * completed_packet / total_packets
+
+                        _phase = "CHECKPOINT"
+                        _save_checkpoint(_busy_job, {
+                            "job_id": _busy_job,
+                            "next_packet": completed_packet,
+                            "verified_atoms": verified_atoms,
+                            "retries": retries,
+                            "total_packets": total_packets,
+                            "total_atoms": len(atoms),
+                            "updated_utc": datetime.now(timezone.utc).isoformat(),
+                        })
+                        publish_heartbeat(force=True)
+                        break
+
+                    attempt += 1
+                    retries += 1
+                    _retry_count = retries
+                    _phase = "RETRY"
+                    publish_heartbeat(force=True)
+                    if attempt > max_retries:
+                        raise RuntimeError(f"packet {idx + 1} failed checker after {attempt} attempts: {reason}")
+                    result = _hive_packet_worker(pkt)
+                    class _Done:
+                        def result(self_inner):
+                            return result
+                    fut = _Done()
+
+            packet_index = wave_indexes[-1] + 1
+
+    _phase = "VERIFIED_DONE"
+    _workers_active = 0
+    _batch_current = total_packets
+    _checkpoint_packet = total_packets
+    _verified_atoms = len(atoms)
+    _progress_pct = 100.0
+    publish_heartbeat(force=True)
+
+    return (
+        f"VERIFIED_DONE atoms={len(atoms)} packets={total_packets} "
+        f"retries={retries} hard_rules={totals['hard_rules']} "
+        f"unknown={totals['unknown']} headings={totals['headings']} todos={totals['todos']} "
+        f"checkpoint={_checkpoint_path(_busy_job)}"
+    )
+
 FUNCTIONS = {
     "battery": battery,
     "text_batch": text_batch,
@@ -350,6 +541,7 @@ FUNCTIONS = {
     "mailbox_gap_scan": mailbox_gap_scan,
     "repo_integrity_scan": repo_integrity_scan,
     "four_worker_two_hour_test": four_worker_two_hour_test,
+    "s20_hive_campaign": s20_hive_campaign,
 }
 
 def publish_result(job_id, function, status, output):
@@ -391,6 +583,9 @@ def process_jobs():
         _batch_current = 0
         _batch_total = 0
         _progress_pct = 0.0
+        _verified_atoms = 0
+        _retry_count = 0
+        _checkpoint_packet = 0
         publish_heartbeat(force=True)
         try:
             fn = FUNCTIONS[function]
@@ -408,6 +603,9 @@ def process_jobs():
             _batch_current = 0
             _batch_total = 0
             _progress_pct = 0.0
+            _verified_atoms = 0
+            _retry_count = 0
+            _checkpoint_packet = 0
             publish_heartbeat(force=True)
 
 print("ANDERSON HOUSE — S20 MAILBOX")
