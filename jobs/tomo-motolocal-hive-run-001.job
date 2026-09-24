@@ -1,0 +1,3 @@
+JOB_ID=tomo-motolocal-hive-run-001
+WORKER=MOTO-LOCAL
+FUNCTION=moto_local_hive_campaign
