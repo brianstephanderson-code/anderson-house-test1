@@ -199,9 +199,47 @@ def publish_heartbeat(force=False):
         run("git", "push", "origin", "main")
     _last_heartbeat = now
 
+def repo_policy_scan():
+    files = sorted((ROOT / "hive").rglob("*.md")) if (ROOT / "hive").exists() else []
+    hard = unknown = headings = todos = lines_total = 0
+    for p in files:
+        text = p.read_text(encoding="utf-8", errors="replace")
+        lines = text.splitlines()
+        lines_total += len(lines)
+        hard += sum(1 for line in lines if re.search(r"\b(MUST|NEVER|ONLY|REQUIRED|ALWAYS|DO NOT|SHALL)\b", line, re.I))
+        unknown += sum(1 for line in lines if re.search(r"\bUNKNOWN\b", line, re.I))
+        headings += sum(1 for line in lines if re.match(r"^#{1,6}\s+", line))
+        todos += sum(1 for line in lines if re.search(r"\b(TODO|TBD|FIXME)\b|\?\?\?", line, re.I))
+    return f"files={len(files)} lines={lines_total} hard_rules={hard} unknown={unknown} headings={headings} todos={todos}"
+
+def mailbox_gap_scan():
+    jobs = {p.stem for p in JOBS.glob("*.job")}
+    results = {p.name[:-7] for p in RESULTS.glob("*.result")}
+    missing = sorted(jobs - results)
+    orphan = sorted(results - jobs)
+    return f"jobs_without_results={len(missing)} results_without_jobs={len(orphan)} sample_missing={','.join(missing[:20])}"
+
+def repo_integrity_scan():
+    import hashlib
+    files = sorted(p for p in ROOT.rglob("*") if p.is_file() and ".git" not in p.parts)
+    h = hashlib.sha256()
+    total_bytes = 0
+    for p in files:
+        try:
+            data = p.read_bytes()
+            total_bytes += len(data)
+            h.update(str(p.relative_to(ROOT)).encode())
+            h.update(data)
+        except Exception:
+            pass
+    return f"files={len(files)} bytes={total_bytes} sha256={h.hexdigest()}"
+
 FUNCTIONS = {
     "battery": battery,
     "text_batch": text_batch,
+    "repo_policy_scan": repo_policy_scan,
+    "mailbox_gap_scan": mailbox_gap_scan,
+    "repo_integrity_scan": repo_integrity_scan,
 }
 
 def publish_result(job_id, function, status, output):
