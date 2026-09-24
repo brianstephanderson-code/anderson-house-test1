@@ -19,12 +19,14 @@ MESSAGE_ID=<globally unique id>
 CHANNEL=<ORDERS|CROSSTALK|UPLINK>
 FROM=<sender>
 TO=<recipient>
+DEPT=<GENERAL|SHREDDER|CHECKER|HEALTH|MAILROOM>
 TYPE=<message type>
 CORRELATION_ID=<optional prior message id>
 PAYLOAD=<single-line data>
 
 ## Crosstalk acceptance gate
 A hive only accepts CROSSTALK when all are true:
+0. DEPT names the local room; GENERAL is the fallback.
 1. TO matches the hive or ALL.
 2. CHANNEL=CROSSTALK.
 3. TYPE is allowed.
