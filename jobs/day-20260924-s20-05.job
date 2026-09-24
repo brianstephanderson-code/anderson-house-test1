@@ -1,0 +1,4 @@
+JOB_ID=day-20260924-s20-05
+WORKER=S20
+FUNCTION=repo_policy_scan
+DATA=Day-shift production queue item 5; perform current-state repo_policy_scan and return verified result.
