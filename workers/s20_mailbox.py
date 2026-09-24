@@ -234,12 +234,82 @@ def repo_integrity_scan():
             pass
     return f"files={len(files)} bytes={total_bytes} sha256={h.hexdigest()}"
 
+def _parallel_lane(payload):
+    import hashlib, re
+    docs, rounds = payload
+    hard = unknown = headings = todos = 0
+    h = hashlib.sha256()
+    for _ in range(rounds):
+        for path, text in docs:
+            h.update(path.encode())
+            h.update(text.encode("utf-8", "replace"))
+            lines = text.splitlines()
+            hard += sum(1 for line in lines if re.search(r"\b(MUST|NEVER|ONLY|REQUIRED|ALWAYS|DO NOT|SHALL)\b", line, re.I))
+            unknown += sum(1 for line in lines if re.search(r"\bUNKNOWN\b", line, re.I))
+            headings += sum(1 for line in lines if re.match(r"^#{1,6}\s+", line))
+            todos += sum(1 for line in lines if re.search(r"\b(TODO|TBD|FIXME)\b|\?\?\?", line, re.I))
+    return hard, unknown, headings, todos, h.hexdigest()
+
+def _load_policy_docs():
+    files = sorted((ROOT / "hive").rglob("*.md")) if (ROOT / "hive").exists() else []
+    return [(str(p.relative_to(ROOT)), p.read_text(encoding="utf-8", errors="replace")) for p in files]
+
+def four_worker_two_hour_test():
+    from concurrent.futures import ProcessPoolExecutor
+    docs = _load_policy_docs()
+    if not docs:
+        return "FAILED no policy docs"
+
+    log = ROOT / "results" / "s20_four_worker_metrics.csv"
+    new_file = not log.exists()
+    fh = log.open("a", encoding="utf-8")
+    if new_file:
+        fh.write("utc,phase,workers,batches,battery_pct,temp_c,cpu_pct,memory_pct,elapsed_s\n")
+
+    def sample(phase, workers, batches, started):
+        h = health_snapshot()
+        fh.write(
+            f"{datetime.now(timezone.utc).isoformat()},{phase},{workers},{batches},"
+            f"{h['BATTERY_PCT']},{h['TEMP_C']},{h['CPU_PCT']},{h['MEMORY_PCT']},"
+            f"{int(time.time()-started)}\n"
+        )
+        fh.flush()
+
+    # Short 1-worker baseline for comparison.
+    baseline_started = time.time()
+    baseline_batches = 0
+    while time.time() - baseline_started < 300:
+        _parallel_lane((docs, 25))
+        baseline_batches += 1
+        if baseline_batches == 1 or baseline_batches % 5 == 0:
+            sample("baseline", 1, baseline_batches, baseline_started)
+
+    # Main 4-worker run for about two hours.
+    run_started = time.time()
+    batches = 0
+    with ProcessPoolExecutor(max_workers=4) as pool:
+        while time.time() - run_started < 7200:
+            list(pool.map(_parallel_lane, [(docs, 25)] * 4))
+            batches += 1
+            if batches == 1 or batches % 5 == 0:
+                sample("four_worker", 4, batches, run_started)
+
+    sample("four_worker_done", 4, batches, run_started)
+    fh.close()
+
+    return (
+        f"baseline_batches_5min={baseline_batches} "
+        f"four_worker_batches_2h={batches} "
+        f"metrics={log}"
+    )
+
 FUNCTIONS = {
     "battery": battery,
     "text_batch": text_batch,
     "repo_policy_scan": repo_policy_scan,
     "mailbox_gap_scan": mailbox_gap_scan,
     "repo_integrity_scan": repo_integrity_scan,
+    "four_worker_two_hour_test": four_worker_two_hour_test,
 }
 
 def publish_result(job_id, function, status, output):
