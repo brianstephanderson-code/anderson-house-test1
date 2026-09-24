@@ -43,6 +43,33 @@ def battery():
     status = read_text("/sys/class/power_supply/battery/status")
     return f"S20 battery: {cap}% — {status}"
 
+def text_batch():
+    # Light deterministic production work for the S20.
+    # Reads a small local corpus if present, otherwise uses a built-in sample.
+    candidates = [
+        Path.home() / "tale.txt",
+        ROOT / "README.md",
+    ]
+    text = ""
+    for p in candidates:
+        try:
+            if p.exists():
+                text = p.read_text(encoding="utf-8", errors="replace")
+                break
+        except Exception:
+            pass
+    if not text:
+        text = "Anderson House worker production sample. " * 5000
+
+    lines = text.splitlines() or [text]
+    words = text.split()
+    sentences = [x for x in re.split(r"(?<=[.!?])\s+", text) if x.strip()]
+    digest = __import__("hashlib").sha256(text.encode("utf-8", "replace")).hexdigest()
+    return (
+        f"lines={len(lines)} words={len(words)} sentences={len(sentences)} "
+        f"sha256={digest}"
+    )
+
 def cpu_pct():
     # First try Android/Termux 'top' for a one-shot system CPU sample.
     try:
@@ -174,6 +201,7 @@ def publish_heartbeat(force=False):
 
 FUNCTIONS = {
     "battery": battery,
+    "text_batch": text_batch,
 }
 
 def publish_result(job_id, function, status, output):
