@@ -1,0 +1,3 @@
+JOB_ID=tomo-s20-hive-campaign-012
+WORKER=S20
+FUNCTION=s20_hive_campaign
