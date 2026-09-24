@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import hashlib, json, re, shutil, subprocess, time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from hive_peer_bus import process_bus
@@ -156,17 +156,21 @@ def run_campaign(job_id):
     _retry_count=int(cp.get("retries",0) or 0)
     _packet_current=start
     _phase="SHREDDED"; publish_heartbeat(force=True)
-    with ProcessPoolExecutor(max_workers=MAX_WORKERS) as pool:
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
         for i in range(start,len(packets)):
             pkt=packets[i]; attempt=0
+            last_error = ""
             while True:
                 _phase="WORK"
                 try:
                     result=pool.submit(packet_work,pkt).result()
                     _phase="CHECK"
                     ok=check_packet(pkt,result)
-                except Exception:
+                    if not ok:
+                        last_error = "checker mismatch"
+                except Exception as exc:
                     ok=False
+                    last_error = f"{type(exc).__name__}: {exc}"
                 if ok:
                     _verified_atoms+=len(pkt)
                     _packet_current=i+1
@@ -175,7 +179,7 @@ def run_campaign(job_id):
                     publish_heartbeat(force=True)
                     break
                 attempt+=1; _retry_count+=1; _phase="RETRY"; publish_heartbeat(force=True)
-                if attempt>2: raise RuntimeError(f"packet {i+1} failed checker")
+                if attempt>2: raise RuntimeError(f"packet {i+1} failed checker: {last_error}")
     _phase="VERIFIED_DONE"; publish_heartbeat(force=True)
     return f"VERIFIED_DONE atoms={len(atoms)} packets={len(packets)} retries={_retry_count}"
 
