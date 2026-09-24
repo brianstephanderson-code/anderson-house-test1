@@ -1,0 +1,5 @@
+JOB_ID=tomo-production-hotspot-002
+WORKER=HOTSPOT
+FUNCTION=hotspot_hive_campaign
+STATUS=FAILED
+OUTPUT=packet 1 failed checker
