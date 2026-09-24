@@ -187,3 +187,24 @@ When a large evidence universe can be reduced to a reliable observable sign or s
 HUGE STATE -> VERIFIED RELEVANT CHARACTERISTICS -> SIMPLE RELIABLE SIGN -> ACTION
 
 The end user should receive the smallest sufficient instruction needed to reach DONE, while the evidence, assumptions, provenance, and deeper meadow remain available to reopen if reality produces a bug.
+
+
+## OPEN THE BUT — caveat-to-test rule
+
+A material BUT, caveat, limitation, or possible bias is not a closed door and is not automatically a reason to discard a finding.
+
+When a finding is followed by a material caveat:
+
+1. Preserve the original finding.
+2. State exactly what the BUT claims could weaken, bias, or limit it.
+3. Convert that concern into a new local STATE / test.
+4. Search for evidence that could verify, bound, or falsify the concern.
+5. Look for a different source environment, measurement, road, or oracle where useful.
+6. Reconcile the result with the original finding.
+7. Stop only when the caveat is immaterial to the parent DONE, sufficiently tested, or genuinely bounded as UNKNOWN.
+
+Shorthand:
+**FINDING -> BUT -> WHAT EXACTLY COULD BE WRONG? -> TEST IT -> RECONCILE -> CONTINUE.**
+
+Rule:
+**A caveat generates the next investigation; it does not automatically terminate the road.**
