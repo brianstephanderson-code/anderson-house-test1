@@ -3,6 +3,7 @@ import hashlib, json, re, shutil, subprocess, time
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
+from hive_peer_bus import process_bus
 
 ROOT = Path.home() / "anderson-house-mailbox"
 JOBS = ROOT / "jobs"
@@ -208,7 +209,7 @@ print("ANDERSON HOUSE — HOTSPOT MINI-HIVE")
 print("Workers: 2 (light duty)")
 while True:
     try:
-        pull(); publish_heartbeat(); process_jobs()
+        pull(); process_bus(WORKER, ROOT); publish_heartbeat(); process_jobs()
     except KeyboardInterrupt:
         raise
     except Exception as exc:
