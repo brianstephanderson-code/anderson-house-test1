@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 import shutil
 import subprocess
 import time
@@ -43,6 +44,27 @@ def battery():
     return f"S20 battery: {cap}% — {status}"
 
 def cpu_pct():
+    # First try Android/Termux 'top' for a one-shot system CPU sample.
+    try:
+        p = subprocess.run(
+            ["top", "-b", "-n", "1"],
+            text=True, capture_output=True, timeout=5
+        )
+        if p.returncode == 0:
+            text = p.stdout
+            m = re.search(r"(?:CPU usage|Cpu\(s\)|CPU):?\s*([^\n]+)", text, re.I)
+            if m:
+                line = m.group(1)
+                idle = re.search(r"([0-9.]+)\s*%?\s*(?:idle|id)", line, re.I)
+                if idle:
+                    return f"{max(0.0,100.0-float(idle.group(1))):.1f}"
+                nums = [float(x) for x in re.findall(r"([0-9.]+)%", line)]
+                if nums:
+                    return f"{min(sum(nums),100.0):.1f}"
+    except Exception:
+        pass
+
+    # Fallback: sample /proc/stat if Android exposes it to Termux.
     def snap():
         parts = Path("/proc/stat").read_text().splitlines()[0].split()[1:]
         vals = [int(x) for x in parts]
@@ -50,7 +72,7 @@ def cpu_pct():
         return sum(vals), idle
     try:
         t1, i1 = snap()
-        time.sleep(0.35)
+        time.sleep(0.5)
         t2, i2 = snap()
         dt = t2 - t1
         return f"{(100.0 * (dt - (i2 - i1)) / dt):.1f}" if dt > 0 else "NA"
@@ -96,10 +118,24 @@ def health_snapshot():
         disk = f"{free/(1024**3):.1f}"
     except Exception:
         disk = "NA"
+    uptime = "NA"
     try:
-        uptime = f"{float(Path('/proc/uptime').read_text().split()[0])/3600:.1f}"
+        raw = Path("/proc/uptime").read_text().split()[0]
+        uptime = f"{float(raw)/3600:.1f}"
     except Exception:
-        uptime = "NA"
+        try:
+            p = subprocess.run(["uptime", "-s"], text=True, capture_output=True, timeout=5)
+            if p.returncode == 0 and p.stdout.strip():
+                from datetime import datetime
+                started = datetime.strptime(p.stdout.strip(), "%Y-%m-%d %H:%M:%S")
+                uptime = f"{(datetime.now()-started).total_seconds()/3600:.1f}"
+        except Exception:
+            try:
+                p = subprocess.run(["cat", "/proc/uptime"], text=True, capture_output=True, timeout=5)
+                if p.returncode == 0 and p.stdout.strip():
+                    uptime = f"{float(p.stdout.split()[0])/3600:.1f}"
+            except Exception:
+                pass
     return {
         "BATTERY_PCT": cap,
         "CHARGE_STATE": charging,
