@@ -1,0 +1,5 @@
+JOB_ID=day-20260924-motolocal-06
+WORKER=MOTO-LOCAL
+FUNCTION=moto_local_hive_campaign
+STATUS=DONE
+OUTPUT=VERIFIED_DONE atoms=14 retries=0
