@@ -351,6 +351,8 @@ def process_peer_bus_api():
             msg = parse_job(text)
         except Exception:
             continue
+        if msg.get("CHANNEL", "").upper() != "CROSSTALK":
+            continue
         if msg.get("TO") not in {WORKER, "ALL"}:
             continue
         mid = msg.get("MESSAGE_ID", item["name"][:-4])
@@ -359,13 +361,14 @@ def process_peer_bus_api():
             continue
         typ = msg.get("TYPE", "").upper()
         payload = msg.get("PAYLOAD", "")
+        dept = msg.get("DEPT", "GENERAL").upper()
         if typ == "PING":
-            status, detail = "PONG", f"pong_from={WORKER}"
+            status, detail = "PONG", f"pong_from={WORKER};dept={dept}"
         elif typ == "STATUS_REQUEST":
-            status, detail = "STATUS", f"alive={WORKER}"
+            status, detail = "STATUS", f"alive={WORKER};dept={dept}"
         elif typ == "VERIFY_REQUEST":
             import hashlib
-            status, detail = "VERIFIED", f"sha256={hashlib.sha256(payload.encode('utf-8','replace')).hexdigest()}"
+            status, detail = "VERIFIED", f"dept={dept};sha256={hashlib.sha256(payload.encode('utf-8','replace')).hexdigest()}"
         elif typ == "ACK":
             status, detail = "ACK_RECEIVED", "ack_not_replied"
         else:
