@@ -1,0 +1,5 @@
+JOB_ID=tomo-s20-text-batch-003
+WORKER=S20
+FUNCTION=text_batch
+STATUS=DONE
+OUTPUT=lines=1 words=2 sentences=1 sha256=755b565cd8730da0f39574fd453d7b30d6423149ebf82bcd8f2cad9308ec1909
