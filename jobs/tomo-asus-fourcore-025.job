@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-fourcore-025
+WORKER=CLASSICQUILL
+FUNCTION=function_pack
+DATA=four-core parallel granularity lab
