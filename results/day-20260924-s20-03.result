@@ -1,0 +1,5 @@
+JOB_ID=day-20260924-s20-03
+WORKER=S20
+FUNCTION=repo_integrity_scan
+STATUS=FAILED
+OUTPUT=Function not allowed
