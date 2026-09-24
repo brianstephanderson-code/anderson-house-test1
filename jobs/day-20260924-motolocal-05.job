@@ -1,0 +1,4 @@
+JOB_ID=day-20260924-motolocal-05
+WORKER=MOTO-LOCAL
+FUNCTION=moto_local_hive_campaign
+DATA=Day-shift control/light verification campaign 5; verify current repository atoms and checkpoint result.
