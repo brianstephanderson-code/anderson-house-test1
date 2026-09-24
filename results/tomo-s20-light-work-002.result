@@ -1,0 +1,5 @@
+JOB_ID=tomo-s20-light-work-002
+WORKER=S20
+FUNCTION=battery
+STATUS=DONE
+OUTPUT=S20 battery: 31% — Charging
