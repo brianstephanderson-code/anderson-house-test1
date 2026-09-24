@@ -9,6 +9,7 @@ from pathlib import Path
 from hive_peer_bus import process_bus
 
 ROOT = Path.home() / "anderson-house-mailbox"
+WORKER = "S20"
 JOBS = ROOT / "jobs"
 RESULTS = ROOT / "results"
 HEARTBEAT = ROOT / "hive" / "heartbeat" / "s20.txt"
