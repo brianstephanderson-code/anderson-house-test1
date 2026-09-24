@@ -29,7 +29,7 @@ INBOX = AH / "IN"
 OUTBOX = AH / "OUT"
 CHECKPOINTS = AH / "WORK" / "checkpoints"
 JOB_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,100}$")
-ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign", "policy_audit", "function_pack"}
+ALLOWED = {"uppercase", "lowercase", "wordcount", "campaign", "policy_audit", "function_pack", "hive_campaign"}
 CAMPAIGN_FUNCS = {"uppercase", "lowercase", "wordcount"}
 
 def safe_text(value):
@@ -219,6 +219,21 @@ def run_function_pack():
         raise RuntimeError("Function pack returned empty output")
     return output
 
+def run_hive_campaign():
+    local_script = r"C:\\AH\\MAILROOM\\workers\\classicquill_hive.py"
+    sync_repo_worker("workers/classicquill_hive.py", local_script)
+    p = subprocess.run(["python", local_script], text=True, capture_output=True, timeout=7200)
+    if p.returncode != 0:
+        raise RuntimeError(safe_text(p.stderr or p.stdout)[:1000])
+    output = safe_text(p.stdout).strip()
+    if not output:
+        report_path = Path(r"C:\\AH\\OUT\\classicquill_hive_latest.txt")
+        if report_path.exists():
+            output = report_path.read_text(encoding="utf-8", errors="replace").strip()
+    if not output:
+        raise RuntimeError("Hive campaign returned empty output")
+    return output
+
 def health_snapshot():
     data = {"CPU_PCT":"NA","MEMORY_PCT":"NA","DISK_FREE_GB":"NA","UPTIME_HOURS":"NA","TEMP_C":"NA"}
     try:
@@ -338,7 +353,7 @@ def process_once():
         set_progress(0, atom_total, 0, packet_total, force=False)
         publish_heartbeat(force=True)
         try:
-            output = run_campaign(job) if function == "campaign" else (run_policy_audit() if function == "policy_audit" else (run_function_pack() if function == "function_pack" else run_local(job_id, function, data)))
+            output = run_campaign(job) if function == "campaign" else (run_policy_audit() if function == "policy_audit" else (run_function_pack() if function == "function_pack" else (run_hive_campaign() if function == "hive_campaign" else run_local(job_id, function, data))))
             publish_result(job_id, function, "DONE", output)
             print(f"DONE: {job_id} -> {output}", flush=True)
         except Exception as exc:
