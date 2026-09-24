@@ -1,0 +1,5 @@
+JOB_ID=tomo-s20-mailbox-gap-005
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+STATUS=DONE
+OUTPUT=jobs_without_results=4 results_without_jobs=1 sample_missing=tomo-asus-fourcore-025,tomo-asus-fourcore-026,tomo-s20-mailbox-gap-005,tomo-s20-policy-scan-004
