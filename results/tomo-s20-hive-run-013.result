@@ -1,0 +1,5 @@
+JOB_ID=tomo-s20-hive-run-013
+WORKER=S20
+FUNCTION=s20_hive_campaign
+STATUS=FAILED
+OUTPUT=Function not allowed
