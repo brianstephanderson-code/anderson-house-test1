@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
+import shutil
 import subprocess
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path.home() / "anderson-house-mailbox"
 JOBS = ROOT / "jobs"
 RESULTS = ROOT / "results"
+HEARTBEAT = ROOT / "hive" / "heartbeat" / "s20.txt"
 INTERVAL = 30
-
+HEARTBEAT_INTERVAL = 300
+_last_heartbeat = 0.0
+_busy_job = ""
+_busy_function = ""
 
 def run(*args, check=True):
     return subprocess.run(args, cwd=ROOT, text=True, capture_output=True, check=check)
 
-
 def pull():
     run("git", "pull", "--rebase", "--autostash", "origin", "main")
-
 
 def parse_job(path):
     data = {}
@@ -27,17 +31,114 @@ def parse_job(path):
         data[key.strip()] = value.strip()
     return data
 
+def read_text(path, default="NA"):
+    try:
+        return Path(path).read_text().strip()
+    except Exception:
+        return default
 
 def battery():
-    cap = Path("/sys/class/power_supply/battery/capacity").read_text().strip()
-    status = Path("/sys/class/power_supply/battery/status").read_text().strip()
+    cap = read_text("/sys/class/power_supply/battery/capacity")
+    status = read_text("/sys/class/power_supply/battery/status")
     return f"S20 battery: {cap}% — {status}"
 
+def cpu_pct():
+    def snap():
+        parts = Path("/proc/stat").read_text().splitlines()[0].split()[1:]
+        vals = [int(x) for x in parts]
+        idle = vals[3] + (vals[4] if len(vals) > 4 else 0)
+        return sum(vals), idle
+    try:
+        t1, i1 = snap()
+        time.sleep(0.35)
+        t2, i2 = snap()
+        dt = t2 - t1
+        return f"{(100.0 * (dt - (i2 - i1)) / dt):.1f}" if dt > 0 else "NA"
+    except Exception:
+        return "NA"
+
+def memory_pct():
+    try:
+        vals = {}
+        for line in Path("/proc/meminfo").read_text().splitlines():
+            if ":" in line:
+                k,v = line.split(":",1)
+                vals[k] = int(v.strip().split()[0])
+        total = vals["MemTotal"]
+        avail = vals.get("MemAvailable", vals.get("MemFree",0))
+        return f"{100.0*(total-avail)/total:.1f}"
+    except Exception:
+        return "NA"
+
+def temp_c():
+    candidates = [
+        "/sys/class/power_supply/battery/temp",
+        "/sys/class/thermal/thermal_zone0/temp",
+    ]
+    for p in candidates:
+        try:
+            raw = float(Path(p).read_text().strip())
+            if raw > 1000:
+                raw /= 1000.0
+            elif raw > 100:
+                raw /= 10.0
+            if -20 <= raw <= 120:
+                return f"{raw:.1f}"
+        except Exception:
+            pass
+    return "NA"
+
+def health_snapshot():
+    cap = read_text("/sys/class/power_supply/battery/capacity")
+    charging = read_text("/sys/class/power_supply/battery/status")
+    try:
+        _,_,free = shutil.disk_usage(str(Path.home()))
+        disk = f"{free/(1024**3):.1f}"
+    except Exception:
+        disk = "NA"
+    try:
+        uptime = f"{float(Path('/proc/uptime').read_text().split()[0])/3600:.1f}"
+    except Exception:
+        uptime = "NA"
+    return {
+        "BATTERY_PCT": cap,
+        "CHARGE_STATE": charging,
+        "TEMP_C": temp_c(),
+        "CPU_PCT": cpu_pct(),
+        "MEMORY_PCT": memory_pct(),
+        "DISK_FREE_GB": disk,
+        "UPTIME_HOURS": uptime,
+    }
+
+def publish_heartbeat(force=False):
+    global _last_heartbeat
+    now = time.time()
+    if not force and now - _last_heartbeat < HEARTBEAT_INTERVAL:
+        return
+    h = health_snapshot()
+    state = "BUSY" if _busy_job else "FREE"
+    stamp = datetime.now(timezone.utc).isoformat()
+    HEARTBEAT.parent.mkdir(parents=True, exist_ok=True)
+    HEARTBEAT.write_text(
+        f"WORKER=S20\nSTATUS=ALIVE\nSTATE={state}\n"
+        f"JOB_ID={_busy_job}\nFUNCTION={_busy_function}\n"
+        f"BATTERY_PCT={h['BATTERY_PCT']}\nCHARGE_STATE={h['CHARGE_STATE']}\n"
+        f"CPU_PCT={h['CPU_PCT']}\nMEMORY_PCT={h['MEMORY_PCT']}\n"
+        f"DISK_FREE_GB={h['DISK_FREE_GB']}\nUPTIME_HOURS={h['UPTIME_HOURS']}\n"
+        f"TEMP_C={h['TEMP_C']}\nUTC={stamp}\n",
+        encoding="utf-8"
+    )
+    run("git", "add", str(HEARTBEAT.relative_to(ROOT)))
+    changed = run("git", "diff", "--cached", "--quiet", check=False)
+    if changed.returncode != 0:
+        run("git", "commit", "-m", f"S20 heartbeat {stamp}")
+        run("git", "pull", "--rebase", "origin", "main")
+        run("git", "push", "origin", "main")
+    _last_heartbeat = now
 
 FUNCTIONS = {
     "battery": battery,
 }
-
 
 def publish_result(job_id, function, status, output):
     RESULTS.mkdir(parents=True, exist_ok=True)
@@ -49,32 +150,29 @@ def publish_result(job_id, function, status, output):
         f"STATUS={status}\n"
         f"OUTPUT={output}\n"
     )
-
     run("git", "add", str(out.relative_to(ROOT)))
     changed = run("git", "diff", "--cached", "--quiet", check=False)
     if changed.returncode == 0:
         return
-
     run("git", "commit", "-m", f"S20 result {job_id}")
     run("git", "pull", "--rebase", "origin", "main")
     run("git", "push", "origin", "main")
 
-
 def process_jobs():
+    global _busy_job, _busy_function
     JOBS.mkdir(parents=True, exist_ok=True)
     RESULTS.mkdir(parents=True, exist_ok=True)
-
     for path in sorted(JOBS.glob("*.job")):
         job = parse_job(path)
         job_id = job.get("JOB_ID", path.stem)
         worker = job.get("WORKER", "")
         function = job.get("FUNCTION", "")
-
         if worker != "S20":
             continue
         if (RESULTS / f"{job_id}.result").exists():
             continue
-
+        _busy_job, _busy_function = job_id, function
+        publish_heartbeat(force=True)
         try:
             fn = FUNCTIONS[function]
             output = fn()
@@ -83,7 +181,9 @@ def process_jobs():
         except Exception as exc:
             publish_result(job_id, function or "UNKNOWN", "FAILED", str(exc).replace("\n", " "))
             print(f"FAILED: {job_id} -> {exc}", flush=True)
-
+        finally:
+            _busy_job, _busy_function = "", ""
+            publish_heartbeat(force=True)
 
 print("ANDERSON HOUSE — S20 MAILBOX")
 print("Watching GitHub for jobs...", flush=True)
@@ -91,6 +191,7 @@ print("Watching GitHub for jobs...", flush=True)
 while True:
     try:
         pull()
+        publish_heartbeat()
         process_jobs()
     except Exception as exc:
         print(f"MAILBOX RETRY: {exc}", flush=True)
