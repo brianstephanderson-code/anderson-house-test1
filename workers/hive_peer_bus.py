@@ -28,6 +28,8 @@ def _reply_status(msg, worker):
     if typ=="VERIFY_REQUEST":
         digest=hashlib.sha256(payload.encode("utf-8","replace")).hexdigest()
         return "VERIFIED", f"sha256={digest}"
+    if typ=="HANDOFF_REQUEST":
+        return "ACCEPTED", f"handoff_ready={worker}"
     if typ=="ACK":
         return "ACK_RECEIVED", "ack_not_replied"
     return "UNSUPPORTED", f"type={typ or 'UNKNOWN'}"
@@ -66,6 +68,8 @@ def process_local(worker, root):
     for p in sorted(msgdir.glob("*.msg")):
         try: msg=_parse(p.read_text(encoding="utf-8",errors="replace"))
         except Exception: continue
+        if msg.get("CHANNEL","").upper() != "CROSSTALK": continue
+        if msg.get("CHANNEL","").upper() != "CROSSTALK": continue
         if msg.get("TO") not in {worker,"ALL"}: continue
         mid=msg.get("MESSAGE_ID",p.stem)
         ack=ackdir/f"{mid}.{worker}.ack"
