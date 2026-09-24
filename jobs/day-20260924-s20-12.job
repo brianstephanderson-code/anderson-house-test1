@@ -1,0 +1,4 @@
+JOB_ID=day-20260924-s20-12
+WORKER=S20
+FUNCTION=s20_hive_campaign
+DATA=Day-shift production queue item 12; perform current-state s20_hive_campaign and return verified result.
