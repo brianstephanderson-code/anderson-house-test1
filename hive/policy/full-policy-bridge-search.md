@@ -259,3 +259,57 @@ Examples:
 - Ferry trip: verify weather and operations allow sailing before optimizing fare or departure.
 
 Rule: **A road that exists on paper but cannot deliver DONE in reality is not a road.**
+
+
+## End-User Distance / Door-to-City Gate
+
+The END-USER FUNNEL is not one undifferentiated pool. When end-user evidence matters, sample across materially different distances from the product/service door.
+
+### Near door
+People closest to direct use or purchase:
+- verified buyers;
+- direct operators;
+- current users;
+- retailer/product-specific reviewers;
+- product-specific communities.
+
+This layer usually provides greater detail about actual use, dosage/workflow, timing, failures, and concrete outcomes.
+
+### Mid-distance
+People with firsthand experience but less attachment to the seller/product environment:
+- independent forums;
+- user communities;
+- practitioner/operator groups;
+- complaint/recovery threads;
+- comparative discussions.
+
+This layer often reveals mixed outcomes, workarounds, abandonment, and context missing from product pages.
+
+### City center
+Broader independent population chatter:
+- Reddit;
+- general discussion boards;
+- casual mentions;
+- non-product-specific communities;
+- people who used the thing but were not trying to write a formal review.
+
+This layer increases breadth and can expose zero-output, skeptical, indifferent, or unexpected experiences that may be underrepresented near the door.
+
+### Sampling rule
+1. Do not assume “end-user evidence” is complete after sampling only one distance.
+2. Keep distance classes separate initially.
+3. Remove duplicates and separate firsthand experience from theory/opinion.
+4. Compare outcome shapes across distances.
+5. Look for signals that survive movement from near-door to city-center environments.
+6. Stop widening when additional distance classes are unlikely to materially change the parent DONE.
+
+### Interpretation rule
+Near-door evidence tends to provide depth.
+Farther-out evidence tends to provide breadth.
+Neither automatically outranks the other; reconcile them at the Bridge.
+
+Shorthand:
+**END USER != ONE POND.**
+**NEAR DOOR = DEPTH.**
+**CITY CENTER = BREADTH.**
+**SURVIVING SHAPE = STRONGER SIGNAL.**
