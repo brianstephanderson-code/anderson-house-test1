@@ -327,7 +327,65 @@ def publish_heartbeat(force=False):
     if p.returncode==0:
         _last_heartbeat=now
 
+
+def process_peer_bus_api():
+    bus_messages = "hive/bus/messages"
+    bus_acks = "hive/bus/acks"
+    listing = gh("api", f"repos/{REPO}/contents/{bus_messages}", check=False)
+    if listing.returncode != 0:
+        return 0
+    try:
+        items = json.loads(listing.stdout)
+    except Exception:
+        return 0
+    made = 0
+    for item in items:
+        if item.get("type") != "file" or not item.get("name", "").endswith(".msg"):
+            continue
+        raw = gh("api", f"repos/{REPO}/contents/{bus_messages}/{item['name']}", check=False)
+        if raw.returncode != 0:
+            continue
+        try:
+            obj = json.loads(raw.stdout)
+            text = base64.b64decode(obj["content"]).decode("utf-8", "replace")
+            msg = parse_job(text)
+        except Exception:
+            continue
+        if msg.get("TO") not in {WORKER, "ALL"}:
+            continue
+        mid = msg.get("MESSAGE_ID", item["name"][:-4])
+        ack_path = f"{bus_acks}/{mid}.{WORKER}.ack"
+        if gh("api", f"repos/{REPO}/contents/{ack_path}", check=False).returncode == 0:
+            continue
+        typ = msg.get("TYPE", "").upper()
+        payload = msg.get("PAYLOAD", "")
+        if typ == "PING":
+            status, detail = "PONG", f"pong_from={WORKER}"
+        elif typ == "STATUS_REQUEST":
+            status, detail = "STATUS", f"alive={WORKER}"
+        elif typ == "VERIFY_REQUEST":
+            import hashlib
+            status, detail = "VERIFIED", f"sha256={hashlib.sha256(payload.encode('utf-8','replace')).hexdigest()}"
+        elif typ == "ACK":
+            status, detail = "ACK_RECEIVED", "ack_not_replied"
+        else:
+            status, detail = "UNSUPPORTED", f"type={typ or 'UNKNOWN'}"
+        from datetime import datetime, timezone
+        stamp = datetime.now(timezone.utc).isoformat()
+        ack_text = (
+            f"MESSAGE_ID={mid}\nFROM={WORKER}\nTO={msg.get('FROM','')}\nTYPE=ACK\n"
+            f"STATUS={status}\nDETAIL={detail}\nCORRELATION_ID={mid}\nUTC={stamp}\n"
+        )
+        encoded = base64.b64encode(ack_text.encode()).decode()
+        put = gh("api", "--method", "PUT", f"repos/{REPO}/contents/{ack_path}",
+                 "-f", f"message={WORKER} peer-bus ack {stamp}",
+                 "-f", f"content={encoded}", check=False)
+        if put.returncode == 0:
+            made += 1
+    return made
+
 def process_once():
+    process_peer_bus_api()
     publish_heartbeat()
     for name in list_jobs():
         job = fetch_job(name)
