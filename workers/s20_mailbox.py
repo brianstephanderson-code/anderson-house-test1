@@ -15,6 +15,12 @@ HEARTBEAT_INTERVAL = 300
 _last_heartbeat = 0.0
 _busy_job = ""
 _busy_function = ""
+_job_started_at = 0.0
+_phase = ""
+_workers_active = 0
+_batch_current = 0
+_batch_total = 0
+_progress_pct = 0.0
 
 def run(*args, check=True):
     return subprocess.run(args, cwd=ROOT, text=True, capture_output=True, check=check)
@@ -180,11 +186,19 @@ def publish_heartbeat(force=False):
         return
     h = health_snapshot()
     state = "BUSY" if _busy_job else "FREE"
+    elapsed_s = max(int(now - _job_started_at), 0) if _busy_job and _job_started_at else 0
+    eta_s = 0
+    if _busy_job and _progress_pct > 0:
+        eta_s = max(int(elapsed_s * (100.0 - _progress_pct) / _progress_pct), 0)
     stamp = datetime.now(timezone.utc).isoformat()
     HEARTBEAT.parent.mkdir(parents=True, exist_ok=True)
     HEARTBEAT.write_text(
         f"WORKER=S20\nSTATUS=ALIVE\nSTATE={state}\n"
         f"JOB_ID={_busy_job}\nFUNCTION={_busy_function}\n"
+        f"PHASE={_phase}\nWORKERS_ACTIVE={_workers_active}\n"
+        f"BATCH_CURRENT={_batch_current}\nBATCH_TOTAL={_batch_total}\n"
+        f"PROGRESS_PCT={_progress_pct:.1f}\n"
+        f"ELAPSED_SECONDS={elapsed_s}\nETA_SECONDS={eta_s}\n"
         f"BATTERY_PCT={h['BATTERY_PCT']}\nCHARGE_STATE={h['CHARGE_STATE']}\n"
         f"CPU_PCT={h['CPU_PCT']}\nMEMORY_PCT={h['MEMORY_PCT']}\n"
         f"DISK_FREE_GB={h['DISK_FREE_GB']}\nUPTIME_HOURS={h['UPTIME_HOURS']}\n"
@@ -255,6 +269,7 @@ def _load_policy_docs():
     return [(str(p.relative_to(ROOT)), p.read_text(encoding="utf-8", errors="replace")) for p in files]
 
 def four_worker_two_hour_test():
+    global _phase, _workers_active, _batch_current, _batch_total, _progress_pct
     from concurrent.futures import ProcessPoolExecutor
     docs = _load_policy_docs()
     if not docs:
@@ -266,7 +281,7 @@ def four_worker_two_hour_test():
     if new_file:
         fh.write("utc,phase,workers,batches,battery_pct,temp_c,cpu_pct,memory_pct,elapsed_s\n")
 
-    def sample(phase, workers, batches, started):
+    def sample(phase, workers, batches, started, force_pulse=False):
         h = health_snapshot()
         fh.write(
             f"{datetime.now(timezone.utc).isoformat()},{phase},{workers},{batches},"
@@ -274,27 +289,52 @@ def four_worker_two_hour_test():
             f"{int(time.time()-started)}\n"
         )
         fh.flush()
+        publish_heartbeat(force=force_pulse)
 
-    # Short 1-worker baseline for comparison.
+    # 5-minute 1-worker baseline.
+    _phase = "BASELINE_1_WORKER"
+    _workers_active = 1
+    _batch_current = 0
+    _batch_total = 0
+    _progress_pct = 0.0
     baseline_started = time.time()
     baseline_batches = 0
+    last_pulse = 0.0
+    publish_heartbeat(force=True)
     while time.time() - baseline_started < 300:
         _parallel_lane((docs, 25))
         baseline_batches += 1
-        if baseline_batches == 1 or baseline_batches % 5 == 0:
-            sample("baseline", 1, baseline_batches, baseline_started)
+        _batch_current = baseline_batches
+        _progress_pct = min(5.0 * (time.time() - baseline_started) / 300.0, 5.0)
+        if time.time() - last_pulse >= HEARTBEAT_INTERVAL:
+            sample("baseline", 1, baseline_batches, baseline_started, force_pulse=True)
+            last_pulse = time.time()
 
     # Main 4-worker run for about two hours.
+    _phase = "FOUR_WORKER"
+    _workers_active = 4
+    _batch_current = 0
+    _batch_total = 0
+    _progress_pct = 5.0
     run_started = time.time()
     batches = 0
+    last_pulse = 0.0
+    publish_heartbeat(force=True)
     with ProcessPoolExecutor(max_workers=4) as pool:
         while time.time() - run_started < 7200:
             list(pool.map(_parallel_lane, [(docs, 25)] * 4))
             batches += 1
-            if batches == 1 or batches % 5 == 0:
-                sample("four_worker", 4, batches, run_started)
+            _batch_current = batches
+            _progress_pct = min(5.0 + 95.0 * (time.time() - run_started) / 7200.0, 100.0)
+            if time.time() - last_pulse >= HEARTBEAT_INTERVAL:
+                sample("four_worker", 4, batches, run_started, force_pulse=True)
+                last_pulse = time.time()
 
-    sample("four_worker_done", 4, batches, run_started)
+    _phase = "FOUR_WORKER_DONE"
+    _workers_active = 0
+    _batch_current = batches
+    _progress_pct = 100.0
+    sample("four_worker_done", 4, batches, run_started, force_pulse=True)
     fh.close()
 
     return (
@@ -331,7 +371,8 @@ def publish_result(job_id, function, status, output):
     run("git", "push", "origin", "main")
 
 def process_jobs():
-    global _busy_job, _busy_function
+    global _busy_job, _busy_function, _job_started_at
+    global _phase, _workers_active, _batch_current, _batch_total, _progress_pct
     JOBS.mkdir(parents=True, exist_ok=True)
     RESULTS.mkdir(parents=True, exist_ok=True)
     for path in sorted(JOBS.glob("*.job")):
@@ -344,6 +385,12 @@ def process_jobs():
         if (RESULTS / f"{job_id}.result").exists():
             continue
         _busy_job, _busy_function = job_id, function
+        _job_started_at = time.time()
+        _phase = "STARTING"
+        _workers_active = 0
+        _batch_current = 0
+        _batch_total = 0
+        _progress_pct = 0.0
         publish_heartbeat(force=True)
         try:
             fn = FUNCTIONS[function]
@@ -355,6 +402,12 @@ def process_jobs():
             print(f"FAILED: {job_id} -> {exc}", flush=True)
         finally:
             _busy_job, _busy_function = "", ""
+            _job_started_at = 0.0
+            _phase = ""
+            _workers_active = 0
+            _batch_current = 0
+            _batch_total = 0
+            _progress_pct = 0.0
             publish_heartbeat(force=True)
 
 print("ANDERSON HOUSE — S20 MAILBOX")
