@@ -1,0 +1,3 @@
+JOB_ID=tomo-s20-text-batch-003
+WORKER=S20
+FUNCTION=text_batch
