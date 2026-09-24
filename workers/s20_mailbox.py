@@ -256,7 +256,7 @@ def publish_heartbeat(force=False):
     changed = run("git", "diff", "--cached", "--quiet", check=False)
     if changed.returncode != 0:
         run("git", "commit", "-m", f"S20 heartbeat {stamp}")
-        run("git", "pull", "--rebase", "origin", "main")
+        pull()
         git_push_resilient()
     _last_heartbeat = now
 
@@ -600,7 +600,7 @@ def publish_result(job_id, function, status, output):
     if changed.returncode == 0:
         return
     run("git", "commit", "-m", f"S20 result {job_id}")
-    run("git", "pull", "--rebase", "origin", "main")
+    pull()
     git_push_resilient()
 
 def process_jobs():
