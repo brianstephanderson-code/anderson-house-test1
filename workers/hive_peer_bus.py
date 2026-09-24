@@ -81,7 +81,11 @@ def process_local(worker, root):
         if _run(["git","diff","--cached","--quiet"],cwd=root,check=False).returncode!=0:
             stamp=datetime.now(timezone.utc).isoformat()
             _run(["git","commit","-m",f"{worker} peer-bus ack {stamp}"],cwd=root)
-            _run(["git","pull","--rebase","origin","main"],cwd=root)
+            _run(["git","fetch","origin"],cwd=root)
+            r=_run(["git","rebase","origin/main"],cwd=root,check=False)
+            if r.returncode!=0:
+                _run(["git","rebase","--abort"],cwd=root,check=False)
+                raise RuntimeError((r.stderr or r.stdout or "peer-bus rebase failed").strip())
             _git_push_resilient(root)
     return made
 
