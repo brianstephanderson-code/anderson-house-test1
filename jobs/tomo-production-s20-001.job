@@ -1,0 +1,4 @@
+JOB_ID=tomo-production-s20-001
+WORKER=S20
+FUNCTION=repo_policy_scan
+DATA=Survey Anderson House policy markdown: hard rules, unknowns, headings, TODOs.
