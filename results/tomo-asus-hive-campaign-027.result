@@ -1,0 +1,5 @@
+JOB_ID=tomo-asus-hive-campaign-027
+WORKER=CLASSICQUILL
+FUNCTION=hive_campaign
+STATUS=DONE
+OUTPUT=VERIFIED_DONE atoms=30 packets=4 retries=0 hard_rules=119 unknown=14 headings=133 todos=0 checkpoint=C:\AH\WORK\checkpoints\classicquill-hive.json
