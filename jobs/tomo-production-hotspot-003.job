@@ -1,0 +1,4 @@
+JOB_ID=tomo-production-hotspot-003
+WORKER=HOTSPOT
+FUNCTION=hotspot_hive_campaign
+DATA=Fresh HOTSPOT production retest after patched worker confirmed live.
