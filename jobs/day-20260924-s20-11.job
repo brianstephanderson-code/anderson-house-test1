@@ -1,0 +1,4 @@
+JOB_ID=day-20260924-s20-11
+WORKER=S20
+FUNCTION=repo_integrity_scan
+DATA=Day-shift production queue item 11; perform current-state repo_integrity_scan and return verified result.
