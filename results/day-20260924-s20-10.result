@@ -1,0 +1,5 @@
+JOB_ID=day-20260924-s20-10
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+STATUS=FAILED
+OUTPUT=Function not allowed
