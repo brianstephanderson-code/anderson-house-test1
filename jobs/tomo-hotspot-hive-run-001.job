@@ -1,0 +1,3 @@
+JOB_ID=tomo-hotspot-hive-run-001
+WORKER=HOTSPOT
+FUNCTION=hotspot_hive_campaign
