@@ -4,12 +4,28 @@ import json
 import shutil
 import subprocess
 import time
+import sys
+import fcntl
 from datetime import datetime, timezone
 from pathlib import Path
 from hive_peer_bus import process_bus
 
 ROOT = Path.home() / "anderson-house-mailbox"
 WORKER = "S20"
+SINGLETON_LOCK = ROOT / ".s20_mailbox.lock"
+_lock_handle = None
+
+def acquire_singleton():
+    global _lock_handle
+    SINGLETON_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    _lock_handle = SINGLETON_LOCK.open("w")
+    try:
+        fcntl.flock(_lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print("S20 MAILBOX ALREADY RUNNING — exiting duplicate.", flush=True)
+        sys.exit(0)
+    _lock_handle.write(str(__import__("os").getpid()))
+    _lock_handle.flush()
 JOBS = ROOT / "jobs"
 RESULTS = ROOT / "results"
 HEARTBEAT = ROOT / "hive" / "heartbeat" / "s20.txt"
@@ -630,6 +646,7 @@ def process_jobs():
             _checkpoint_packet = 0
             publish_heartbeat(force=True)
 
+acquire_singleton()
 print("ANDERSON HOUSE — S20 MAILBOX")
 print("Watching GitHub for jobs...", flush=True)
 
