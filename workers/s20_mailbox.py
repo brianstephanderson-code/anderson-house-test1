@@ -48,7 +48,10 @@ def run(*args, check=True):
     return subprocess.run(args, cwd=ROOT, text=True, capture_output=True, check=check)
 
 def pull():
-    run("git", "pull", "--rebase", "--autostash", "origin", "main")
+    p = run("git", "pull", "--rebase", "--autostash", "origin", "main", check=False)
+    if p.returncode != 0:
+        detail = (p.stderr or p.stdout or "").strip()
+        raise RuntimeError(f"git pull failed rc={p.returncode}: {detail}")
 
 
 def git_push_resilient(max_attempts=4):
