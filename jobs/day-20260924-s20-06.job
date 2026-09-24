@@ -1,0 +1,4 @@
+JOB_ID=day-20260924-s20-06
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+DATA=Day-shift production queue item 6; perform current-state mailbox_gap_scan and return verified result.
