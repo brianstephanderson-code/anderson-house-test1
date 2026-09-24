@@ -1,0 +1,5 @@
+JOB_ID=tomo-s20-1v4-loadtest-008
+WORKER=S20
+FUNCTION=four_worker_two_hour_test
+STATUS=FAILED
+OUTPUT='four_worker_two_hour_test'
