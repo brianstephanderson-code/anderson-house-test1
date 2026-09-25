@@ -48,11 +48,32 @@ _checkpoint_packet = 0
 def run(*args, check=True):
     return subprocess.run(args, cwd=ROOT, text=True, capture_output=True, check=check)
 
+_startup_worker_sha = None
+
+def _worker_file_sha():
+    import hashlib
+    try:
+        return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    except Exception:
+        return None
+
+def maybe_self_restart_after_pull():
+    global _startup_worker_sha
+    current = _worker_file_sha()
+    if _startup_worker_sha is None:
+        _startup_worker_sha = current
+        return
+    if current and current != _startup_worker_sha:
+        print("S20 WORKER UPDATED — restarting into new code.", flush=True)
+        import os
+        os.execv(sys.executable, [sys.executable, str(Path(__file__).resolve())])
+
 def pull():
     p = run("git", "pull", "--rebase", "--autostash", "origin", "main", check=False)
     if p.returncode != 0:
         detail = (p.stderr or p.stdout or "").strip()
         raise RuntimeError(f"git pull failed rc={p.returncode}: {detail}")
+    maybe_self_restart_after_pull()
 
 
 def git_push_resilient(max_attempts=4):
