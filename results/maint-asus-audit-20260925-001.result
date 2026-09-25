@@ -1,0 +1,5 @@
+JOB_ID=maint-asus-audit-20260925-001
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+STATUS=FAILED
+OUTPUT=[WinError 206] The filename or extension is too long
