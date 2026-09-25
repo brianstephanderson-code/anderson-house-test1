@@ -6,6 +6,7 @@ import subprocess
 import time
 import shutil
 import ctypes
+import sys
 from pathlib import Path
 
 REPO = "brianstephanderson-code/anderson-house-test1"
@@ -193,9 +194,9 @@ def sync_repo_worker(repo_path, local_path):
     tmp.replace(target)
 
 def run_policy_audit():
-    local_script = r"C:\\AH\\MAILROOM\\workers\\classicquill_policy_audit.py"
+    local_script = r"C:\\AH\\BIN\\audit.py"
     sync_repo_worker("workers/classicquill_policy_audit.py", local_script)
-    p = subprocess.run(["python", local_script], text=True, capture_output=True, timeout=7200)
+    p = subprocess.run([sys.executable, local_script], text=True, capture_output=True, timeout=7200)
     if p.returncode != 0:
         raise RuntimeError(safe_text(p.stderr or p.stdout)[:1000])
     output = safe_text(p.stdout).strip()
@@ -209,7 +210,7 @@ def run_policy_audit():
 
 
 def run_function_pack():
-    local_script = r"C:\\AH\\MAILROOM\\workers\\classicquill_function_pack.py"
+    local_script = r"C:\\AH\\BIN\\function_pack.py"
     sync_repo_worker("workers/classicquill_function_pack.py", local_script)
     p = subprocess.run(["python", local_script], text=True, capture_output=True, timeout=7200)
     if p.returncode != 0:
