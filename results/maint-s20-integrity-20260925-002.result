@@ -1,0 +1,5 @@
+JOB_ID=maint-s20-integrity-20260925-002
+WORKER=S20
+FUNCTION=repo_integrity_scan
+STATUS=FAILED
+OUTPUT=Function not allowed
