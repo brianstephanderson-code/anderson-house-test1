@@ -37,12 +37,28 @@ def git_push_resilient(max_attempts=4):
         r=run("git","rebase","origin/main",check=False)
         if r.returncode!=0:
             run("git","rebase","--abort",check=False)
-            raise RuntimeError((r.stderr or r.stdout).strip())
+            # One clean reset of tracking state before giving up on this attempt.
+            run("git","update-ref","-d","refs/remotes/origin/main",check=False)
+            run("git","fetch","origin")
+            r=run("git","rebase","origin/main",check=False)
+            if r.returncode!=0:
+                run("git","rebase","--abort",check=False)
+                raise RuntimeError((r.stderr or r.stdout).strip())
         time.sleep(min(attempt,3))
     raise RuntimeError(f"push failed: {last}")
 
 def pull():
-    run("git","pull","--rebase","--autostash","origin","main")
+    p=run("git","pull","--rebase","--autostash","origin","main",check=False)
+    if p.returncode==0:
+        return
+    detail=(p.stderr or p.stdout or "").strip()
+    # Recover stale rebase state left by an interrupted multi-writer race.
+    run("git","rebase","--abort",check=False)
+    run("git","fetch","origin")
+    r=run("git","rebase","origin/main",check=False)
+    if r.returncode!=0:
+        run("git","rebase","--abort",check=False)
+        raise RuntimeError(f"git sync failed: {(r.stderr or r.stdout or detail).strip()}")
 
 def read_text(path,default="NA"):
     try: return Path(path).read_text().strip()
@@ -101,7 +117,7 @@ def publish_heartbeat(force=False):
     run("git","add",str(HEARTBEAT.relative_to(ROOT)))
     if run("git","diff","--cached","--quiet",check=False).returncode!=0:
         run("git","commit","-m",f"HOTSPOT heartbeat {stamp}")
-        run("git","pull","--rebase","origin","main")
+        pull()
         git_push_resilient()
     _last_heartbeat=now
 
@@ -189,7 +205,7 @@ def publish_result(job_id,status,output):
     run("git","add",str(out.relative_to(ROOT)))
     if run("git","diff","--cached","--quiet",check=False).returncode!=0:
         run("git","commit","-m",f"HOTSPOT result {job_id}")
-        run("git","pull","--rebase","origin","main")
+        pull()
         git_push_resilient()
 
 def process_jobs():
