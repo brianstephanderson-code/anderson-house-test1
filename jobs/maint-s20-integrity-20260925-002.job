@@ -1,0 +1,4 @@
+JOB_ID=maint-s20-integrity-20260925-002
+WORKER=S20
+FUNCTION=repo_integrity_scan
+DATA=Maintenance: verify local S20 mailbox repository integrity after registry update.
