@@ -1,0 +1,4 @@
+JOB_ID=maint-hotspot-production-20260925-001
+WORKER=HOTSPOT
+FUNCTION=hotspot_hive_campaign
+DATA=Light production verification run after health check.
