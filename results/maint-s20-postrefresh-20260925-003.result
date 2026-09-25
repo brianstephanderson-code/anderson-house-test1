@@ -1,0 +1,5 @@
+JOB_ID=maint-s20-postrefresh-20260925-003
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+STATUS=FAILED
+OUTPUT=Function not allowed
