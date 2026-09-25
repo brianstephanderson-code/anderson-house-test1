@@ -1,0 +1,4 @@
+JOB_ID=maint-s20-finalcheck-20260925-004
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+DATA=Final maintenance verification after Git tracking repair and mailbox restart.
