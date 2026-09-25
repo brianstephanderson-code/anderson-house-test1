@@ -1,0 +1,4 @@
+JOB_ID=maint-s20-postrefresh-20260925-003
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+DATA=Post-refresh verification of S20 worker registry and dispatch path.
