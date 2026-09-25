@@ -1,0 +1,4 @@
+JOB_ID=maint-s20-gap-20260925-001
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+DATA=Maintenance: verify current function registry and job/result dispatch gap after worker v3 update.
