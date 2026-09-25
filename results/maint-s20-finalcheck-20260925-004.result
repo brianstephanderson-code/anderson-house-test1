@@ -1,0 +1,5 @@
+JOB_ID=maint-s20-finalcheck-20260925-004
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+STATUS=DONE
+OUTPUT=jobs_without_results=3 results_without_jobs=1 sample_missing=maint-asus-functions-20260925-002,maint-asus-pathaudit-20260925-003,maint-s20-finalcheck-20260925-004
