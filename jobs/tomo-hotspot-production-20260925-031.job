@@ -1,0 +1,4 @@
+JOB_ID=tomo-hotspot-production-20260925-031
+WORKER=HOTSPOT
+FUNCTION=hotspot_hive_campaign
+DATA=Production run: process current Anderson House hive material through the HOTSPOT two-worker mini-hive, verify packets, checkpoint progress, and return VERIFIED_DONE.
