@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-production-20260925-029
+WORKER=CLASSICQUILL
+FUNCTION=hive_campaign
+DATA=Production run: process current Anderson House hive policy/work material through the Classicquill local hive, verify packets, checkpoint progress, and return final result.
