@@ -1,0 +1,4 @@
+JOB_ID=tomo-fixcheck-s20-001
+WORKER=S20
+FUNCTION=mailbox_gap_scan
+DATA=Verify current S20 function registry and dispatch path.
