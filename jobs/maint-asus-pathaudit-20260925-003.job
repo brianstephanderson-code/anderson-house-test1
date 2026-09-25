@@ -1,0 +1,4 @@
+JOB_ID=maint-asus-pathaudit-20260925-003
+WORKER=CLASSICQUILL
+FUNCTION=policy_audit
+DATA=Post-maintenance audit using shortened helper path and current Python executable.
