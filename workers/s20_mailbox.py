@@ -12,6 +12,7 @@ from hive_peer_bus import process_bus
 
 ROOT = Path.home() / "anderson-house-mailbox"
 WORKER = "S20"
+CODE_VERSION = "s20-v3"
 SINGLETON_LOCK = ROOT / ".s20_mailbox.lock"
 _lock_handle = None
 
@@ -239,6 +240,7 @@ def publish_heartbeat(force=False):
     HEARTBEAT.parent.mkdir(parents=True, exist_ok=True)
     HEARTBEAT.write_text(
         f"WORKER=S20\nSTATUS=ALIVE\nSTATE={state}\n"
+        f"CODE_VERSION={CODE_VERSION}\n"
         f"JOB_ID={_busy_job}\nFUNCTION={_busy_function}\n"
         f"PHASE={_phase}\nWORKERS_ACTIVE={_workers_active}\n"
         f"BATCH_CURRENT={_batch_current}\nBATCH_TOTAL={_batch_total}\n"
@@ -629,6 +631,8 @@ def process_jobs():
         _checkpoint_packet = 0
         publish_heartbeat(force=True)
         try:
+            if function not in FUNCTIONS:
+                raise RuntimeError(f"Function not allowed: {function}; available={','.join(sorted(FUNCTIONS))}")
             fn = FUNCTIONS[function]
             output = fn()
             publish_result(job_id, function, "DONE", output)
