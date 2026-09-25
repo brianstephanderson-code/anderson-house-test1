@@ -1,0 +1,5 @@
+JOB_ID=day-20260924-hotspot-07
+WORKER=HOTSPOT
+FUNCTION=hotspot_hive_campaign
+STATUS=DONE
+OUTPUT=VERIFIED_DONE atoms=25 packets=5 retries=0
