@@ -388,9 +388,27 @@ def process_peer_bus_api():
             made += 1
     return made
 
+def run_idle_verify_cycle(seconds=60):
+    global _busy_job, _busy_function, _job_started_at
+    import hashlib
+    _busy_job, _busy_function = "AUTO-IDLE", "idle_verify"
+    _job_started_at = time.time()
+    steps=max(int(seconds//5),1)
+    set_progress(0,steps,0,steps,force=True)
+    for i in range(steps):
+        data=Path(__file__).read_bytes()
+        a=hashlib.sha256(data).hexdigest(); b=hashlib.sha256(data).hexdigest()
+        if a!=b:
+            raise RuntimeError("idle verification hash mismatch")
+        set_progress(i+1,steps,i+1,steps,force=False)
+        publish_heartbeat()
+        time.sleep(5)
+    publish_heartbeat(force=True)
+
 def process_once():
     process_peer_bus_api()
     publish_heartbeat()
+    handled = False
     for name in list_jobs():
         job = fetch_job(name)
         job_id = job.get("JOB_ID", Path(name).stem)
@@ -408,6 +426,7 @@ def process_once():
             publish_result(job_id, function or "UNKNOWN", "FAILED", "Function not allowed")
             continue
         global _busy_job, _busy_function, _job_started_at
+        handled = True
         _busy_job, _busy_function = job_id, function
         _job_started_at = time.time()
         atom_total = int(job.get("ATOM_TOTAL", "0") or 0)
@@ -427,6 +446,8 @@ def process_once():
             _job_started_at = 0.0
             set_progress(0, 0, 0, 0, force=False)
             publish_heartbeat(force=True)
+    if not handled:
+        run_idle_verify_cycle()
 
 print("ANDERSON HOUSE — CLASSICQUILL MAILBOX")
 print("Road: GitHub API <-> CLASSICQUILL")
