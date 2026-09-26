@@ -1,0 +1,4 @@
+JOB_ID=tomo-moto-production-20260926-039
+WORKER=MOTO-LOCAL
+FUNCTION=moto_local_hive_campaign
+DATA=Production run: verify current Anderson House hive material atom-by-atom, checkpoint progress, and return VERIFIED_DONE.
