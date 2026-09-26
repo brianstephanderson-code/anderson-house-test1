@@ -1,0 +1,4 @@
+JOB_ID=tomo-s20-production-20260926-037
+WORKER=S20
+FUNCTION=s20_hive_campaign
+DATA=Production run: process current Anderson House hive material through the S20 local hive, verify packets, checkpoint progress, and return VERIFIED_DONE.
