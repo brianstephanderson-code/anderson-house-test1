@@ -1,0 +1,5 @@
+JOB_ID=tomo-s20-production-20260926-037
+WORKER=S20
+FUNCTION=s20_hive_campaign
+STATUS=FAILED
+OUTPUT=[Errno 104] Connection reset by peer
