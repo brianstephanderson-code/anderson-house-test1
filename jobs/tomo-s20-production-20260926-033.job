@@ -1,0 +1,4 @@
+JOB_ID=tomo-s20-production-20260926-033
+WORKER=S20
+FUNCTION=s20_hive_campaign
+DATA=Morning production retry: process current Anderson House hive material through the S20 local hive, verify packets, checkpoint progress, and return VERIFIED_DONE.
