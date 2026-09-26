@@ -1,0 +1,4 @@
+JOB_ID=tomo-asus-production-20260926-032
+WORKER=CLASSICQUILL
+FUNCTION=hive_campaign
+DATA=Morning production run: process current Anderson House hive material, verify packets, checkpoint progress, and return VERIFIED_DONE.
