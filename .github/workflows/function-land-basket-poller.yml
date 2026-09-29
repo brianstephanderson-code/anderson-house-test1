@@ -114,6 +114,11 @@ jobs:
             [ -n "$id" ] || id="$(basename "$file" .msg)"
             [ -n "$to" ] || return 0
 
+            executor="$(value_of EXECUTOR "$file")"
+            if [ "$(echo "$executor" | tr '[:lower:]' '[:upper:]')" = "DISPATCHER" ]; then
+              return 0
+            fi
+
             for provider in aws google cloudflare; do
               target_matches "$to" "$provider" || continue
               out="hive/bus/uplink/$id.$provider.uplink"

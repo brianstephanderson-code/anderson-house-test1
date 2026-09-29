@@ -9,13 +9,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -124,6 +128,43 @@ jobs:
             echo "Active pool: **$HEALTHY**"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Publish ORDERS before execution
+        env:
+          HEALTHY_POOL: ${{ steps.health.outputs.pool }}
+        run: |
+          set -euo pipefail
+          mkdir -p hive/bus/orders
+          IFS=',' read -ra PROVIDERS <<< "$HEALTHY_POOL"
+          COUNT="${#PROVIDERS[@]}"
+          test "$COUNT" -gt 0
+
+          for ID in $(seq 30); do
+            SLOT="$(( (ID - 1) % COUNT ))"
+            PROVIDER="${PROVIDERS[$SLOT]}"
+            UPPER="$(echo "$PROVIDER" | tr '[:lower:]' '[:upper:]')"
+            MESSAGE_ID="dispatch-${GITHUB_RUN_ID}-$ID"
+            TEXT="Parcel $ID. Many hands work. Bees return!"
+            MESSAGE_ID="dispatch-${GITHUB_RUN_ID}-$ID"
+            UPPER="$(echo "$PROVIDER" | tr '[:lower:]' '[:upper:]')"
+            {
+              echo "MESSAGE_ID=$MESSAGE_ID"
+              echo "CHANNEL=ORDERS"
+              echo "FROM=MANAGEMENT"
+              echo "TO=$UPPER"
+              echo "TYPE=DISPATCH_ORDER"
+              echo "EXECUTOR=DISPATCHER"
+              echo "PAYLOAD=$TEXT"
+              echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "hive/bus/orders/$MESSAGE_ID.msg"
+          done
+
+          git config user.name "Function Land Dispatcher"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hive/bus/orders
+          git commit -m "Publish Function Land orders for run $GITHUB_RUN_ID"
+          git pull --rebase origin main
+          git push origin main
+
       - name: Health-aware dispatch of 30 parcels
         env:
           HEALTHY_POOL: ${{ steps.health.outputs.pool }}
@@ -132,7 +173,7 @@ jobs:
           AWS_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
           CLOUDFLARE_URI: https://ah-word-count.brian-steph-anderson.workers.dev
         run: |
-          mkdir -p /tmp/function-land-results
+          mkdir -p /tmp/function-land-results hive/bus/uplink
           rm -f /tmp/function-land-results/*.tsv /tmp/routes.tsv
 
           dispatch_one() {
@@ -146,10 +187,12 @@ jobs:
             if [ "$PROVIDER" = "cloudflare" ]; then
               BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "text=$TEXT" "$CLOUDFLARE_URI")"
               echo "$BODY" | jq -e '.providerHive.provider == "cloudflare"' >/dev/null
+              RESULT_JSON="$(echo "$BODY" | jq -c .)"
 
             elif [ "$PROVIDER" = "google" ]; then
               BODY="$(curl --fail --silent --show-error --get                 -H "Authorization: Bearer $GOOGLE_ID_TOKEN"                 --data-urlencode "text=$TEXT" "$GOOGLE_URI")"
               echo "$BODY" | jq -e '.providerHive.provider == "google"' >/dev/null
+              RESULT_JSON="$(echo "$BODY" | jq -c .)"
 
             elif [ "$PROVIDER" = "aws" ]; then
               aws lambda invoke                 --function-name "$AWS_FUNCTION_NAME"                 --cli-binary-format raw-in-base64-out                 --payload "$(jq -nc --arg text "$TEXT" '{text:$text}')"                 "/tmp/function-land-results/aws-$ID.json" >/dev/null
@@ -159,9 +202,22 @@ jobs:
                 const body=typeof outer.body==="string" ? JSON.parse(outer.body) : outer;
                 if (body?.providerHive?.provider !== "aws") process.exit(1);
               ' "/tmp/function-land-results/aws-$ID.json"
+              RESULT_JSON="$(jq -c 'if (.body|type)=="string" then (.body|fromjson) else . end' "/tmp/function-land-results/aws-$ID.json")"
             else
               exit 1
             fi
+
+            {
+              echo "MESSAGE_ID=$MESSAGE_ID"
+              echo "CHANNEL=UPLINK"
+              echo "FROM=$UPPER"
+              echo "TO=MANAGEMENT"
+              echo "TYPE=ORDER_RESULT"
+              echo "STATUS=DONE"
+              echo "CORRELATION_ID=$MESSAGE_ID"
+              echo "RESULT_JSON=$RESULT_JSON"
+              echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "hive/bus/uplink/$MESSAGE_ID.$PROVIDER.uplink"
 
             printf '%s\t%s\tOK\n' "$ID" "$PROVIDER" > "/tmp/function-land-results/$ID.tsv"
           }
@@ -181,6 +237,11 @@ jobs:
           AWS="$(awk -F '\t' '$2=="aws"{n++} END{print n+0}' /tmp/routes.tsv)"
 
           test "$TOTAL" -eq 30
+
+          git add hive/bus/uplink
+          git commit -m "Publish Function Land uplinks for run $GITHUB_RUN_ID"
+          git pull --rebase origin main
+          git push origin main
 
           {
             echo "## Function Land Health-Aware Dispatcher"
