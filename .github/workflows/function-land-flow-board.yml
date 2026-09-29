@@ -4,6 +4,16 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "*/5 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "hive/bus/orders/**"
+      - "hive/bus/crosstalk/**"
+      - "hive/bus/uplink/**"
+      - "hive/bus/acks/**"
+      - "hive/bus/pending/**"
+      - ".github/workflows/function-land-flow-board.yml"
 
 permissions:
   contents: read
@@ -20,47 +30,72 @@ jobs:
           shopt -s nullglob
 
           orders=(hive/bus/orders/*.msg)
+          crosstalk=(hive/bus/crosstalk/*.msg)
           uplinks=(hive/bus/uplink/*.uplink)
-          acks=(hive/bus/acks/*.ack)
 
-          ORDER_TOTAL="${#orders[@]}"
-          UPLINK_TOTAL="${#uplinks[@]}"
-          ACK_TOTAL="${#acks[@]}"
-
-          ORDER_DONE=0
+          ORDER_IN=0
+          ORDER_PENDING=0
+          ORDER_OUT=0
           ORDER_BLOCKED=0
+
           for f in "${orders[@]}"; do
             id="$(awk -F= '$1=="MESSAGE_ID"{sub(/^[^=]*=/,"");print;exit}' "$f")"
             [ -n "$id" ] || continue
             matches=(hive/bus/uplink/"$id".*.uplink)
-            if [ "${#matches[@]}" -gt 0 ]; then
-              if grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
-                ORDER_BLOCKED=$((ORDER_BLOCKED+1))
-              else
-                ORDER_DONE=$((ORDER_DONE+1))
-              fi
+
+            if [ "${#matches[@]}" -gt 0 ] && grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
+              ORDER_BLOCKED=$((ORDER_BLOCKED+1))
+            elif [ "${#matches[@]}" -gt 0 ]; then
+              ORDER_OUT=$((ORDER_OUT+1))
+            elif [ -e "hive/bus/pending/$id.pending" ]; then
+              ORDER_PENDING=$((ORDER_PENDING+1))
+            else
+              ORDER_IN=$((ORDER_IN+1))
             fi
           done
 
-          ORDER_PENDING=$((ORDER_TOTAL-ORDER_DONE-ORDER_BLOCKED))
-          if [ "$ORDER_PENDING" -lt 0 ]; then ORDER_PENDING=0; fi
+          XTALK_IN=0
+          XTALK_PENDING=0
+          XTALK_OUT=0
+          XTALK_BLOCKED=0
 
-          CROSSTALK_TOTAL="$(find hive/bus/crosstalk -maxdepth 1 -type f -name '*.msg' 2>/dev/null | wc -l)"
-          CROSSTALK_OUT="$ACK_TOTAL"
-          CROSSTALK_PENDING=$((CROSSTALK_TOTAL-CROSSTALK_OUT))
-          if [ "$CROSSTALK_PENDING" -lt 0 ]; then CROSSTALK_PENDING=0; fi
+          for f in "${crosstalk[@]}"; do
+            id="$(awk -F= '$1=="MESSAGE_ID"{sub(/^[^=]*=/,"");print;exit}' "$f")"
+            [ -n "$id" ] || continue
+            acks=(hive/bus/acks/"$id".*.ack)
+            exceptions=(hive/bus/uplink/"$id".*.exception.uplink)
 
-          UPLINK_BLOCKED="$(grep -l '^STATUS=BLOCKED$' hive/bus/uplink/*.uplink 2>/dev/null | wc -l || true)"
-          UPLINK_OUT=$((UPLINK_TOTAL-UPLINK_BLOCKED))
+            if [ "${#exceptions[@]}" -gt 0 ]; then
+              XTALK_BLOCKED=$((XTALK_BLOCKED+1))
+            elif [ "${#acks[@]}" -gt 0 ]; then
+              XTALK_OUT=$((XTALK_OUT+1))
+            elif [ -e "hive/bus/pending/$id.pending" ]; then
+              XTALK_PENDING=$((XTALK_PENDING+1))
+            else
+              XTALK_IN=$((XTALK_IN+1))
+            fi
+          done
+
+          UPLINK_OUT=0
+          UPLINK_BLOCKED=0
+          for f in "${uplinks[@]}"; do
+            if grep -q '^STATUS=BLOCKED$' "$f"; then
+              UPLINK_BLOCKED=$((UPLINK_BLOCKED+1))
+            else
+              UPLINK_OUT=$((UPLINK_OUT+1))
+            fi
+          done
 
           {
             echo "## Anderson House Communication Flow"
             echo
             echo "| Lane | IN | PENDING | OUT | BLOCKED |"
             echo "|---|---:|---:|---:|---:|"
-            echo "| ORDERS | $ORDER_TOTAL | $ORDER_PENDING | $ORDER_DONE | $ORDER_BLOCKED |"
-            echo "| CROSSTALK | $CROSSTALK_TOTAL | $CROSSTALK_PENDING | $CROSSTALK_OUT | 0 |"
-            echo "| UPLINK | $UPLINK_TOTAL | 0 | $UPLINK_OUT | $UPLINK_BLOCKED |"
+            echo "| ORDERS | $ORDER_IN | $ORDER_PENDING | $ORDER_OUT | $ORDER_BLOCKED |"
+            echo "| CROSSTALK | $XTALK_IN | $XTALK_PENDING | $XTALK_OUT | $XTALK_BLOCKED |"
+            echo "| UPLINK | 0 | 0 | $UPLINK_OUT | $UPLINK_BLOCKED |"
+            echo
+            echo "**Reading rule:** growth in PENDING means work is accumulating; BLOCKED means normal flow has entered recovery."
             echo
             echo "**Recovery:** BLOCKED -> local retry -> return/correlation -> UPLINK exception."
           } >> "$GITHUB_STEP_SUMMARY"

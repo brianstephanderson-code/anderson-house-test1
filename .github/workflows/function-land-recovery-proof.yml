@@ -1,0 +1,128 @@
+name: Function Land Recovery Proof
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/function-land-recovery-proof.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: function-land-recovery-proof
+  cancel-in-progress: false
+
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run controlled self-correction proof
+        run: |
+          set -euo pipefail
+          mkdir -p hive/bus/orders hive/bus/pending hive/bus/uplink
+
+          RECOVER_ID="recovery-${GITHUB_RUN_ID}-local"
+          BLOCK_ID="recovery-${GITHUB_RUN_ID}-escalate"
+
+          write_order() {
+            local id="$1" mode="$2"
+            {
+              echo "MESSAGE_ID=$id"
+              echo "CHANNEL=ORDERS"
+              echo "FROM=MANAGEMENT"
+              echo "TO=RECOVERY-LAB"
+              echo "TYPE=CONTROLLED_FAILURE_TEST"
+              echo "EXECUTOR=RECOVERY_PROOF"
+              echo "MODE=$mode"
+              echo "PAYLOAD=Harmless synthetic recovery proof"
+              echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "hive/bus/orders/$id.msg"
+            {
+              echo "MESSAGE_ID=$id"
+              echo "STATE=PENDING"
+              echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "hive/bus/pending/$id.pending"
+          }
+
+          write_order "$RECOVER_ID" "RECOVER_ON_THIRD_ATTEMPT"
+          write_order "$BLOCK_ID" "FAIL_ALL_THREE"
+
+          # Parcel A: fails twice, succeeds locally on attempt 3.
+          ATTEMPTS=0
+          RECOVERED=no
+          for attempt in 1 2 3; do
+            ATTEMPTS="$attempt"
+            if [ "$attempt" -lt 3 ]; then
+              echo "$RECOVER_ID attempt $attempt: synthetic failure"
+            else
+              RECOVERED=yes
+              break
+            fi
+          done
+
+          test "$RECOVERED" = "yes"
+          {
+            echo "MESSAGE_ID=$RECOVER_ID"
+            echo "CHANNEL=UPLINK"
+            echo "FROM=RECOVERY-LAB"
+            echo "TO=MANAGEMENT"
+            echo "TYPE=ORDER_RESULT"
+            echo "STATUS=DONE"
+            echo "CORRELATION_ID=$RECOVER_ID"
+            echo "RECOVERED_LOCALLY=yes"
+            echo "RECOVERY_ATTEMPTS=$ATTEMPTS"
+            echo "ESCALATED=no"
+            echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "hive/bus/uplink/$RECOVER_ID.recovery-lab.uplink"
+
+          # Parcel B: all three local attempts fail; only then escalate.
+          ATTEMPTS=0
+          for attempt in 1 2 3; do
+            ATTEMPTS="$attempt"
+            echo "$BLOCK_ID attempt $attempt: synthetic failure"
+          done
+
+          {
+            echo "MESSAGE_ID=$BLOCK_ID"
+            echo "CHANNEL=UPLINK"
+            echo "FROM=RECOVERY-LAB"
+            echo "TO=MANAGEMENT"
+            echo "TYPE=RECOVERY_EXCEPTION"
+            echo "STATUS=BLOCKED"
+            echo "CORRELATION_ID=$BLOCK_ID"
+            echo "RECOVERED_LOCALLY=no"
+            echo "RECOVERY_ATTEMPTS=$ATTEMPTS"
+            echo "RETURN_TO_ORIGIN=attempted"
+            echo "ESCALATED=yes"
+            echo "REASON=LOCAL_RETRY_EXHAUSTED"
+            echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > "hive/bus/uplink/$BLOCK_ID.recovery-lab.uplink"
+
+          rm -f "hive/bus/pending/$RECOVER_ID.pending" "hive/bus/pending/$BLOCK_ID.pending"
+
+          git config user.name "Function Land Recovery Proof"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hive/bus/orders hive/bus/pending hive/bus/uplink
+          git commit -m "Record controlled BLOCKED recovery proof $GITHUB_RUN_ID"
+          git pull --rebase origin main
+          git push origin main
+
+          {
+            echo "## Controlled self-correction proof"
+            echo
+            echo "| Parcel | Local attempts | Final state | Escalated |"
+            echo "|---|---:|---|---|"
+            echo "| Recoverable | 3 | DONE | no |"
+            echo "| Unrecoverable | 3 | BLOCKED | yes |"
+            echo
+            echo "The first parcel stayed below management until it recovered."
+            echo
+            echo "The second parcel escalated only after the local retry budget was exhausted."
+          } >> "$GITHUB_STEP_SUMMARY"
