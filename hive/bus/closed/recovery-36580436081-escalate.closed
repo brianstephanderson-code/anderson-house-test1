@@ -1,0 +1,6 @@
+MESSAGE_ID=recovery-36580436081-escalate
+STATUS=CLOSED
+DISPOSITION=RESOLVED
+MASTER_RECORD=hive/work/records/recovery-36580436081-escalate.record
+WAREHOUSE=hive/warehouse/communications/recovery-36580436081-escalate.manifest
+CLOSED_UTC=2026-09-29T15:15:29Z

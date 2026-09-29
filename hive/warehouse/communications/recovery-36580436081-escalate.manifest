@@ -1,0 +1,9 @@
+MESSAGE_ID=recovery-36580436081-escalate
+KIND=ORDER
+STATUS=CLOSED
+DISPOSITION=RESOLVED
+MASTER_RECORD=hive/work/records/recovery-36580436081-escalate.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/recovery-36580436081-escalate/recovery-36580436081-escalate.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/recovery-36580436081-escalate/recovery-36580436081-escalate.recovery-lab.uplink
+CORRELATION_ID=recovery-36580436081-escalate
+CLOSED_UTC=2026-09-29T15:15:29Z

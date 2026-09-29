@@ -5,3 +5,5 @@ SOURCE=hive/bus/orders/recovery-36580436081-local.msg
 RETURNS=hive/bus/uplink/recovery-36580436081-local.recovery-lab.uplink
 CORRELATION_ID=recovery-36580436081-local
 CLOSED_UTC=2026-09-29T15:02:25Z
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/recovery-36580436081-local/recovery-36580436081-local.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/recovery-36580436081-local/recovery-36580436081-local.recovery-lab.uplink

@@ -5,3 +5,5 @@ SOURCE=hive/bus/crosstalk/xtalk-production-verify-20260929-001.msg
 RETURNS=hive/bus/acks/xtalk-production-verify-20260929-001.google.ack
 CORRELATION_ID=xtalk-production-verify-20260929-001
 CLOSED_UTC=2026-09-29T15:02:25Z
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/xtalk-production-verify-20260929-001/xtalk-production-verify-20260929-001.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/xtalk-production-verify-20260929-001/xtalk-production-verify-20260929-001.google.ack

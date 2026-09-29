@@ -5,3 +5,5 @@ SOURCE=hive/bus/orders/production-policy-20260929-009.msg
 RETURNS=hive/bus/uplink/production-policy-20260929-009.cloudflare.uplink
 CORRELATION_ID=production-policy-20260929-009
 CLOSED_UTC=2026-09-29T15:02:25Z
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/production-policy-20260929-009/production-policy-20260929-009.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/production-policy-20260929-009/production-policy-20260929-009.cloudflare.uplink

@@ -5,3 +5,5 @@ SOURCE=hive/bus/orders/dispatch-36579446302-9.msg
 RETURNS=hive/bus/uplink/dispatch-36579446302-9.cloudflare.uplink
 CORRELATION_ID=dispatch-36579446302-9
 CLOSED_UTC=2026-09-29T15:02:25Z
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/dispatch-36579446302-9/dispatch-36579446302-9.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/dispatch-36579446302-9/dispatch-36579446302-9.cloudflare.uplink

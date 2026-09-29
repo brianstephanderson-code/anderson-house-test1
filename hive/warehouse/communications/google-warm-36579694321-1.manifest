@@ -5,3 +5,5 @@ SOURCE=hive/bus/orders/google-warm-36579694321-1.msg
 RETURNS=hive/bus/uplink/google-warm-36579694321-1.google.uplink
 CORRELATION_ID=google-warm-36579694321-1
 CLOSED_UTC=2026-09-29T15:02:25Z
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/google-warm-36579694321-1/google-warm-36579694321-1.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/google-warm-36579694321-1/google-warm-36579694321-1.google.uplink

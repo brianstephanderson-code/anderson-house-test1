@@ -5,3 +5,5 @@ SOURCE=hive/bus/orders/real-use-20260929-001.msg
 RETURNS=hive/bus/uplink/real-use-20260929-001.aws.uplink,hive/bus/uplink/real-use-20260929-001.google.uplink,hive/bus/uplink/real-use-20260929-001.cloudflare.uplink
 CORRELATION_ID=real-use-20260929-001
 CLOSED_UTC=2026-09-29T15:02:25Z
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/real-use-20260929-001/real-use-20260929-001.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/real-use-20260929-001/real-use-20260929-001.aws.uplink,hive/warehouse/communications/evidence/real-use-20260929-001/real-use-20260929-001.google.uplink,hive/warehouse/communications/evidence/real-use-20260929-001/real-use-20260929-001.cloudflare.uplink
