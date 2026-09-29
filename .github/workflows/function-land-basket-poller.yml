@@ -4,6 +4,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "*/5 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "hive/bus/orders/**"
+      - "hive/bus/crosstalk/**"
+      - ".github/workflows/function-land-basket-poller.yml"
 
 permissions:
   contents: write
