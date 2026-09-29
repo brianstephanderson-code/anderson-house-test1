@@ -1,0 +1,227 @@
+name: Function Land Runtime Feed
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/function-land-runtime-feed.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  cloudflare-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Feed existing Cloudflare hive
+        env:
+          URI: https://ah-word-count.brian-steph-anderson.workers.dev
+        run: |
+          : > /tmp/results.tsv
+
+          run_batch() {
+            COUNT="$1"
+            PARALLEL="$2"
+            START="$(date +%s%N)"
+
+            seq "$COUNT" | xargs -I{} -P "$PARALLEL" sh -c '
+              curl --silent --show-error --get                 --output /dev/null                 --write-out "%{http_code}\n"                 --data-urlencode "text=Many hands work. Bees return!"                 "$0"
+            ' "$URI" > /tmp/status.txt
+
+            END="$(date +%s%N)"
+            MS="$(( (END - START) / 1000000 ))"
+            OK="$(grep -c '^200$' /tmp/status.txt || true)"
+            FAIL="$(( COUNT - OK ))"
+            printf '%s\t%s\t%s\t%s\t%s\n' "$COUNT" "$PARALLEL" "$MS" "$OK" "$FAIL" >> /tmp/results.tsv
+            test "$FAIL" -eq 0
+          }
+
+          FIRST="$(curl --fail --silent --show-error --get --data-urlencode 'text=Many hands work. Bees return!' "$URI")"
+          echo "$FIRST" | jq -e '.words == 5 and .sentences == 2 and .paragraphs == 1 and .terminalPunctuation == true' >/dev/null
+
+          run_batch 10 5
+          run_batch 50 10
+          run_batch 100 10
+
+          {
+            echo "## Cloudflare Runtime Feed"
+            echo
+            echo "| Requests | Parallel | Wall ms | OK | Fail |"
+            echo "|---:|---:|---:|---:|---:|"
+            while IFS="$(printf '\t')" read -r COUNT PARALLEL MS OK FAIL; do
+              echo "| $COUNT | $PARALLEL | $MS | $OK | $FAIL |"
+            done < /tmp/results.tsv
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  aws-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Feed existing AWS hive
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+        run: |
+          : > /tmp/results.tsv
+
+          invoke_one() {
+            ID="$1"
+            aws lambda invoke               --function-name "$FUNCTION_NAME"               --cli-binary-format raw-in-base64-out               --payload '{"text":"Many hands work. Bees return!"}'               "/tmp/aws-$ID.json" >/dev/null
+            node -e '
+              const fs=require("fs");
+              const outer=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+              const body=typeof outer.body==="string" ? JSON.parse(outer.body) : outer;
+              process.exit(
+                body.words===5 &&
+                body.sentences===2 &&
+                body.paragraphs===1 &&
+                body.terminalPunctuation===true ? 0 : 1
+              );
+            ' "/tmp/aws-$ID.json"
+          }
+          export -f invoke_one
+          export FUNCTION_NAME
+
+          invoke_one warmup
+
+          run_batch() {
+            COUNT="$1"
+            PARALLEL="$2"
+            START="$(date +%s%N)"
+
+            seq "$COUNT" | xargs -I{} -P "$PARALLEL" bash -c '
+              if invoke_one "$1"; then echo OK; else echo FAIL; fi
+            ' _ {} > /tmp/status.txt
+
+            END="$(date +%s%N)"
+            MS="$(( (END - START) / 1000000 ))"
+            OK="$(grep -c '^OK$' /tmp/status.txt || true)"
+            FAIL="$(( COUNT - OK ))"
+            printf '%s\t%s\t%s\t%s\t%s\n' "$COUNT" "$PARALLEL" "$MS" "$OK" "$FAIL" >> /tmp/results.tsv
+            test "$FAIL" -eq 0
+          }
+
+          run_batch 10 5
+          run_batch 50 10
+          run_batch 100 10
+
+          {
+            echo "## AWS Runtime Feed"
+            echo
+            echo "| Requests | Parallel | Wall ms | OK | Fail |"
+            echo "|---:|---:|---:|---:|---:|"
+            while IFS="$(printf '\t')" read -r COUNT PARALLEL MS OK FAIL; do
+              echo "| $COUNT | $PARALLEL | $MS | $OK | $FAIL |"
+            done < /tmp/results.tsv
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  google-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to inspect Google function
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Resolve Google function endpoint
+        id: endpoint
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          test -n "$URI"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Mint identity token
+        id: idtoken
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ steps.endpoint.outputs.uri }}
+          create_credentials_file: false
+
+      - name: Feed existing Google hive
+        env:
+          URI: ${{ steps.endpoint.outputs.uri }}
+          ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
+        run: |
+          : > /tmp/results.tsv
+
+          FIRST="$(curl --fail --silent --show-error --get             -H "Authorization: Bearer $ID_TOKEN"             --data-urlencode 'text=Many hands work. Bees return!'             "$URI")"
+          echo "$FIRST" | jq -e '.words == 5 and .sentences == 2 and .paragraphs == 1 and .terminalPunctuation == true' >/dev/null
+
+          run_batch() {
+            COUNT="$1"
+            PARALLEL="$2"
+            START="$(date +%s%N)"
+
+            seq "$COUNT" | xargs -I{} -P "$PARALLEL" sh -c '
+              curl --silent --show-error --get                 --output /dev/null                 --write-out "%{http_code}\n"                 -H "Authorization: Bearer $1"                 --data-urlencode "text=Many hands work. Bees return!"                 "$0"
+            ' "$URI" "$ID_TOKEN" > /tmp/status.txt
+
+            END="$(date +%s%N)"
+            MS="$(( (END - START) / 1000000 ))"
+            OK="$(grep -c '^200$' /tmp/status.txt || true)"
+            FAIL="$(( COUNT - OK ))"
+            printf '%s\t%s\t%s\t%s\t%s\n' "$COUNT" "$PARALLEL" "$MS" "$OK" "$FAIL" >> /tmp/results.tsv
+            test "$FAIL" -eq 0
+          }
+
+          run_batch 10 5
+          run_batch 50 10
+          run_batch 100 10
+
+          {
+            echo "## Google Runtime Feed"
+            echo
+            echo "| Requests | Parallel | Wall ms | OK | Fail |"
+            echo "|---:|---:|---:|---:|---:|"
+            while IFS="$(printf '\t')" read -r COUNT PARALLEL MS OK FAIL; do
+              echo "| $COUNT | $PARALLEL | $MS | $OK | $FAIL |"
+            done < /tmp/results.tsv
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  aggregate:
+    if: ${{ always() }}
+    needs:
+      - cloudflare-runtime
+      - aws-runtime
+      - google-runtime
+    runs-on: ubuntu-latest
+    steps:
+      - name: Function Land runtime state
+        env:
+          CLOUDFLARE_STATE: ${{ needs.cloudflare-runtime.result }}
+          AWS_STATE: ${{ needs.aws-runtime.result }}
+          GOOGLE_STATE: ${{ needs.google-runtime.result }}
+        run: |
+          {
+            echo "## Function Land Runtime"
+            echo
+            echo "| Provider | State |"
+            echo "|---|---|"
+            echo "| Cloudflare | $CLOUDFLARE_STATE |"
+            echo "| AWS | $AWS_STATE |"
+            echo "| Google | $GOOGLE_STATE |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          test "$CLOUDFLARE_STATE" = success
+          test "$AWS_STATE" = success
+          test "$GOOGLE_STATE" = success
