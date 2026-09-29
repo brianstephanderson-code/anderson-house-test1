@@ -35,7 +35,9 @@ jobs:
           set -euo pipefail
           shopt -s nullglob
 
-          mkdir -p             hive/bus/closed             hive/bus/pending             hive/bus/resolved             hive/warehouse/communications/evidence             hive/work/records
+          mkdir -p hive/bus/closed hive/bus/pending hive/bus/resolved
+          mkdir -p hive/warehouse/communications/evidence hive/warehouse/communications/orphans
+          mkdir -p hive/work/records
 
           value_of() {
             local key="$1" file="$2"
@@ -52,14 +54,24 @@ jobs:
           }
 
           is_done() {
-            [ -e "$1" ] && grep -q '^STATUS=DONE
+            [ -e "$1" ] && grep -q '^STATUS=DONE$' "$1"
+          }
+
+          is_ack_success() {
+            local file="$1" status
+            [ -e "$file" ] || return 1
+            status="$(value_of STATUS "$file" | tr '[:lower:]' '[:upper:]')"
+            case "$status" in
+              DONE|ACK|OK|PASS|PONG|VERIFIED) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
 
           ensure_master() {
             local id="$1" kind="$2" source="$3"
             local master from to type
             master="hive/work/records/$id.record"
             [ -e "$master" ] && return 0
-
             from="$(value_of FROM "$source")"
             to="$(value_of TO "$source")"
             type="$(value_of TYPE "$source")"
@@ -78,8 +90,7 @@ jobs:
           }
 
           archive_one() {
-            local id="$1" file="$2"
-            local dir dest
+            local id="$1" file="$2" dir dest
             [ -n "$file" ] || return 0
             [ -e "$file" ] || return 0
             dir="hive/warehouse/communications/evidence/$id"
@@ -92,9 +103,7 @@ jobs:
           }
 
           archive_returns() {
-            local id="$1" returns="$2"
-            local item archived joined
-            joined=""
+            local id="$1" returns="$2" item archived joined=""
             IFS=',' read -r -a items <<< "$returns"
             for item in "${items[@]}"; do
               [ -n "$item" ] || continue
@@ -106,8 +115,7 @@ jobs:
           }
 
           finalize_master() {
-            local id="$1" disposition="$2" manifest="$3" closed_at="$4"
-            local master
+            local id="$1" disposition="$2" manifest="$3" closed_at="$4" master
             master="hive/work/records/$id.record"
             [ -e "$master" ] || return 0
             case "$disposition" in
@@ -121,13 +129,12 @@ jobs:
 
           write_closure() {
             local id="$1" kind="$2" source="$3" returns="$4" disposition="$5"
-            local closed_at manifest archived_source archived_returns master
+            local closed_at manifest master archived_source archived_returns
             closed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             manifest="hive/warehouse/communications/$id.manifest"
             master="hive/work/records/$id.record"
 
             ensure_master "$id" "$kind" "$source"
-
             archived_source="$(archive_one "$id" "$source")"
             archived_returns="$(archive_returns "$id" "$returns")"
 
@@ -156,9 +163,8 @@ jobs:
             finalize_master "$id" "$disposition" "$manifest" "$closed_at"
           }
 
-          quarantine_orphan_uplinks() {
+          quarantine_orphans() {
             local file dest
-            mkdir -p hive/warehouse/communications/orphans
             for file in hive/bus/uplink/.*.uplink; do
               [ -e "$file" ] || continue
               if [ -z "$(value_of MESSAGE_ID "$file")" ]; then
@@ -166,13 +172,11 @@ jobs:
                 mv "$file" "$dest"
               fi
             done
-            if [ ! -e hive/warehouse/communications/orphans/README.md ]; then
-              printf '%s\n'                 '# Orphan transport evidence'                 ''                 'These files are retired communication artifacts that had no valid MESSAGE_ID and therefore cannot be correlated to a master work record.'                 ''                 'They are preserved as historical evidence but are not live basket work.'                 > hive/warehouse/communications/orphans/README.md
-            fi
+            printf '%s\n'               '# Orphan transport evidence'               ''               'These are retired historical communication artifacts without a valid MESSAGE_ID.'               'They are preserved as evidence but are not live basket work.'               > hive/warehouse/communications/orphans/README.md
           }
 
           migrate_existing_closed() {
-            local receipt id manifest source returns archived_source archived_returns closed_at master
+            local receipt id manifest source returns archived_source archived_returns closed_at master kind
             for receipt in hive/bus/closed/*.closed; do
               id="$(value_of MESSAGE_ID "$receipt")"
               [ -n "$id" ] || continue
@@ -183,6 +187,7 @@ jobs:
               returns="$(value_of RETURNS "$manifest")"
               archived_source="$(value_of SOURCE_ARCHIVE "$manifest")"
               archived_returns="$(value_of RETURN_ARCHIVES "$manifest")"
+              kind="$(value_of KIND "$manifest")"
 
               if [ -z "$archived_source" ] && [ -n "$source" ] && [ -e "$source" ]; then
                 archived_source="$(archive_one "$id" "$source")"
@@ -195,8 +200,9 @@ jobs:
 
               master="hive/work/records/$id.record"
               if [ ! -e "$master" ] && [ -n "$archived_source" ] && [ -e "$archived_source" ]; then
-                ensure_master "$id" "$(value_of KIND "$manifest")" "$archived_source"
+                ensure_master "$id" "${kind:-MIGRATED}" "$archived_source"
               fi
+
               closed_at="$(value_of CLOSED_UTC "$receipt")"
               [ -n "$closed_at" ] || closed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
               if [ -e "$master" ]; then
@@ -211,8 +217,7 @@ jobs:
           }
 
           close_order() {
-            local file="$1"
-            local id to upper p f from expected returns disposition
+            local file="$1" id to upper p f from returns=""
             id="$(value_of MESSAGE_ID "$file")"
             to="$(value_of TO "$file")"
             [ -n "$id" ] || return 0
@@ -228,7 +233,6 @@ jobs:
 
             if grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
               [ -e "hive/bus/resolved/$id.resolved" ] || return 0
-              returns=""
               for f in "${matches[@]}"; do
                 returns="${returns:+$returns,}$f"
               done
@@ -237,12 +241,9 @@ jobs:
             fi
 
             upper="$(echo "$to" | tr '[:lower:]' '[:upper:]')"
-            returns=""
-
             case "$upper" in
               ALL)
-                expected="aws google cloudflare"
-                for p in $expected; do
+                for p in aws google cloudflare; do
                   f="hive/bus/uplink/$id.$p.uplink"
                   is_done "$f" || return 0
                   returns="${returns:+$returns,}$f"
@@ -273,8 +274,7 @@ jobs:
           }
 
           close_crosstalk() {
-            local file="$1"
-            local id to upper p f from expected returns
+            local file="$1" id to upper p f from returns=""
             id="$(value_of MESSAGE_ID "$file")"
             to="$(value_of TO "$file")"
             [ -n "$id" ] || return 0
@@ -283,7 +283,6 @@ jobs:
             local exceptions=(hive/bus/uplink/"$id".*.exception.uplink)
             if [ "${#exceptions[@]}" -gt 0 ]; then
               [ -e "hive/bus/resolved/$id.resolved" ] || return 0
-              returns=""
               for f in "${exceptions[@]}"; do
                 returns="${returns:+$returns,}$f"
               done
@@ -293,13 +292,11 @@ jobs:
 
             local matches=(hive/bus/acks/"$id".*.ack)
             [ "${#matches[@]}" -gt 0 ] || return 0
-            upper="$(echo "$to" | tr '[:lower:]' '[:upper:]')"
-            returns=""
 
+            upper="$(echo "$to" | tr '[:lower:]' '[:upper:]')"
             case "$upper" in
               ALL)
-                expected="aws google cloudflare"
-                for p in $expected; do
+                for p in aws google cloudflare; do
                   f="hive/bus/acks/$id.$p.ack"
                   is_ack_success "$f" || return 0
                   returns="${returns:+$returns,}$f"
@@ -329,27 +326,23 @@ jobs:
             write_closure "$id" CROSSTALK "$file" "$returns" ACKED
           }
 
-          quarantine_orphan_uplinks
+          quarantine_orphans
           migrate_existing_closed
 
           for file in hive/bus/orders/*.msg; do
             close_order "$file"
           done
-
           for file in hive/bus/crosstalk/*.msg; do
             close_crosstalk "$file"
           done
-
-          # Legacy device-bus crosstalk uses hive/bus/messages.
-          # Close those loops too so old ACKed copies do not remain dangling.
           for file in hive/bus/messages/*.msg; do
             close_crosstalk "$file"
           done
 
-          if git status --porcelain               hive/bus/orders hive/bus/crosstalk hive/bus/messages hive/bus/uplink hive/bus/acks               hive/bus/closed hive/bus/pending hive/warehouse/communications hive/work/records               | grep -q .; then
+          if git status --porcelain               hive/bus/orders hive/bus/crosstalk hive/bus/messages               hive/bus/uplink hive/bus/acks hive/bus/closed hive/bus/pending               hive/warehouse/communications hive/work/records | grep -q .; then
             git config user.name "Function Land Closure Clerk"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A               hive/bus/orders hive/bus/crosstalk hive/bus/messages hive/bus/uplink hive/bus/acks               hive/bus/closed hive/bus/pending hive/warehouse/communications hive/work/records
+            git add -A               hive/bus/orders hive/bus/crosstalk hive/bus/messages               hive/bus/uplink hive/bus/acks hive/bus/closed hive/bus/pending               hive/warehouse/communications hive/work/records
             git commit -m "Close and warehouse Function Land communication loops"
             git pull --rebase origin main
             git push origin main
@@ -358,310 +351,8 @@ jobs:
           {
             echo "## Function Land Closure Clerk"
             echo
-            echo "Bus messages are transport copies; the work master stays with the work record."
-            echo
-            echo "DONE is not terminal. CLOSED + warehouse manifest is terminal."
-            echo
-            echo "Closed transport copies are physically retired from live baskets into warehouse evidence."
-          } >> "$GITHUB_STEP_SUMMARY"
- "$1"
-          }
-
-          is_ack_success() {
-            local file="$1" status
-            [ -e "$file" ] || return 1
-            status="$(value_of STATUS "$file" | tr '[:lower:]' '[:upper:]')"
-            case "$status" in
-              DONE|ACK|OK|PASS|PONG|VERIFIED) return 0 ;;
-              *) return 1 ;;
-            esac
-          }
-
-          ensure_master() {
-            local id="$1" kind="$2" source="$3"
-            local master from to type
-            master="hive/work/records/$id.record"
-            [ -e "$master" ] && return 0
-
-            from="$(value_of FROM "$source")"
-            to="$(value_of TO "$source")"
-            type="$(value_of TYPE "$source")"
-            {
-              echo "WORK_ID=$id"
-              echo "RECORD_KIND=$kind"
-              echo "STATUS=ACTIVE"
-              echo "ORIGIN=$from"
-              echo "TARGET=$to"
-              echo "MESSAGE_TYPE=$type"
-              echo "COMMUNICATION_COPY=$source"
-              echo "COMMUNICATION_SHA256=$(sha256sum "$source" | awk '{print $1}')"
-              echo "RULE=MASTER_STAYS_WITH_WORK"
-              echo "CREATED_UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            } > "$master"
-          }
-
-          archive_one() {
-            local id="$1" file="$2"
-            local dir dest
-            [ -n "$file" ] || return 0
-            [ -e "$file" ] || return 0
-            dir="hive/warehouse/communications/evidence/$id"
-            mkdir -p "$dir"
-            dest="$dir/$(basename "$file")"
-            if [ "$file" != "$dest" ]; then
-              mv "$file" "$dest"
-            fi
-            printf '%s' "$dest"
-          }
-
-          archive_returns() {
-            local id="$1" returns="$2"
-            local item archived joined
-            joined=""
-            IFS=',' read -r -a items <<< "$returns"
-            for item in "${items[@]}"; do
-              [ -n "$item" ] || continue
-              archived="$(archive_one "$id" "$item")"
-              [ -n "$archived" ] || continue
-              joined="${joined:+$joined,}$archived"
-            done
-            printf '%s' "$joined"
-          }
-
-          finalize_master() {
-            local id="$1" disposition="$2" manifest="$3" closed_at="$4"
-            local master
-            master="hive/work/records/$id.record"
-            [ -e "$master" ] || return 0
-            case "$disposition" in
-              DONE|ACKED) set_field "$master" STATUS DONE ;;
-              *) set_field "$master" STATUS "$disposition" ;;
-            esac
-            set_field "$master" COMM_STATE CLOSED
-            set_field "$master" CLOSURE_MANIFEST "$manifest"
-            set_field "$master" CLOSED_UTC "$closed_at"
-          }
-
-          write_closure() {
-            local id="$1" kind="$2" source="$3" returns="$4" disposition="$5"
-            local closed_at manifest archived_source archived_returns master
-            closed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            manifest="hive/warehouse/communications/$id.manifest"
-            master="hive/work/records/$id.record"
-
-            ensure_master "$id" "$kind" "$source"
-
-            archived_source="$(archive_one "$id" "$source")"
-            archived_returns="$(archive_returns "$id" "$returns")"
-
-            {
-              echo "MESSAGE_ID=$id"
-              echo "KIND=$kind"
-              echo "STATUS=CLOSED"
-              echo "DISPOSITION=$disposition"
-              echo "MASTER_RECORD=$master"
-              echo "SOURCE_ARCHIVE=$archived_source"
-              echo "RETURN_ARCHIVES=$archived_returns"
-              echo "CORRELATION_ID=$id"
-              echo "CLOSED_UTC=$closed_at"
-            } > "$manifest"
-
-            {
-              echo "MESSAGE_ID=$id"
-              echo "STATUS=CLOSED"
-              echo "DISPOSITION=$disposition"
-              echo "MASTER_RECORD=$master"
-              echo "WAREHOUSE=$manifest"
-              echo "CLOSED_UTC=$closed_at"
-            } > "hive/bus/closed/$id.closed"
-
-            rm -f "hive/bus/pending/$id.pending"
-            finalize_master "$id" "$disposition" "$manifest" "$closed_at"
-          }
-
-          migrate_existing_closed() {
-            local receipt id manifest source returns archived_source archived_returns closed_at master
-            for receipt in hive/bus/closed/*.closed; do
-              id="$(value_of MESSAGE_ID "$receipt")"
-              [ -n "$id" ] || continue
-              manifest="hive/warehouse/communications/$id.manifest"
-              [ -e "$manifest" ] || continue
-
-              source="$(value_of SOURCE "$manifest")"
-              returns="$(value_of RETURNS "$manifest")"
-              archived_source="$(value_of SOURCE_ARCHIVE "$manifest")"
-              archived_returns="$(value_of RETURN_ARCHIVES "$manifest")"
-
-              if [ -z "$archived_source" ] && [ -n "$source" ] && [ -e "$source" ]; then
-                archived_source="$(archive_one "$id" "$source")"
-                set_field "$manifest" SOURCE_ARCHIVE "$archived_source"
-              fi
-              if [ -z "$archived_returns" ] && [ -n "$returns" ]; then
-                archived_returns="$(archive_returns "$id" "$returns")"
-                set_field "$manifest" RETURN_ARCHIVES "$archived_returns"
-              fi
-
-              master="hive/work/records/$id.record"
-              if [ ! -e "$master" ] && [ -n "$archived_source" ] && [ -e "$archived_source" ]; then
-                ensure_master "$id" "$(value_of KIND "$manifest")" "$archived_source"
-              fi
-              closed_at="$(value_of CLOSED_UTC "$receipt")"
-              [ -n "$closed_at" ] || closed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-              if [ -e "$master" ]; then
-                set_field "$master" COMM_STATE CLOSED
-                set_field "$master" CLOSURE_MANIFEST "$manifest"
-                set_field "$master" CLOSED_UTC "$closed_at"
-                if [ "$(value_of STATUS "$master")" = "ACTIVE" ]; then
-                  set_field "$master" STATUS DONE
-                fi
-              fi
-            done
-          }
-
-          close_order() {
-            local file="$1"
-            local id to upper p f from expected returns disposition
-            id="$(value_of MESSAGE_ID "$file")"
-            to="$(value_of TO "$file")"
-            [ -n "$id" ] || return 0
-            [ -e "hive/bus/closed/$id.closed" ] && return 0
-
-            if [ -e "hive/bus/superseded/$id.superseded" ]; then
-              write_closure "$id" ORDER "$file" "" SUPERSEDED
-              return 0
-            fi
-
-            local matches=(hive/bus/uplink/"$id".*.uplink)
-            [ "${#matches[@]}" -gt 0 ] || return 0
-
-            if grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
-              [ -e "hive/bus/resolved/$id.resolved" ] || return 0
-              returns=""
-              for f in "${matches[@]}"; do
-                returns="${returns:+$returns,}$f"
-              done
-              write_closure "$id" ORDER "$file" "$returns" RESOLVED
-              return 0
-            fi
-
-            upper="$(echo "$to" | tr '[:lower:]' '[:upper:]')"
-            returns=""
-
-            case "$upper" in
-              ALL)
-                expected="aws google cloudflare"
-                for p in $expected; do
-                  f="hive/bus/uplink/$id.$p.uplink"
-                  is_ack_success "$f" || return 0
-                  returns="${returns:+$returns,}$f"
-                done
-                ;;
-              AWS|GOOGLE|CLOUDFLARE)
-                p="$(echo "$upper" | tr '[:upper:]' '[:lower:]')"
-                f="hive/bus/uplink/$id.$p.uplink"
-                is_ack_success "$f" || return 0
-                returns="$f"
-                ;;
-              *)
-                f=""
-                for candidate in "${matches[@]}"; do
-                  is_ack_success "$candidate" || continue
-                  from="$(value_of FROM "$candidate" | tr '[:lower:]' '[:upper:]')"
-                  if [ "$from" = "$upper" ]; then
-                    f="$candidate"
-                    break
-                  fi
-                done
-                [ -n "$f" ] || return 0
-                returns="$f"
-                ;;
-            esac
-
-            write_closure "$id" ORDER "$file" "$returns" DONE
-          }
-
-          close_crosstalk() {
-            local file="$1"
-            local id to upper p f from expected returns
-            id="$(value_of MESSAGE_ID "$file")"
-            to="$(value_of TO "$file")"
-            [ -n "$id" ] || return 0
-            [ -e "hive/bus/closed/$id.closed" ] && return 0
-
-            local exceptions=(hive/bus/uplink/"$id".*.exception.uplink)
-            if [ "${#exceptions[@]}" -gt 0 ]; then
-              [ -e "hive/bus/resolved/$id.resolved" ] || return 0
-              returns=""
-              for f in "${exceptions[@]}"; do
-                returns="${returns:+$returns,}$f"
-              done
-              write_closure "$id" CROSSTALK "$file" "$returns" RESOLVED
-              return 0
-            fi
-
-            local matches=(hive/bus/acks/"$id".*.ack)
-            [ "${#matches[@]}" -gt 0 ] || return 0
-            upper="$(echo "$to" | tr '[:lower:]' '[:upper:]')"
-            returns=""
-
-            case "$upper" in
-              ALL)
-                expected="aws google cloudflare"
-                for p in $expected; do
-                  f="hive/bus/acks/$id.$p.ack"
-                  is_ack_success "$f" || return 0
-                  returns="${returns:+$returns,}$f"
-                done
-                ;;
-              AWS|GOOGLE|CLOUDFLARE)
-                p="$(echo "$upper" | tr '[:upper:]' '[:lower:]')"
-                f="hive/bus/acks/$id.$p.ack"
-                is_ack_success "$f" || return 0
-                returns="$f"
-                ;;
-              *)
-                f=""
-                for candidate in "${matches[@]}"; do
-                  is_ack_success "$candidate" || continue
-                  from="$(value_of FROM "$candidate" | tr '[:lower:]' '[:upper:]')"
-                  if [ "$from" = "$upper" ]; then
-                    f="$candidate"
-                    break
-                  fi
-                done
-                [ -n "$f" ] || return 0
-                returns="$f"
-                ;;
-            esac
-
-            write_closure "$id" CROSSTALK "$file" "$returns" ACKED
-          }
-
-          migrate_existing_closed
-
-          for file in hive/bus/orders/*.msg; do
-            close_order "$file"
-          done
-
-          for file in hive/bus/crosstalk/*.msg; do
-            close_crosstalk "$file"
-          done
-
-          if git status --porcelain               hive/bus/orders hive/bus/crosstalk hive/bus/messages hive/bus/uplink hive/bus/acks               hive/bus/closed hive/bus/pending hive/warehouse/communications hive/work/records               | grep -q .; then
-            git config user.name "Function Land Closure Clerk"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A               hive/bus/orders hive/bus/crosstalk hive/bus/messages hive/bus/uplink hive/bus/acks               hive/bus/closed hive/bus/pending hive/warehouse/communications hive/work/records
-            git commit -m "Close and warehouse Function Land communication loops"
-            git pull --rebase origin main
-            git push origin main
-          fi
-
-          {
-            echo "## Function Land Closure Clerk"
-            echo
-            echo "Bus messages are transport copies; the work master stays with the work record."
-            echo
-            echo "DONE is not terminal. CLOSED + warehouse manifest is terminal."
-            echo
-            echo "Closed transport copies are physically retired from live baskets into warehouse evidence."
+            echo "MASTER stays with work."
+            echo "COMMUNICATION copies travel."
+            echo "Correlated returns marry back to the master."
+            echo "CLOSED copies retire into warehouse evidence."
           } >> "$GITHUB_STEP_SUMMARY"
