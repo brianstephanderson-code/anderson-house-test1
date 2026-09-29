@@ -1,0 +1,217 @@
+name: Function Land Basket Poller
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: function-land-basket-poller
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Authenticate to inspect Google function
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Resolve Google endpoint
+        id: google-endpoint
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          test -n "$URI"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Mint Google runtime token
+        id: google-idtoken
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ steps.google-endpoint.outputs.uri }}
+          create_credentials_file: false
+
+      - name: Check ORDERS and CROSSTALK baskets
+        env:
+          GOOGLE_URI: ${{ steps.google-endpoint.outputs.uri }}
+          GOOGLE_ID_TOKEN: ${{ steps.google-idtoken.outputs.id_token }}
+          AWS_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+          CLOUDFLARE_URI: https://ah-word-count.brian-steph-anderson.workers.dev
+        run: |
+          set -euo pipefail
+
+          mkdir -p hive/bus/orders hive/bus/crosstalk hive/bus/uplink hive/bus/acks
+
+          value_of() {
+            local key="$1" file="$2"
+            awk -F= -v k="$key" '$1==k {sub(/^[^=]*=/,""); print; exit}' "$file"
+          }
+
+          invoke_provider() {
+            local provider="$1" text="$2"
+            case "$provider" in
+              aws)
+                local tmp
+                tmp="$(mktemp)"
+                aws lambda invoke                   --function-name "$AWS_FUNCTION_NAME"                   --cli-binary-format raw-in-base64-out                   --payload "$(jq -nc --arg text "$text" '{text:$text}')"                   "$tmp" >/dev/null
+                jq -c 'if (.body|type)=="string" then (.body|fromjson) else . end' "$tmp"
+                rm -f "$tmp"
+                ;;
+              google)
+                curl --fail --silent --show-error --get                   -H "Authorization: Bearer $GOOGLE_ID_TOKEN"                   --data-urlencode "text=$text"                   "$GOOGLE_URI" | jq -c .
+                ;;
+              cloudflare)
+                curl --fail --silent --show-error --get                   --data-urlencode "text=$text"                   "$CLOUDFLARE_URI" | jq -c .
+                ;;
+              *)
+                return 2
+                ;;
+            esac
+          }
+
+          target_matches() {
+            local to
+            to="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
+            local provider
+            provider="$(echo "$2" | tr '[:lower:]' '[:upper:]')"
+            [ "$to" = "ALL" ] || [ "$to" = "$provider" ]
+          }
+
+          process_order() {
+            local file="$1"
+            local id to payload provider result out
+            id="$(value_of MESSAGE_ID "$file")"
+            to="$(value_of TO "$file")"
+            payload="$(value_of PAYLOAD "$file")"
+            [ -n "$id" ] || id="$(basename "$file" .msg)"
+            [ -n "$to" ] || return 0
+
+            for provider in aws google cloudflare; do
+              target_matches "$to" "$provider" || continue
+              out="hive/bus/uplink/$id.$provider.uplink"
+              [ -e "$out" ] && continue
+
+              if result="$(invoke_provider "$provider" "$payload")"; then
+                {
+                  echo "MESSAGE_ID=$id"
+                  echo "CHANNEL=UPLINK"
+                  echo "FROM=$(echo "$provider" | tr '[:lower:]' '[:upper:]')"
+                  echo "TO=MANAGEMENT"
+                  echo "TYPE=ORDER_RESULT"
+                  echo "STATUS=DONE"
+                  echo "CORRELATION_ID=$id"
+                  echo "RESULT_JSON=$result"
+                  echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                } > "$out"
+              else
+                {
+                  echo "MESSAGE_ID=$id"
+                  echo "CHANNEL=UPLINK"
+                  echo "FROM=$(echo "$provider" | tr '[:lower:]' '[:upper:]')"
+                  echo "TO=MANAGEMENT"
+                  echo "TYPE=ORDER_RESULT"
+                  echo "STATUS=BLOCKED"
+                  echo "CORRELATION_ID=$id"
+                  echo "REASON=PROVIDER_INVOKE_FAILED"
+                  echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                } > "$out"
+              fi
+            done
+          }
+
+          process_crosstalk() {
+            local file="$1"
+            local id to payload provider result ack
+            id="$(value_of MESSAGE_ID "$file")"
+            to="$(value_of TO "$file")"
+            payload="$(value_of PAYLOAD "$file")"
+            [ -n "$id" ] || id="$(basename "$file" .msg)"
+            [ -n "$to" ] || return 0
+
+            for provider in aws google cloudflare; do
+              target_matches "$to" "$provider" || continue
+              ack="hive/bus/acks/$id.$provider.ack"
+              [ -e "$ack" ] && continue
+
+              if result="$(invoke_provider "$provider" "$payload")"; then
+                {
+                  echo "MESSAGE_ID=$id"
+                  echo "CHANNEL=CROSSTALK"
+                  echo "FROM=$(echo "$provider" | tr '[:lower:]' '[:upper:]')"
+                  echo "TO=$(value_of FROM "$file")"
+                  echo "TYPE=ACK"
+                  echo "STATUS=DONE"
+                  echo "CORRELATION_ID=$id"
+                  echo "RESULT_JSON=$result"
+                  echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                } > "$ack"
+              else
+                {
+                  echo "MESSAGE_ID=$id"
+                  echo "CHANNEL=UPLINK"
+                  echo "FROM=$(echo "$provider" | tr '[:lower:]' '[:upper:]')"
+                  echo "TO=MANAGEMENT"
+                  echo "TYPE=CROSSTALK_EXCEPTION"
+                  echo "STATUS=BLOCKED"
+                  echo "CORRELATION_ID=$id"
+                  echo "REASON=PROVIDER_INVOKE_FAILED"
+                  echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                } > "hive/bus/uplink/$id.$provider.exception.uplink"
+              fi
+            done
+          }
+
+          shopt -s nullglob
+          for file in hive/bus/orders/*.msg; do
+            process_order "$file"
+          done
+          for file in hive/bus/crosstalk/*.msg; do
+            process_crosstalk "$file"
+          done
+
+          if git status --porcelain hive/bus/acks hive/bus/uplink | grep -q .; then
+            git config user.name "Function Land Basket Poller"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add hive/bus/acks hive/bus/uplink
+            git commit -m "Function Land basket returns"
+            git pull --rebase origin main
+            git push origin main
+          fi
+
+          {
+            echo "## Function Land Basket Poller"
+            echo
+            echo "Checked ORDERS and CROSSTALK baskets."
+            echo
+            echo "Routine CROSSTALK returns stay in ACKs."
+            echo
+            echo "ORDERS results and unresolved exceptions rise through UPLINK."
+          } >> "$GITHUB_STEP_SUMMARY"
