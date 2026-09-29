@@ -20,6 +20,10 @@ on:
           - aws
           - google
 
+concurrency:
+  group: function-lane-deploy
+  cancel-in-progress: false
+
 permissions:
   contents: read
   actions: read
