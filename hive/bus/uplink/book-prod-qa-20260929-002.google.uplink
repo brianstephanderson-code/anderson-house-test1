@@ -1,0 +1,10 @@
+MESSAGE_ID=book-prod-qa-20260929-002
+CHANNEL=UPLINK
+FROM=GOOGLE
+TO=MANAGEMENT
+TYPE=ORDER_RESULT
+STATUS=DONE
+CORRELATION_ID=book-prod-qa-20260929-002
+RESULT_JSON={"words":12,"sentences":1,"paragraphs":1,"terminalPunctuation":true,"particleRoute":{"particle":"terminal_punctuation","returnsTo":"text_profile","backupTo":"function_lane_checkpoint","crosstalk":["terminal_punctuation_verifier"]},"crosstalkVerification":{"by":"terminal_punctuation_verifier","passed":true},"uplink":{"via":"primary","to":"text_profile"},"characters":52,"providerHive":{"provider":"google","mode":"fanout-join","workerCount":5,"workers":["word_count","sentence_count","paragraph_count","terminal_punctuation","character_count"],"elapsedMs":0}}
+RECOVERY=3_LOCAL_ATTEMPTS
+UTC=2026-09-29T20:39:35Z
