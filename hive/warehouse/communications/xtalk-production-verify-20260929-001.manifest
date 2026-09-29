@@ -1,0 +1,7 @@
+MESSAGE_ID=xtalk-production-verify-20260929-001
+KIND=CROSSTALK
+STATUS=CLOSED
+SOURCE=hive/bus/crosstalk/xtalk-production-verify-20260929-001.msg
+RETURNS=hive/bus/acks/xtalk-production-verify-20260929-001.google.ack
+CORRELATION_ID=xtalk-production-verify-20260929-001
+CLOSED_UTC=2026-09-29T15:02:25Z

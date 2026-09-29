@@ -1,0 +1,7 @@
+MESSAGE_ID=production-policy-20260929-007
+KIND=ORDER
+STATUS=CLOSED
+SOURCE=hive/bus/orders/production-policy-20260929-007.msg
+RETURNS=hive/bus/uplink/production-policy-20260929-007.google.uplink
+CORRELATION_ID=production-policy-20260929-007
+CLOSED_UTC=2026-09-29T15:02:25Z

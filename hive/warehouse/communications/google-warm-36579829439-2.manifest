@@ -1,0 +1,7 @@
+MESSAGE_ID=google-warm-36579829439-2
+KIND=ORDER
+STATUS=CLOSED
+SOURCE=hive/bus/orders/google-warm-36579829439-2.msg
+RETURNS=hive/bus/uplink/google-warm-36579829439-2.google.uplink
+CORRELATION_ID=google-warm-36579829439-2
+CLOSED_UTC=2026-09-29T15:02:25Z

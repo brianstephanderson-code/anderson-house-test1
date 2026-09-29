@@ -1,0 +1,7 @@
+MESSAGE_ID=real-use-20260929-001
+KIND=ORDER
+STATUS=CLOSED
+SOURCE=hive/bus/orders/real-use-20260929-001.msg
+RETURNS=hive/bus/uplink/real-use-20260929-001.aws.uplink,hive/bus/uplink/real-use-20260929-001.google.uplink,hive/bus/uplink/real-use-20260929-001.cloudflare.uplink
+CORRELATION_ID=real-use-20260929-001
+CLOSED_UTC=2026-09-29T15:02:25Z
