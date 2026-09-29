@@ -16,7 +16,7 @@ jobs:
   runtime-feed:
     runs-on: ubuntu-latest
     steps:
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to inspect Google function
         uses: google-github-actions/auth@v3
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
@@ -26,7 +26,8 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Feed existing Google hive
+      - name: Resolve Google function endpoint
+        id: endpoint
         env:
           PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           REGION: ${{ vars.GCP_REGION || 'us-east1' }}
@@ -34,10 +35,28 @@ jobs:
         run: |
           URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
           test -n "$URI"
-          TOKEN="$(gcloud auth print-identity-token --audiences="$URI")"
-          test -n "$TOKEN"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
 
-          FIRST="$(curl --fail --silent --show-error --get -H "Authorization: Bearer $TOKEN" --data-urlencode 'text=Many hands work. Bees return!' "$URI")"
+      - name: Mint identity token for Google runtime
+        id: idtoken
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ steps.endpoint.outputs.uri }}
+          create_credentials_file: false
+
+      - name: Feed existing Google hive
+        env:
+          URI: ${{ steps.endpoint.outputs.uri }}
+          ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
+        run: |
+          test -n "$URI"
+          test -n "$ID_TOKEN"
+
+          FIRST="$(curl --fail --silent --show-error --get             -H "Authorization: Bearer $ID_TOKEN"             --data-urlencode 'text=Many hands work. Bees return!'             "$URI")"
           echo "$FIRST" | jq -e '.words == 5 and .sentences == 2 and .paragraphs == 1 and .terminalPunctuation == true' >/dev/null
 
           : > /tmp/results.tsv
@@ -49,7 +68,7 @@ jobs:
 
             seq "$COUNT" | xargs -I{} -P "$PARALLEL" sh -c '
               curl --silent --show-error --get                 --output /dev/null                 --write-out "%{http_code}\n"                 -H "Authorization: Bearer $1"                 --data-urlencode "text=Many hands work. Bees return!"                 "$0"
-            ' "$URI" "$TOKEN" > /tmp/status.txt
+            ' "$URI" "$ID_TOKEN" > /tmp/status.txt
 
             END="$(date +%s%N)"
             MS="$(( (END - START) / 1000000 ))"
