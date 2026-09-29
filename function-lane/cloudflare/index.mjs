@@ -1,4 +1,6 @@
 import { resultFor } from "./core/word_count.mjs";
+import { sentenceResultFor } from "./core/sentence_count.mjs";
+import { paragraphResultFor } from "./core/paragraph_count.mjs";
 
 export default {
   async fetch(request) {
@@ -10,6 +12,10 @@ export default {
       text = new URL(request.url).searchParams.get("text") ?? "";
     }
 
-    return Response.json(resultFor(text));
+    return Response.json({
+      ...resultFor(text),
+      ...sentenceResultFor(text),
+      ...paragraphResultFor(text),
+    });
   },
 };
