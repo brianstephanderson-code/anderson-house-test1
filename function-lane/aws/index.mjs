@@ -1,7 +1,4 @@
-import { resultFor } from "./core/word_count.mjs";
-import { sentenceResultFor } from "./core/sentence_count.mjs";
-import { paragraphResultFor } from "./core/paragraph_count.mjs";
-import { punctuationResultFor } from "./core/terminal_punctuation.mjs";
+import { providerHiveProfile } from "./core/provider_hive.mjs";
 
 export const handler = async (event = {}) => {
   let body = event;
@@ -13,13 +10,7 @@ export const handler = async (event = {}) => {
     }
   }
 
-  const text = body?.text ?? "";
-  const result = {
-    ...resultFor(text),
-    ...sentenceResultFor(text),
-    ...paragraphResultFor(text),
-    ...punctuationResultFor(text),
-  };
+  const result = await providerHiveProfile(body?.text ?? "", "aws");
 
   return {
     statusCode: 200,
