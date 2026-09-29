@@ -1,0 +1,32 @@
+name: The Amigos - Gitty Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "function-lane/core/**"
+      - "function-lane/test/**"
+      - ".github/workflows/gitty-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitty-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Run shared book-function tests
+        run: node --test function-lane/test/*.test.mjs
+      - name: Run Gitty fanout-join worker
+        run: |
+          node --input-type=module <<'NODE'
+          import { providerHiveProfile } from './function-lane/core/provider_hive.mjs';
+          const text = 'Many hands work. Bees return!';
+          const result = await providerHiveProfile(text, 'gitty');
+          if (result.words !== 5 || result.sentences !== 2 || result.paragraphs !== 1 || result.terminalPunctuation !== true || result.characters !== text.length || result.lines !== 1 || result.blankLines !== 0) process.exit(1);
+          if (result.providerHive.provider !== 'gitty' || result.providerHive.mode !== 'fanout-join' || result.providerHive.workerCount !== 7) process.exit(1);
+          console.log(JSON.stringify(result));
+          NODE
