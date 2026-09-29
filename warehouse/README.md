@@ -11,9 +11,14 @@ Rule:
 Current shelves:
 1. Text Measurement
 2. Text Checking
-3. Routing
-4. Communications
-5. Orchestration
+3. Verification
+4. Routing
+5. Communications
+6. Orchestration
+
+Important distinction:
+- CHECKING = inspect the original material.
+- VERIFICATION = independently check another function's finding/output.
 
 Status words:
 - TEST-PRESENT = a matching test file exists in the repository.
