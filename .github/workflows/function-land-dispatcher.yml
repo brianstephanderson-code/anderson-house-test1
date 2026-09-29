@@ -1,4 +1,4 @@
-name: Function Land Dispatcher
+name: The 3 Amigos Dispatcher
 
 on:
   schedule:
@@ -188,10 +188,10 @@ jobs:
             } > "hive/bus/orders/$MESSAGE_ID.msg"
           done
 
-          git config user.name "Function Land Dispatcher"
+          git config user.name "The 3 Amigos Dispatcher"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add hive/bus/orders
-          git commit -m "Publish Function Land orders for run $GITHUB_RUN_ID"
+          git commit -m "Publish The 3 Amigos orders for run $GITHUB_RUN_ID"
           git pull --rebase origin main
           git push origin main
 
@@ -288,12 +288,12 @@ jobs:
           } > hive/load-ramp/state.env
 
           git add hive/bus/uplink hive/load-ramp/state.env
-          git commit -m "Publish Function Land uplinks for run $GITHUB_RUN_ID"
+          git commit -m "Publish The 3 Amigos uplinks for run $GITHUB_RUN_ID"
           git pull --rebase origin main
           git push origin main
 
           {
-            echo "## Function Land Health-Aware Dispatcher"
+            echo "## The 3 Amigos Health-Aware Dispatcher"
             echo
             echo "| Item | Result |"
             echo "|---|---:|"

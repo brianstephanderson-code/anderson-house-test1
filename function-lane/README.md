@@ -1,4 +1,4 @@
-# Anderson House Function Lane
+# Anderson House The 3 Amigos
 
 One tiny function, one source of truth, three cloud adapters.
 
@@ -55,7 +55,7 @@ No service-account JSON key is required when WIF is used.
 
 The workflow is manual at first so an unconfigured cloud cannot fail on every push.
 
-GitHub -> Actions -> **Function Lane Deploy** -> **Run workflow**
+GitHub -> Actions -> **The 3 Amigos Deploy** -> **Run workflow**
 
 Choose `all` to deploy the same function to all three providers.
 

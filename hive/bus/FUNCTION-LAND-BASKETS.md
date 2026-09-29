@@ -1,6 +1,6 @@
-# Function Land communication baskets
+# The 3 Amigos communication baskets
 
-Function Land reuses the Anderson House three-lane bus.
+The 3 Amigos reuses the Anderson House three-lane bus.
 
 ## 1. ORDERS — management visible
 

@@ -1,4 +1,4 @@
-name: Function Land Native Health Board
+name: The 3 Amigos Native Health Board
 # retest native telemetry after IAM propagation
 
 on:
@@ -213,7 +213,7 @@ jobs:
         run: |
           {
             echo "FUNCTION_LAND_NATIVE_BOARD aws=$AWS_STATE google=$GOOGLE_STATE cloudflare=$CLOUDFLARE_STATE"
-            echo "## Function Land native health board"
+            echo "## The 3 Amigos native health board"
             echo
             echo "| Provider reader | State |"
             echo "|---|---|"

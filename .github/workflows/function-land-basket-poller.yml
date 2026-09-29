@@ -1,4 +1,4 @@
-name: Function Land Basket Poller
+name: The 3 Amigos Basket Poller
 
 on:
   workflow_dispatch:
@@ -297,16 +297,16 @@ jobs:
           done
 
           if git status --porcelain hive/bus/acks hive/bus/uplink hive/work/records | grep -q .; then
-            git config user.name "Function Land Basket Poller"
+            git config user.name "The 3 Amigos Basket Poller"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add hive/bus/acks hive/bus/uplink hive/work/records
-            git commit -m "Function Land basket returns"
+            git commit -m "The 3 Amigos basket returns"
             git pull --rebase origin main
             git push origin main
           fi
 
           {
-            echo "## Function Land Basket Poller"
+            echo "## The 3 Amigos Basket Poller"
             echo
             echo "Checked ORDERS and CROSSTALK baskets."
             echo

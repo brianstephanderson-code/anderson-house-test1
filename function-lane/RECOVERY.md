@@ -1,4 +1,4 @@
-# Function Land Recovery Kit
+# The 3 Amigos Recovery Kit
 
 Purpose: restore one broken cloud doorway without rebuilding the whole system.
 
@@ -26,8 +26,8 @@ Recovery:
 1. Confirm the GitHub variables still exist.
 2. Confirm the deploy role still trusts GitHub OIDC for this repository and main branch.
 3. Confirm Lambda Ahhello exists in the configured region.
-4. Re-run Function Lane Deploy targeting AWS.
-5. Run Function Land Runtime Feed and require AWS runtime success.
+4. Re-run The 3 Amigos Deploy targeting AWS.
+5. Run The 3 Amigos Runtime Feed and require AWS runtime success.
 
 Known non-blocking gap:
 - CloudWatch metric-read permission is optional telemetry, not required for Lambda runtime.
@@ -54,8 +54,8 @@ Recovery:
 2. Confirm the Workload Identity Provider exists.
 3. Confirm the service account still exists and accepts the GitHub identity path used by the workflow.
 4. Confirm Gen2 function ahhello exists in the configured region.
-5. Re-run Function Lane Deploy targeting Google.
-6. Run Google Runtime Feed or Function Land Runtime Feed and require authenticated runtime success.
+5. Re-run The 3 Amigos Deploy targeting Google.
+6. Run Google Runtime Feed or The 3 Amigos Runtime Feed and require authenticated runtime success.
 
 Important:
 - Google deployment normally takes about 45-50 seconds even when runtime code is tiny.
@@ -66,7 +66,7 @@ Important:
 
 Known components:
 - Worker: ah-word-count
-- Runtime endpoint is defined in the Function Land workflows.
+- Runtime endpoint is defined in the The 3 Amigos workflows.
 
 GitHub secrets used:
 - CLOUDFLARE_API_TOKEN
@@ -75,8 +75,8 @@ GitHub secrets used:
 Recovery:
 1. Confirm both GitHub secrets still exist.
 2. Confirm worker ah-word-count still exists.
-3. Re-run Function Lane Deploy targeting Cloudflare.
-4. Run Function Land Runtime Feed and require Cloudflare runtime success.
+3. Re-run The 3 Amigos Deploy targeting Cloudflare.
+4. Run The 3 Amigos Runtime Feed and require Cloudflare runtime success.
 
 ## GitHub control layer
 
@@ -112,8 +112,8 @@ If runtime fails but deployment is green:
 ## Verified recovery baseline
 
 - Google runtime-only feed: 10 -> 50 -> 100 requests, success.
-- Function Land Runtime Feed: AWS + Google + Cloudflare all successfully processed 160 runtime jobs each without redeployment.
-- Function Land Dispatcher: 30 parcels, 10 per provider, all returned, one joined DONE.
+- The 3 Amigos Runtime Feed: AWS + Google + Cloudflare all successfully processed 160 runtime jobs each without redeployment.
+- The 3 Amigos Dispatcher: 30 parcels, 10 per provider, all returned, one joined DONE.
 
 ## Senior rule
 

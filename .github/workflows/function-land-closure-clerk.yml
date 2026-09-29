@@ -1,11 +1,11 @@
-name: Function Land Closure Clerk
+name: The 3 Amigos Closure Clerk
 
 on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - "Function Land Basket Poller"
-      - "Function Land Dispatcher"
+      - "The 3 Amigos Basket Poller"
+      - "The 3 Amigos Dispatcher"
       - "Google Two-Job Warm Probe"
     types:
       - completed
@@ -350,16 +350,16 @@ jobs:
           done
 
           if git status --porcelain hive/bus hive/warehouse/communications hive/work/records | grep -q .; then
-            git config user.name "Function Land Closure Clerk"
+            git config user.name "The 3 Amigos Closure Clerk"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A hive/bus hive/warehouse/communications hive/work/records
-            git commit -m "Close and warehouse Function Land communication loops"
+            git commit -m "Close and warehouse The 3 Amigos communication loops"
             git pull --rebase origin main
             git push origin main
           fi
 
           {
-            echo "## Function Land Closure Clerk"
+            echo "## The 3 Amigos Closure Clerk"
             echo
             echo "MASTER stays with work."
             echo "COMMUNICATION copies travel."

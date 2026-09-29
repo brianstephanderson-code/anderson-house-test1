@@ -1,8 +1,8 @@
-# Function Land basket worker loop
+# The 3 Amigos basket worker loop
 
 The cloud functions are serverless and sleep between invocations, so GitHub Actions supplies the periodic wake-up.
 
-Every five minutes, **Function Land Basket Poller** checks:
+Every five minutes, **The 3 Amigos Basket Poller** checks:
 
 - `hive/bus/orders/*.msg`
 - `hive/bus/crosstalk/*.msg`

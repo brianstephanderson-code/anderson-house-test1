@@ -1,4 +1,4 @@
-name: Function Land Runtime Feed
+name: The 3 Amigos Runtime Feed
 
 on:
   push:
@@ -206,14 +206,14 @@ jobs:
       - google-runtime
     runs-on: ubuntu-latest
     steps:
-      - name: Function Land runtime state
+      - name: The 3 Amigos runtime state
         env:
           CLOUDFLARE_STATE: ${{ needs.cloudflare-runtime.result }}
           AWS_STATE: ${{ needs.aws-runtime.result }}
           GOOGLE_STATE: ${{ needs.google-runtime.result }}
         run: |
           {
-            echo "## Function Land Runtime"
+            echo "## The 3 Amigos Runtime"
             echo
             echo "| Provider | State |"
             echo "|---|---|"

@@ -1,5 +1,5 @@
 # recovery-proof refresh
-name: Function Land Flow Board
+name: The 3 Amigos Flow Board
 
 on:
   workflow_dispatch:
