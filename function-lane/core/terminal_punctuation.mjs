@@ -1,4 +1,4 @@
-import { crosstalkEnvelope, routeFor } from "./particle_route.mjs";
+import { crosstalkEnvelope, routeFor, uplinkFor } from "./particle_route.mjs";
 import { verifyTerminalPunctuation } from "./terminal_punctuation_verifier.mjs";
 
 export function hasTerminalPunctuation(text = "") {
@@ -16,6 +16,7 @@ export function punctuationResultFor(text = "") {
   );
 
   const verification = verifyTerminalPunctuation(message.payload);
+  const uplink = uplinkFor("terminal_punctuation");
 
   return {
     terminalPunctuation,
@@ -25,8 +26,8 @@ export function punctuationResultFor(text = "") {
     },
     crosstalkVerification: {
       by: message.to,
-      returnTo: message.returnTo,
       passed: verification.passed,
     },
+    uplink,
   };
 }

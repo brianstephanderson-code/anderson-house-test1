@@ -17,12 +17,15 @@ test("verifier catches a false claim", () => {
   );
 });
 
-test("micro particle uses only its approved crosstalk verifier", () => {
+test("micro particle verifies sideways then returns by primary uplink", () => {
   const result = punctuationResultFor("Many hands work.");
   assert.equal(result.terminalPunctuation, true);
   assert.deepEqual(result.crosstalkVerification, {
     by: "terminal_punctuation_verifier",
-    returnTo: "text_profile",
     passed: true,
+  });
+  assert.deepEqual(result.uplink, {
+    via: "primary",
+    to: "text_profile",
   });
 });
