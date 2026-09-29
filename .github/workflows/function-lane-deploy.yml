@@ -327,3 +327,80 @@ jobs:
             echo
             echo "_CloudWatch metrics can arrive a little after the invocation, so very fresh activity may not appear immediately._"
           } >> "$GITHUB_STEP_SUMMARY"
+
+
+  google-usage:
+    if: ${{ always() && needs.provider-usage.result == 'success' }}
+    needs:
+      - provider-usage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud for telemetry
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Read Google Function Land consumption
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          set +e
+          FUNCTION_JSON="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format=json 2>/tmp/gcp-function-error)"
+          RC=$?
+          set -e
+
+          if [ "$RC" -ne 0 ]; then
+            {
+              echo "## Google Consumption"
+              echo
+              echo "Google telemetry: **not readable with the current service account yet**"
+              echo
+              echo "This is a telemetry-permission gap, not a Function Lane failure."
+            } >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/gcp-function-error
+            exit 0
+          fi
+
+          SERVICE_URI="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.uri // empty')"
+          AVAILABLE_MEM="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.availableMemory // "unknown"')"
+          MAX_INSTANCES="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.maxInstanceCount // "provider default"')"
+          MIN_INSTANCES="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.minInstanceCount // 0')"
+
+          {
+            echo "## Google Consumption"
+            echo
+            echo "| Gauge | Value |"
+            echo "|---|---:|"
+            echo "| Configured memory | $AVAILABLE_MEM |"
+            echo "| Minimum instances | $MIN_INSTANCES |"
+            echo "| Maximum instances | $MAX_INSTANCES |"
+            echo "| Function endpoint discovered | $([ -n "$SERVICE_URI" ] && echo yes || echo no) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -n "$SERVICE_URI" ]; then
+            set +e
+            METRICS="$(curl --silent --show-error --get               --output /tmp/google-live-body.json               --write-out '%{time_total}\t%{size_download}\t%{http_code}'               --data-urlencode 'text=Many hands work. Bees return!'               "$SERVICE_URI")"
+            CURL_RC=$?
+            set -e
+
+            if [ "$CURL_RC" -eq 0 ]; then
+              IFS=$'\t' read -r G_SECONDS G_BYTES G_HTTP <<< "$METRICS"
+              {
+                echo
+                echo "### Google live probe"
+                echo
+                echo "| Probe | Value |"
+                echo "|---|---:|"
+                echo "| HTTP | $G_HTTP |"
+                echo "| Response seconds | $G_SECONDS |"
+                echo "| Response bytes | $G_BYTES |"
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
