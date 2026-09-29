@@ -49,6 +49,7 @@ jobs:
           cp function-lane/core/sentence_count.mjs function-lane/cloudflare/core/sentence_count.mjs
           cp function-lane/core/paragraph_count.mjs function-lane/cloudflare/core/paragraph_count.mjs
           cp function-lane/core/terminal_punctuation.mjs function-lane/cloudflare/core/terminal_punctuation.mjs
+          cp function-lane/core/particle_route.mjs function-lane/cloudflare/core/particle_route.mjs
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:
@@ -74,6 +75,7 @@ jobs:
           cp function-lane/core/sentence_count.mjs .build/aws/core/sentence_count.mjs
           cp function-lane/core/paragraph_count.mjs .build/aws/core/paragraph_count.mjs
           cp function-lane/core/terminal_punctuation.mjs .build/aws/core/terminal_punctuation.mjs
+          cp function-lane/core/particle_route.mjs .build/aws/core/particle_route.mjs
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -107,6 +109,7 @@ jobs:
           cp function-lane/core/sentence_count.mjs .build/google/core/sentence_count.mjs
           cp function-lane/core/paragraph_count.mjs .build/google/core/paragraph_count.mjs
           cp function-lane/core/terminal_punctuation.mjs .build/google/core/terminal_punctuation.mjs
+          cp function-lane/core/particle_route.mjs .build/google/core/particle_route.mjs
       - name: Authenticate to Google Cloud with WIF
         uses: google-github-actions/auth@v3
         with:
