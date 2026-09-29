@@ -1,0 +1,100 @@
+name: Function Lane Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Cloud target
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - cloudflare
+          - aws
+          - google
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Test parent function
+        run: node --test function-lane/test/word_count.test.mjs
+
+  cloudflare:
+    if: ${{ inputs.target == 'all' || inputs.target == 'cloudflare' }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Stage shared core
+        run: |
+          mkdir -p function-lane/cloudflare/core
+          cp function-lane/core/word_count.mjs function-lane/cloudflare/core/word_count.mjs
+      - name: Deploy Cloudflare Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: function-lane/cloudflare
+
+  aws:
+    if: ${{ inputs.target == 'all' || inputs.target == 'aws' }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Stage Lambda package
+        run: |
+          rm -rf .build/aws
+          mkdir -p .build/aws/core
+          cp function-lane/aws/index.mjs .build/aws/index.mjs
+          cp function-lane/core/word_count.mjs .build/aws/core/word_count.mjs
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: Deploy Lambda
+        uses: aws-actions/aws-lambda-deploy@v1.1.1
+        with:
+          function-name: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+          code-artifacts-dir: .build/aws
+          handler: index.handler
+          runtime: nodejs22.x
+          role: ${{ vars.AWS_LAMBDA_EXECUTION_ROLE }}
+
+  google:
+    if: ${{ inputs.target == 'all' || inputs.target == 'google' }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Stage Google function
+        run: |
+          rm -rf .build/google
+          mkdir -p .build/google/core
+          cp function-lane/google/index.mjs .build/google/index.mjs
+          cp function-lane/google/package.json .build/google/package.json
+          cp function-lane/core/word_count.mjs .build/google/core/word_count.mjs
+      - name: Authenticate to Google Cloud with WIF
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - name: Deploy Google function
+        id: deploy-google
+        uses: google-github-actions/deploy-cloud-functions@v4
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          region: ${{ vars.GCP_REGION || 'us-east1' }}
+          name: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+          runtime: nodejs22
+          entry_point: wordCount
+          source_dir: .build/google

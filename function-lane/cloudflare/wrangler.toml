@@ -1,0 +1,3 @@
+name = "ah-word-count"
+main = "index.mjs"
+compatibility_date = "2026-09-28"

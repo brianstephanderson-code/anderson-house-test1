@@ -1,0 +1,9 @@
+{
+  "name": "ah-word-count-google",
+  "private": true,
+  "type": "module",
+  "main": "index.mjs",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.0"
+  }
+}
