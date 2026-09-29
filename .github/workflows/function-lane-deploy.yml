@@ -190,21 +190,25 @@ jobs:
       - google
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/auth@v3
+      - name: Authenticate to Google Cloud with WIF
+        id: google-auth
+        uses: google-github-actions/auth@v3
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          token_format: access_token
+          token_format: id_token
+          id_token_audience: https://${{ vars.GCP_REGION || 'us-east1' }}-${{ vars.GCP_PROJECT_ID }}.cloudfunctions.net/${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
       - name: Live Google check
         env:
           FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
           REGION: ${{ vars.GCP_REGION || 'us-east1' }}
           PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          GOOGLE_ID_TOKEN: ${{ steps.google-auth.outputs.id_token }}
         run: |
           URL="https://${REGION}-${PROJECT_ID}.cloudfunctions.net/${FUNCTION_NAME}"
           BODY="$(curl --fail --silent --show-error \
-            --header "Authorization: Bearer ${CLOUDSDK_AUTH_ACCESS_TOKEN}" \
+            --header "Authorization: Bearer ${GOOGLE_ID_TOKEN}" \
             --get --data-urlencode 'text=Many hands work. Bees return!' "$URL")"
           echo "$BODY"
           node -e '
