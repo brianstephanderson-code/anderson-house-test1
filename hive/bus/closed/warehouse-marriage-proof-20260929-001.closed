@@ -1,0 +1,6 @@
+MESSAGE_ID=warehouse-marriage-proof-20260929-001
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/warehouse-marriage-proof-20260929-001.record
+WAREHOUSE=hive/warehouse/communications/warehouse-marriage-proof-20260929-001.manifest
+CLOSED_UTC=2026-09-29T15:25:58Z
