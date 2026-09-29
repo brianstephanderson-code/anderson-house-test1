@@ -2,6 +2,13 @@ name: Function Land Closure Clerk
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Function Land Basket Poller"
+      - "Function Land Dispatcher"
+      - "Google Two-Job Warm Probe"
+    types:
+      - completed
   schedule:
     - cron: "*/5 * * * *"
   push:
