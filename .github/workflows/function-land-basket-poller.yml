@@ -17,7 +17,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: function-land-basket-poller
+  group: function-land-bus-writer
   cancel-in-progress: false
 
 jobs:

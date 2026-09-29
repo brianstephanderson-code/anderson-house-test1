@@ -19,7 +19,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: function-land-closure-clerk
+  group: function-land-bus-writer
   cancel-in-progress: false
 
 jobs:
@@ -167,13 +167,7 @@ jobs:
               fi
             done
             if [ ! -e hive/warehouse/communications/orphans/README.md ]; then
-              cat > hive/warehouse/communications/orphans/README.md <<'EOF'
-# Orphan transport evidence
-
-These files are retired communication artifacts that had no valid MESSAGE_ID and therefore cannot be correlated to a master work record.
-
-They are preserved as historical evidence but are not live basket work.
-EOF
+              printf '%s\n'                 '# Orphan transport evidence'                 ''                 'These files are retired communication artifacts that had no valid MESSAGE_ID and therefore cannot be correlated to a master work record.'                 ''                 'They are preserved as historical evidence but are not live basket work.'                 > hive/warehouse/communications/orphans/README.md
             fi
           }
 
