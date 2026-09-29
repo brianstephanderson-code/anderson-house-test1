@@ -1,0 +1,130 @@
+name: Function Land Dispatcher
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/function-land-dispatcher.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Authenticate to inspect Google function
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Resolve Google endpoint
+        id: endpoint
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          test -n "$URI"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Mint Google runtime token
+        id: idtoken
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ steps.endpoint.outputs.uri }}
+          create_credentials_file: false
+
+      - name: Dispatch 30 parcels across Function Land
+        env:
+          GOOGLE_URI: ${{ steps.endpoint.outputs.uri }}
+          GOOGLE_ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
+          AWS_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+          CLOUDFLARE_URI: https://ah-word-count.brian-steph-anderson.workers.dev
+        run: |
+          mkdir -p /tmp/function-land-results
+          : > /tmp/routes.tsv
+
+          dispatch_one() {
+            ID="$1"
+            SLOT="$(( (ID - 1) % 3 ))"
+            TEXT="Parcel $ID. Many hands work. Bees return!"
+
+            if [ "$SLOT" -eq 0 ]; then
+              PROVIDER="cloudflare"
+              BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "text=$TEXT"                 "$CLOUDFLARE_URI")"
+              echo "$BODY" | jq -e '.providerHive.provider == "cloudflare"' >/dev/null
+
+            elif [ "$SLOT" -eq 1 ]; then
+              PROVIDER="google"
+              BODY="$(curl --fail --silent --show-error --get                 -H "Authorization: Bearer $GOOGLE_ID_TOKEN"                 --data-urlencode "text=$TEXT"                 "$GOOGLE_URI")"
+              echo "$BODY" | jq -e '.providerHive.provider == "google"' >/dev/null
+
+            else
+              PROVIDER="aws"
+              aws lambda invoke                 --function-name "$AWS_FUNCTION_NAME"                 --cli-binary-format raw-in-base64-out                 --payload "$(jq -nc --arg text "$TEXT" '{text:$text}')"                 "/tmp/function-land-results/aws-$ID.json" >/dev/null
+              node -e '
+                const fs=require("fs");
+                const outer=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
+                const body=typeof outer.body==="string" ? JSON.parse(outer.body) : outer;
+                if (body?.providerHive?.provider !== "aws") process.exit(1);
+              ' "/tmp/function-land-results/aws-$ID.json"
+            fi
+
+            printf '%s\t%s\tOK\n' "$ID" "$PROVIDER" > "/tmp/function-land-results/$ID.tsv"
+          }
+
+          export -f dispatch_one
+          export GOOGLE_URI GOOGLE_ID_TOKEN AWS_FUNCTION_NAME CLOUDFLARE_URI
+
+          START="$(date +%s%N)"
+          seq 30 | xargs -I{} -P 12 bash -c 'dispatch_one "$1"' _ {}
+          END="$(date +%s%N)"
+          WALL_MS="$(( (END - START) / 1000000 ))"
+
+          cat /tmp/function-land-results/*.tsv | sort -n > /tmp/routes.tsv
+
+          TOTAL="$(wc -l < /tmp/routes.tsv)"
+          CF="$(awk -F '\t' '$2=="cloudflare"{n++} END{print n+0}' /tmp/routes.tsv)"
+          GCP="$(awk -F '\t' '$2=="google"{n++} END{print n+0}' /tmp/routes.tsv)"
+          AWS="$(awk -F '\t' '$2=="aws"{n++} END{print n+0}' /tmp/routes.tsv)"
+
+          test "$TOTAL" -eq 30
+          test "$CF" -eq 10
+          test "$GCP" -eq 10
+          test "$AWS" -eq 10
+
+          {
+            echo "## Function Land Dispatcher"
+            echo
+            echo "| Item | Result |"
+            echo "|---|---:|"
+            echo "| Parcels dispatched | $TOTAL |"
+            echo "| Cloudflare returns | $CF |"
+            echo "| Google returns | $GCP |"
+            echo "| AWS returns | $AWS |"
+            echo "| Joined wall time (ms) | $WALL_MS |"
+            echo
+            echo "**Route:** one dispatcher -> three provider hives -> one joined DONE."
+            echo
+            echo "_No provider was redeployed in this workflow._"
+          } >> "$GITHUB_STEP_SUMMARY"
