@@ -33,7 +33,7 @@ jobs:
         run: node --test function-lane/test/*.test.mjs
 
   cloudflare:
-    if: ${{ inputs.target == 'all' || inputs.target == 'cloudflare' }}
+    if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'cloudflare' }}
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +52,7 @@ jobs:
           workingDirectory: function-lane/cloudflare
 
   aws:
-    if: ${{ inputs.target == 'all' || inputs.target == 'aws' }}
+    if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'aws' }}
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -80,7 +80,7 @@ jobs:
           role: ${{ vars.AWS_LAMBDA_EXECUTION_ROLE }}
 
   google:
-    if: ${{ inputs.target == 'all' || inputs.target == 'google' }}
+    if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'google' }}
     needs: test
     runs-on: ubuntu-latest
     steps:
