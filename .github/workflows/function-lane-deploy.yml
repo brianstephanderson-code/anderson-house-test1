@@ -107,6 +107,7 @@ jobs:
           mkdir -p .build/google/core
           cp function-lane/google/index.mjs .build/google/index.mjs
           cp function-lane/google/package.json .build/google/package.json
+          cp function-lane/google/google_hive.mjs .build/google/google_hive.mjs
           cp function-lane/core/word_count.mjs .build/google/core/word_count.mjs
           cp function-lane/core/sentence_count.mjs .build/google/core/sentence_count.mjs
           cp function-lane/core/paragraph_count.mjs .build/google/core/paragraph_count.mjs
