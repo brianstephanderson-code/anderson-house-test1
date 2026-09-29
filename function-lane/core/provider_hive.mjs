@@ -2,12 +2,14 @@ import { resultFor } from "./word_count.mjs";
 import { sentenceResultFor } from "./sentence_count.mjs";
 import { paragraphResultFor } from "./paragraph_count.mjs";
 import { punctuationResultFor } from "./terminal_punctuation.mjs";
+import { characterResultFor } from "./character_count.mjs";
 
 const CHILDREN = Object.freeze([
   ["word_count", resultFor],
   ["sentence_count", sentenceResultFor],
   ["paragraph_count", paragraphResultFor],
   ["terminal_punctuation", punctuationResultFor],
+  ["character_count", characterResultFor],
 ]);
 
 export async function providerHiveProfile(text = "", provider = "provider") {
