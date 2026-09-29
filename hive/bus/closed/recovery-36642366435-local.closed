@@ -1,0 +1,6 @@
+MESSAGE_ID=recovery-36642366435-local
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/recovery-36642366435-local.record
+WAREHOUSE=hive/warehouse/communications/recovery-36642366435-local.manifest
+CLOSED_UTC=2026-09-29T22:56:26Z
