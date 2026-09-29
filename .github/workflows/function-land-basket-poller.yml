@@ -28,6 +28,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Refresh current main before basket work
+        run: git pull --ff-only origin main
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
