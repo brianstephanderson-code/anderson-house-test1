@@ -93,10 +93,10 @@ jobs:
             ID="google-warm-${GITHUB_RUN_ID}-$N"
             TEXT="Google warm probe parcel $N. Bees return!"
             METRICS="$(curl --fail --silent --show-error --get               --output "/tmp/google-probe/body-$N.json"               --write-out '%{time_total} %{http_code}'               -H "Authorization: Bearer $ID_TOKEN"               --data-urlencode "text=$TEXT"               "$URI")"
-            SECONDS="$(echo "$METRICS" | awk '{print $1}')"
+            RESP_SECONDS="$(echo "$METRICS" | awk '{print $1}')"
             HTTP="$(echo "$METRICS" | awk '{print $2}')"
             BODY="$(jq -c . "/tmp/google-probe/body-$N.json")"
-            echo "$N	$SECONDS	$HTTP" >> /tmp/google-probe/times.tsv
+            echo "$N	$RESP_SECONDS	$HTTP" >> /tmp/google-probe/times.tsv
 
             {
               echo "MESSAGE_ID=$ID"
@@ -106,7 +106,7 @@ jobs:
               echo "TYPE=ORDER_RESULT"
               echo "STATUS=DONE"
               echo "CORRELATION_ID=$ID"
-              echo "RESPONSE_SECONDS=$SECONDS"
+              echo "RESPONSE_SECONDS=$RESP_SECONDS"
               echo "HTTP=$HTTP"
               echo "RESULT_JSON=$BODY"
               echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
