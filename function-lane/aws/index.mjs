@@ -1,4 +1,6 @@
 import { resultFor } from "./core/word_count.mjs";
+import { sentenceResultFor } from "./core/sentence_count.mjs";
+import { paragraphResultFor } from "./core/paragraph_count.mjs";
 
 export const handler = async (event = {}) => {
   let body = event;
@@ -10,7 +12,13 @@ export const handler = async (event = {}) => {
     }
   }
 
-  const result = resultFor(body?.text ?? "");
+  const text = body?.text ?? "";
+  const result = {
+    ...resultFor(text),
+    ...sentenceResultFor(text),
+    ...paragraphResultFor(text),
+  };
+
   return {
     statusCode: 200,
     headers: { "content-type": "application/json" },
