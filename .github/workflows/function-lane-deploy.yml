@@ -275,9 +275,11 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ -n "$URI" ]; then
-            METRICS="$(curl --silent --show-error --get \
+            TOKEN="$(gcloud auth print-identity-token --audiences="$URI")"
+            METRICS="$(curl --fail --silent --show-error --get \
               --output /tmp/google-body.json \
               --write-out '%{time_total}\t%{size_download}\t%{http_code}' \
+              -H "Authorization: Bearer $TOKEN" \
               --data-urlencode 'text=Many hands work. Bees return!' \
               "$URI")"
             IFS=$'\t' read -r SECONDS BYTES HTTP <<< "$METRICS"
