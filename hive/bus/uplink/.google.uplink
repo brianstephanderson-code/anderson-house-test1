@@ -1,0 +1,9 @@
+MESSAGE_ID=
+CHANNEL=UPLINK
+FROM=
+TO=MANAGEMENT
+TYPE=ORDER_RESULT
+STATUS=DONE
+CORRELATION_ID=
+RESULT_JSON={"words":7,"sentences":3,"paragraphs":1,"terminalPunctuation":true,"particleRoute":{"particle":"terminal_punctuation","returnsTo":"text_profile","backupTo":"function_lane_checkpoint","crosstalk":["terminal_punctuation_verifier"]},"crosstalkVerification":{"by":"terminal_punctuation_verifier","passed":true},"uplink":{"via":"primary","to":"text_profile"},"providerHive":{"provider":"google","mode":"fanout-join","workerCount":4,"workers":["word_count","sentence_count","paragraph_count","terminal_punctuation"],"elapsedMs":0}}
+UTC=2026-09-29T13:54:12Z
