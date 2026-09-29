@@ -130,13 +130,32 @@ jobs:
             esac
           }
 
+          validate_provider_result() {
+            local provider="$1" result="$2" expected_char="${3:-}"
+            echo "$result" | jq -e --arg provider "$provider" '
+              type == "object"
+              and (.errorType? == null)
+              and (.errorMessage? == null)
+              and (.providerHive.provider? == $provider)
+              and (.providerHive.workers? | type == "array")
+              and ((.providerHive.workers | index("character_count")) != null)
+              and (.characters? | type == "number")
+            ' >/dev/null || return 1
+
+            if [ -n "$expected_char" ]; then
+              [ "$(echo "$result" | jq -r '.characters')" = "$expected_char" ] || return 1
+            fi
+          }
+
           invoke_with_recovery() {
-            local provider="$1" text="$2"
+            local provider="$1" text="$2" expected_char="${3:-}"
             local attempt result
             for attempt in 1 2 3; do
               if result="$(invoke_provider "$provider" "$text")"; then
-                printf '%s' "$result"
-                return 0
+                if validate_provider_result "$provider" "$result" "$expected_char"; then
+                  printf '%s' "$result"
+                  return 0
+                fi
               fi
               sleep "$attempt"
             done
@@ -153,12 +172,32 @@ jobs:
 
           process_order() {
             local file="$1"
-            local id to payload provider result out
+            local id to payload provider result out expected_char
             id="$(value_of MESSAGE_ID "$file")"
             to="$(value_of TO "$file")"
             payload="$(value_of PAYLOAD "$file")"
+            expected_char="$(value_of EXPECTED_CHARACTER_COUNT "$file")"
             [ -n "$id" ] || id="$(basename "$file" .msg)"
             [ -n "$to" ] || return 0
+            grep -q '^PAYLOAD=' "$file" || {
+              for provider in aws google cloudflare; do
+                target_matches "$to" "$provider" || continue
+                out="hive/bus/uplink/$id.$provider.uplink"
+                [ -e "$out" ] && continue
+                {
+                  echo "MESSAGE_ID=$id"
+                  echo "CHANNEL=UPLINK"
+                  echo "FROM=$(echo "$provider" | tr '[:lower:]' '[:upper:]')"
+                  echo "TO=MANAGEMENT"
+                  echo "TYPE=ORDER_RESULT"
+                  echo "STATUS=BLOCKED"
+                  echo "CORRELATION_ID=$id"
+                  echo "REASON=MISSING_PAYLOAD_FIELD"
+                  echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                } > "$out"
+              done
+              return 0
+            }
 
             executor="$(value_of EXECUTOR "$file")"
             if [ "$(echo "$executor" | tr '[:lower:]' '[:upper:]')" = "DISPATCHER" ]; then
@@ -170,7 +209,7 @@ jobs:
               out="hive/bus/uplink/$id.$provider.uplink"
               [ -e "$out" ] && continue
 
-              if result="$(invoke_with_recovery "$provider" "$payload")"; then
+              if result="$(invoke_with_recovery "$provider" "$payload" "$expected_char")"; then
                 {
                   echo "MESSAGE_ID=$id"
                   echo "CHANNEL=UPLINK"
@@ -192,7 +231,7 @@ jobs:
                   echo "TYPE=ORDER_RESULT"
                   echo "STATUS=BLOCKED"
                   echo "CORRELATION_ID=$id"
-                  echo "REASON=LOCAL_RETRY_EXHAUSTED"
+                  echo "REASON=INVOCATION_OR_RESULT_VALIDATION_FAILED"
                   echo "RECOVERY=3_LOCAL_ATTEMPTS"
                   echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
                 } > "$out"
@@ -236,7 +275,7 @@ jobs:
                   echo "TYPE=CROSSTALK_EXCEPTION"
                   echo "STATUS=BLOCKED"
                   echo "CORRELATION_ID=$id"
-                  echo "REASON=LOCAL_RETRY_EXHAUSTED"
+                  echo "REASON=INVOCATION_OR_RESULT_VALIDATION_FAILED"
                   echo "RECOVERY=3_LOCAL_ATTEMPTS"
                   echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
                 } > "hive/bus/uplink/$id.$provider.exception.uplink"
