@@ -34,8 +34,10 @@ jobs:
         run: |
           URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
           test -n "$URI"
+          TOKEN="$(gcloud auth print-identity-token --audiences="$URI")"
+          test -n "$TOKEN"
 
-          FIRST="$(curl --fail --silent --show-error --get --data-urlencode 'text=Many hands work. Bees return!' "$URI")"
+          FIRST="$(curl --fail --silent --show-error --get -H "Authorization: Bearer $TOKEN" --data-urlencode 'text=Many hands work. Bees return!' "$URI")"
           echo "$FIRST" | jq -e '.words == 5 and .sentences == 2 and .paragraphs == 1 and .terminalPunctuation == true' >/dev/null
 
           : > /tmp/results.tsv
@@ -46,8 +48,8 @@ jobs:
             START="$(date +%s%N)"
 
             seq "$COUNT" | xargs -I{} -P "$PARALLEL" sh -c '
-              curl --silent --show-error --get                 --output /dev/null                 --write-out "%{http_code}\n"                 --data-urlencode "text=Many hands work. Bees return!"                 "$0"
-            ' "$URI" > /tmp/status.txt
+              curl --silent --show-error --get                 --output /dev/null                 --write-out "%{http_code}\n"                 -H "Authorization: Bearer $1"                 --data-urlencode "text=Many hands work. Bees return!"                 "$0"
+            ' "$URI" "$TOKEN" > /tmp/status.txt
 
             END="$(date +%s%N)"
             MS="$(( (END - START) / 1000000 ))"
