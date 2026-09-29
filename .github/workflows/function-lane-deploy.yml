@@ -45,6 +45,7 @@ jobs:
           cp function-lane/core/word_count.mjs function-lane/cloudflare/core/word_count.mjs
           cp function-lane/core/sentence_count.mjs function-lane/cloudflare/core/sentence_count.mjs
           cp function-lane/core/paragraph_count.mjs function-lane/cloudflare/core/paragraph_count.mjs
+          cp function-lane/core/terminal_punctuation.mjs function-lane/cloudflare/core/terminal_punctuation.mjs
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:
@@ -66,6 +67,7 @@ jobs:
           cp function-lane/core/word_count.mjs .build/aws/core/word_count.mjs
           cp function-lane/core/sentence_count.mjs .build/aws/core/sentence_count.mjs
           cp function-lane/core/paragraph_count.mjs .build/aws/core/paragraph_count.mjs
+          cp function-lane/core/terminal_punctuation.mjs .build/aws/core/terminal_punctuation.mjs
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -95,6 +97,7 @@ jobs:
           cp function-lane/core/word_count.mjs .build/google/core/word_count.mjs
           cp function-lane/core/sentence_count.mjs .build/google/core/sentence_count.mjs
           cp function-lane/core/paragraph_count.mjs .build/google/core/paragraph_count.mjs
+          cp function-lane/core/terminal_punctuation.mjs .build/google/core/terminal_punctuation.mjs
       - name: Authenticate to Google Cloud with WIF
         uses: google-github-actions/auth@v3
         with:
@@ -144,7 +147,7 @@ jobs:
           echo "$BODY"
           node -e '
             const body = JSON.parse(process.argv[1]);
-            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1) {
+            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true) {
               console.error("Unexpected live result", body);
               process.exit(1);
             }
@@ -262,7 +265,7 @@ jobs:
             const fs = require("fs");
             const outer = JSON.parse(fs.readFileSync("/tmp/aws-lambda-response.json", "utf8"));
             const body = typeof outer.body === "string" ? JSON.parse(outer.body) : outer;
-            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1) {
+            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true) {
               console.error("Unexpected AWS live result", body);
               process.exit(1);
             }
