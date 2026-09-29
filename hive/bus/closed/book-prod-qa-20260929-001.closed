@@ -1,0 +1,6 @@
+MESSAGE_ID=book-prod-qa-20260929-001
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/book-prod-qa-20260929-001.record
+WAREHOUSE=hive/warehouse/communications/book-prod-qa-20260929-001.manifest
+CLOSED_UTC=2026-09-29T16:33:35Z

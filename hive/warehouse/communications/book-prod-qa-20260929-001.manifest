@@ -1,0 +1,9 @@
+MESSAGE_ID=book-prod-qa-20260929-001
+KIND=ORDER
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/book-prod-qa-20260929-001.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/book-prod-qa-20260929-001/book-prod-qa-20260929-001.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/book-prod-qa-20260929-001/book-prod-qa-20260929-001.aws.uplink,hive/warehouse/communications/evidence/book-prod-qa-20260929-001/book-prod-qa-20260929-001.google.uplink,hive/warehouse/communications/evidence/book-prod-qa-20260929-001/book-prod-qa-20260929-001.cloudflare.uplink
+CORRELATION_ID=book-prod-qa-20260929-001
+CLOSED_UTC=2026-09-29T16:33:35Z
