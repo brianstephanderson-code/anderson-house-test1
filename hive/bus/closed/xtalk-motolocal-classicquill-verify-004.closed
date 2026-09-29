@@ -1,0 +1,6 @@
+MESSAGE_ID=xtalk-motolocal-classicquill-verify-004
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-motolocal-classicquill-verify-004.record
+WAREHOUSE=hive/warehouse/communications/xtalk-motolocal-classicquill-verify-004.manifest
+CLOSED_UTC=2026-09-29T15:22:57Z

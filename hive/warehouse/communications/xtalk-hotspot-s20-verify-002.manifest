@@ -1,0 +1,9 @@
+MESSAGE_ID=xtalk-hotspot-s20-verify-002
+KIND=CROSSTALK
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-hotspot-s20-verify-002.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/xtalk-hotspot-s20-verify-002/xtalk-hotspot-s20-verify-002.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/xtalk-hotspot-s20-verify-002/xtalk-hotspot-s20-verify-002.S20.ack
+CORRELATION_ID=xtalk-hotspot-s20-verify-002
+CLOSED_UTC=2026-09-29T15:22:57Z

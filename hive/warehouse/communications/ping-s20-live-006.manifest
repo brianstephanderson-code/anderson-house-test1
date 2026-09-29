@@ -1,0 +1,9 @@
+MESSAGE_ID=ping-s20-live-006
+KIND=CROSSTALK
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/ping-s20-live-006.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/ping-s20-live-006/ping-s20-live-006.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/ping-s20-live-006/ping-s20-live-006.S20.ack
+CORRELATION_ID=ping-s20-live-006
+CLOSED_UTC=2026-09-29T15:22:57Z

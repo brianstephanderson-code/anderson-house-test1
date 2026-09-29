@@ -1,0 +1,9 @@
+MESSAGE_ID=xtalk-classicquill-autostart-proof-005
+KIND=CROSSTALK
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-classicquill-autostart-proof-005.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/xtalk-classicquill-autostart-proof-005/xtalk-classicquill-autostart-proof-005.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/xtalk-classicquill-autostart-proof-005/xtalk-classicquill-autostart-proof-005.CLASSICQUILL.ack
+CORRELATION_ID=xtalk-classicquill-autostart-proof-005
+CLOSED_UTC=2026-09-29T15:22:57Z

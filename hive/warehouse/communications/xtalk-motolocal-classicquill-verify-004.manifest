@@ -1,0 +1,9 @@
+MESSAGE_ID=xtalk-motolocal-classicquill-verify-004
+KIND=CROSSTALK
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-motolocal-classicquill-verify-004.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/xtalk-motolocal-classicquill-verify-004/xtalk-motolocal-classicquill-verify-004.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/xtalk-motolocal-classicquill-verify-004/xtalk-motolocal-classicquill-verify-004.CLASSICQUILL.ack
+CORRELATION_ID=xtalk-motolocal-classicquill-verify-004
+CLOSED_UTC=2026-09-29T15:22:57Z

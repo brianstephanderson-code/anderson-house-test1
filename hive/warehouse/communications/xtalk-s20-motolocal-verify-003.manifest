@@ -1,0 +1,9 @@
+MESSAGE_ID=xtalk-s20-motolocal-verify-003
+KIND=CROSSTALK
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-s20-motolocal-verify-003.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/xtalk-s20-motolocal-verify-003/xtalk-s20-motolocal-verify-003.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/xtalk-s20-motolocal-verify-003/xtalk-s20-motolocal-verify-003.MOTO-LOCAL.ack
+CORRELATION_ID=xtalk-s20-motolocal-verify-003
+CLOSED_UTC=2026-09-29T15:22:57Z

@@ -1,0 +1,6 @@
+MESSAGE_ID=xtalk-classicquill-autostart-proof-005
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-classicquill-autostart-proof-005.record
+WAREHOUSE=hive/warehouse/communications/xtalk-classicquill-autostart-proof-005.manifest
+CLOSED_UTC=2026-09-29T15:22:57Z

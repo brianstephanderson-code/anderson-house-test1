@@ -1,0 +1,9 @@
+MESSAGE_ID=xtalk-production-classicquill-001
+KIND=CROSSTALK
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-production-classicquill-001.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/xtalk-production-classicquill-001/xtalk-production-classicquill-001.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/xtalk-production-classicquill-001/xtalk-production-classicquill-001.CLASSICQUILL.ack
+CORRELATION_ID=xtalk-production-classicquill-001
+CLOSED_UTC=2026-09-29T15:22:57Z

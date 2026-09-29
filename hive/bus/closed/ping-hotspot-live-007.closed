@@ -1,0 +1,6 @@
+MESSAGE_ID=ping-hotspot-live-007
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/ping-hotspot-live-007.record
+WAREHOUSE=hive/warehouse/communications/ping-hotspot-live-007.manifest
+CLOSED_UTC=2026-09-29T15:22:57Z

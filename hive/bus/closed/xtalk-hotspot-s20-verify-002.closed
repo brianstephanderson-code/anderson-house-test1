@@ -1,0 +1,6 @@
+MESSAGE_ID=xtalk-hotspot-s20-verify-002
+STATUS=CLOSED
+DISPOSITION=ACKED
+MASTER_RECORD=hive/work/records/xtalk-hotspot-s20-verify-002.record
+WAREHOUSE=hive/warehouse/communications/xtalk-hotspot-s20-verify-002.manifest
+CLOSED_UTC=2026-09-29T15:22:57Z
