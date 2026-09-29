@@ -1,0 +1,7 @@
+FUNCTION_ID=sentence_count
+CANONICAL_PATH=function-lane/core/sentence_count.mjs
+VERSION_COMMIT=0438b5d0c75238443bc5946c0c0b015b6dab2eaf
+STATUS=VERIFIED
+PROVIDERS=AWS,GOOGLE,CLOUDFLARE
+EVIDENCE=Function Lane deploy plus repeated correlated runtime returns
+WAREHOUSED_UTC=2026-09-29T14:56:00Z

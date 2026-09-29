@@ -74,3 +74,25 @@ Rule:
 `BLOCKED -> LOCAL RETRY -> RETURN TO ORIGIN -> UPLINK EXCEPTION`
 
 Routine faults should be corrected below management whenever possible. Every retry/return keeps the original MESSAGE_ID or CORRELATION_ID so the loop remains traceable.
+
+
+## CLOSED / warehouse gate
+
+DONE is a worker state. CLOSED is the communication-loop terminal state.
+
+A message loop closes only after:
+1. the required recipient(s) return DONE/ACK;
+2. the return keeps the original MESSAGE_ID/CORRELATION_ID;
+3. the expected return count/identity matches the original target;
+4. a warehouse manifest is written;
+5. a `hive/bus/closed/<MESSAGE_ID>.closed` receipt retires the loop from active basket accounting.
+
+Shorthand:
+
+`SEND -> IN -> PENDING -> WORK -> OUT -> RETURN -> VERIFY RETURN -> CLOSED -> WAREHOUSE`
+
+For `TO=ALL` in Function Land, closure requires successful correlated returns from AWS, Google and Cloudflare.
+
+BLOCKED is not CLOSED. A blocked loop remains active until recovery succeeds or management explicitly resolves/supersedes it.
+
+The original messages and returns remain as immutable evidence. The CLOSED receipt is the deduplication/retirement oracle, so communication copies do not float forever as dangling loops.

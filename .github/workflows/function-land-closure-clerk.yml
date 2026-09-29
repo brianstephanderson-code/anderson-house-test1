@@ -1,0 +1,197 @@
+name: Function Land Closure Clerk
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "hive/bus/uplink/**"
+      - "hive/bus/acks/**"
+      - ".github/workflows/function-land-closure-clerk.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: function-land-closure-clerk
+  cancel-in-progress: false
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Close completed communication loops
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          mkdir -p hive/bus/closed hive/warehouse/communications hive/bus/pending
+
+          value_of() {
+            local key="$1" file="$2"
+            awk -F= -v k="$key" '$1==k {sub(/^[^=]*=/,""); print; exit}' "$file"
+          }
+
+          is_done() {
+            [ -e "$1" ] && grep -q '^STATUS=DONE$' "$1"
+          }
+
+          write_closure() {
+            local id="$1" kind="$2" source="$3" returns="$4"
+            local closed_at warehouse
+            closed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            warehouse="hive/warehouse/communications/$id.manifest"
+
+            {
+              echo "MESSAGE_ID=$id"
+              echo "KIND=$kind"
+              echo "STATUS=CLOSED"
+              echo "SOURCE=$source"
+              echo "RETURNS=$returns"
+              echo "CORRELATION_ID=$id"
+              echo "CLOSED_UTC=$closed_at"
+            } > "$warehouse"
+
+            {
+              echo "MESSAGE_ID=$id"
+              echo "STATUS=CLOSED"
+              echo "WAREHOUSE=$warehouse"
+              echo "CLOSED_UTC=$closed_at"
+            } > "hive/bus/closed/$id.closed"
+
+            rm -f "hive/bus/pending/$id.pending"
+          }
+
+          close_order() {
+            local file="$1"
+            local id to upper p f from expected returns
+            id="$(value_of MESSAGE_ID "$file")"
+            to="$(value_of TO "$file")"
+            [ -n "$id" ] || return 0
+            [ -e "hive/bus/closed/$id.closed" ] && return 0
+            [ -e "hive/bus/superseded/$id.superseded" ] && return 0
+
+            local matches=(hive/bus/uplink/"$id".*.uplink)
+            [ "${#matches[@]}" -gt 0 ] || return 0
+            if grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
+              return 0
+            fi
+
+            upper="$(echo "$to" | tr '[:lower:]' '[:upper:]')"
+            returns=""
+
+            case "$upper" in
+              ALL)
+                expected="aws google cloudflare"
+                for p in $expected; do
+                  f="hive/bus/uplink/$id.$p.uplink"
+                  is_done "$f" || return 0
+                  returns="${returns:+$returns,}$f"
+                done
+                ;;
+              AWS|GOOGLE|CLOUDFLARE)
+                p="$(echo "$upper" | tr '[:upper:]' '[:lower:]')"
+                f="hive/bus/uplink/$id.$p.uplink"
+                is_done "$f" || return 0
+                returns="$f"
+                ;;
+              *)
+                f=""
+                for candidate in "${matches[@]}"; do
+                  is_done "$candidate" || continue
+                  from="$(value_of FROM "$candidate" | tr '[:lower:]' '[:upper:]')"
+                  if [ "$from" = "$upper" ]; then
+                    f="$candidate"
+                    break
+                  fi
+                done
+                [ -n "$f" ] || return 0
+                returns="$f"
+                ;;
+            esac
+
+            write_closure "$id" "ORDER" "$file" "$returns"
+          }
+
+          close_crosstalk() {
+            local file="$1"
+            local id to upper p f from expected returns
+            id="$(value_of MESSAGE_ID "$file")"
+            to="$(value_of TO "$file")"
+            [ -n "$id" ] || return 0
+            [ -e "hive/bus/closed/$id.closed" ] && return 0
+
+            local exceptions=(hive/bus/uplink/"$id".*.exception.uplink)
+            if [ "${#exceptions[@]}" -gt 0 ]; then
+              return 0
+            fi
+
+            local matches=(hive/bus/acks/"$id".*.ack)
+            [ "${#matches[@]}" -gt 0 ] || return 0
+            upper="$(echo "$to" | tr '[:lower:]' '[:upper:]')"
+            returns=""
+
+            case "$upper" in
+              ALL)
+                expected="aws google cloudflare"
+                for p in $expected; do
+                  f="hive/bus/acks/$id.$p.ack"
+                  is_done "$f" || return 0
+                  returns="${returns:+$returns,}$f"
+                done
+                ;;
+              AWS|GOOGLE|CLOUDFLARE)
+                p="$(echo "$upper" | tr '[:upper:]' '[:lower:]')"
+                f="hive/bus/acks/$id.$p.ack"
+                is_done "$f" || return 0
+                returns="$f"
+                ;;
+              *)
+                f=""
+                for candidate in "${matches[@]}"; do
+                  is_done "$candidate" || continue
+                  from="$(value_of FROM "$candidate" | tr '[:lower:]' '[:upper:]')"
+                  if [ "$from" = "$upper" ]; then
+                    f="$candidate"
+                    break
+                  fi
+                done
+                [ -n "$f" ] || return 0
+                returns="$f"
+                ;;
+            esac
+
+            write_closure "$id" "CROSSTALK" "$file" "$returns"
+          }
+
+          for file in hive/bus/orders/*.msg; do
+            close_order "$file"
+          done
+
+          for file in hive/bus/crosstalk/*.msg; do
+            close_crosstalk "$file"
+          done
+
+          if git status --porcelain hive/bus/closed hive/bus/pending hive/warehouse/communications | grep -q .; then
+            git config user.name "Function Land Closure Clerk"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add hive/bus/closed hive/bus/pending hive/warehouse/communications
+            git commit -m "Close completed Function Land communication loops"
+            git pull --rebase origin main
+            git push origin main
+          fi
+
+          {
+            echo "## Function Land Closure Clerk"
+            echo
+            echo "DONE is not the terminal state."
+            echo
+            echo "Terminal state is CLOSED + warehouse receipt."
+          } >> "$GITHUB_STEP_SUMMARY"

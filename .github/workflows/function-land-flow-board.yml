@@ -14,7 +14,9 @@ on:
       - "hive/bus/uplink/**"
       - "hive/bus/acks/**"
       - "hive/bus/pending/**"
+      - "hive/bus/closed/**"
       - "hive/bus/superseded/**"
+      - "hive/warehouse/communications/**"
       - ".github/workflows/function-land-flow-board.yml"
 
 permissions:
@@ -34,6 +36,7 @@ jobs:
           orders=(hive/bus/orders/*.msg)
           crosstalk=(hive/bus/crosstalk/*.msg)
           uplinks=(hive/bus/uplink/*.uplink)
+          closed=(hive/bus/closed/*.closed)
 
           ORDER_IN=0
           ORDER_PENDING=0
@@ -43,9 +46,8 @@ jobs:
           for f in "${orders[@]}"; do
             id="$(awk -F= '$1=="MESSAGE_ID"{sub(/^[^=]*=/,"");print;exit}' "$f")"
             [ -n "$id" ] || continue
-            if [ -e "hive/bus/superseded/$id.superseded" ]; then
-              continue
-            fi
+            [ -e "hive/bus/superseded/$id.superseded" ] && continue
+            [ -e "hive/bus/closed/$id.closed" ] && continue
             matches=(hive/bus/uplink/"$id".*.uplink)
 
             if [ "${#matches[@]}" -gt 0 ] && grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
@@ -67,6 +69,7 @@ jobs:
           for f in "${crosstalk[@]}"; do
             id="$(awk -F= '$1=="MESSAGE_ID"{sub(/^[^=]*=/,"");print;exit}' "$f")"
             [ -n "$id" ] || continue
+            [ -e "hive/bus/closed/$id.closed" ] && continue
             acks=(hive/bus/acks/"$id".*.ack)
             exceptions=(hive/bus/uplink/"$id".*.exception.uplink)
 
@@ -84,6 +87,9 @@ jobs:
           UPLINK_OUT=0
           UPLINK_BLOCKED=0
           for f in "${uplinks[@]}"; do
+            id="$(awk -F= '$1=="MESSAGE_ID"{sub(/^[^=]*=/,"");print;exit}' "$f")"
+            [ -n "$id" ] || continue
+            [ -e "hive/bus/closed/$id.closed" ] && continue
             if grep -q '^STATUS=BLOCKED$' "$f"; then
               UPLINK_BLOCKED=$((UPLINK_BLOCKED+1))
             else
@@ -100,7 +106,9 @@ jobs:
             echo "| CROSSTALK | $XTALK_IN | $XTALK_PENDING | $XTALK_OUT | $XTALK_BLOCKED |"
             echo "| UPLINK | 0 | 0 | $UPLINK_OUT | $UPLINK_BLOCKED |"
             echo
-            echo "**Reading rule:** growth in PENDING means work is accumulating; BLOCKED means normal flow has entered recovery."
+            echo "**WAREHOUSE CLOSED LOOPS:** ${#closed[@]}"
+            echo
+            echo "**Reading rule:** active baskets show only loops not yet closed. CLOSED loops are retired to the warehouse receipt ledger."
             echo
             echo "**Recovery:** BLOCKED -> local retry -> return/correlation -> UPLINK exception."
           } >> "$GITHUB_STEP_SUMMARY"
