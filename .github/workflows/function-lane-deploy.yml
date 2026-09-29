@@ -1,6 +1,12 @@
 name: Function Lane Deploy
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "function-lane/**"
+      - ".github/workflows/function-lane-deploy.yml"
   workflow_dispatch:
     inputs:
       target:
