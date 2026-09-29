@@ -1,6 +1,8 @@
 name: Function Land Dispatcher
 
 on:
+  schedule:
+    - cron: "23 * * * *"
   push:
     branches:
       - main
@@ -11,6 +13,10 @@ on:
 permissions:
   contents: write
   id-token: write
+
+concurrency:
+  group: function-land-bus-writer
+  cancel-in-progress: false
 
 jobs:
   dispatch:
@@ -114,6 +120,7 @@ jobs:
           fi
 
           test -n "$HEALTHY"
+          test "$HEALTHY" = "aws,google,cloudflare"
           echo "pool=$HEALTHY" >> "$GITHUB_OUTPUT"
 
           {
@@ -128,9 +135,32 @@ jobs:
             echo "Active pool: **$HEALTHY**"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Choose progressive load level
+        id: load
+        run: |
+          set -euo pipefail
+          mkdir -p hive/load-ramp
+          CURRENT=12
+          MAX=96
+          if [ -f hive/load-ramp/state.env ]; then
+            source hive/load-ramp/state.env
+          fi
+          : "${CURRENT:=12}"
+          : "${MAX:=96}"
+          echo "count=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "max=$MAX" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Progressive load gate"
+            echo
+            echo "Current batch: **$CURRENT parcels**"
+            echo
+            echo "Maximum automatic ramp: **$MAX parcels**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish ORDERS before execution
         env:
           HEALTHY_POOL: ${{ steps.health.outputs.pool }}
+          LOAD_COUNT: ${{ steps.load.outputs.count }}
         run: |
           set -euo pipefail
           mkdir -p hive/bus/orders
@@ -138,7 +168,7 @@ jobs:
           COUNT="${#PROVIDERS[@]}"
           test "$COUNT" -gt 0
 
-          for ID in $(seq 30); do
+          for ID in $(seq "$LOAD_COUNT"); do
             SLOT="$(( (ID - 1) % COUNT ))"
             PROVIDER="${PROVIDERS[$SLOT]}"
             UPPER="$(echo "$PROVIDER" | tr '[:lower:]' '[:upper:]')"
@@ -165,9 +195,11 @@ jobs:
           git pull --rebase origin main
           git push origin main
 
-      - name: Health-aware dispatch of 30 parcels
+      - name: Health-aware progressive dispatch
         env:
           HEALTHY_POOL: ${{ steps.health.outputs.pool }}
+          LOAD_COUNT: ${{ steps.load.outputs.count }}
+          LOAD_MAX: ${{ steps.load.outputs.max }}
           GOOGLE_URI: ${{ steps.endpoint.outputs.uri }}
           GOOGLE_ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
           AWS_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
@@ -188,12 +220,12 @@ jobs:
 
             if [ "$PROVIDER" = "cloudflare" ]; then
               BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "text=$TEXT" "$CLOUDFLARE_URI")"
-              echo "$BODY" | jq -e '.providerHive.provider == "cloudflare"' >/dev/null
+              echo "$BODY" | jq -e '.providerHive.provider == "cloudflare" and (.characters|type=="number") and ((.providerHive.workers|index("character_count")) != null)' >/dev/null
               RESULT_JSON="$(echo "$BODY" | jq -c .)"
 
             elif [ "$PROVIDER" = "google" ]; then
               BODY="$(curl --fail --silent --show-error --get                 -H "Authorization: Bearer $GOOGLE_ID_TOKEN"                 --data-urlencode "text=$TEXT" "$GOOGLE_URI")"
-              echo "$BODY" | jq -e '.providerHive.provider == "google"' >/dev/null
+              echo "$BODY" | jq -e '.providerHive.provider == "google" and (.characters|type=="number") and ((.providerHive.workers|index("character_count")) != null)' >/dev/null
               RESULT_JSON="$(echo "$BODY" | jq -c .)"
 
             elif [ "$PROVIDER" = "aws" ]; then
@@ -202,7 +234,7 @@ jobs:
                 const fs=require("fs");
                 const outer=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
                 const body=typeof outer.body==="string" ? JSON.parse(outer.body) : outer;
-                if (body?.providerHive?.provider !== "aws") process.exit(1);
+                if (body?.providerHive?.provider !== "aws" || typeof body?.characters !== "number" || !body?.providerHive?.workers?.includes("character_count")) process.exit(1);
               ' "/tmp/function-land-results/aws-$ID.json"
               RESULT_JSON="$(jq -c 'if (.body|type)=="string" then (.body|fromjson) else . end' "/tmp/function-land-results/aws-$ID.json")"
             else
@@ -228,7 +260,9 @@ jobs:
           export HEALTHY_POOL GOOGLE_URI GOOGLE_ID_TOKEN AWS_FUNCTION_NAME CLOUDFLARE_URI GITHUB_RUN_ID
 
           START="$(date +%s%N)"
-          seq 30 | xargs -I{} -P 12 bash -c 'dispatch_one "$1"' _ {}
+          PARALLEL="$LOAD_COUNT"
+          [ "$PARALLEL" -gt 48 ] && PARALLEL=48
+          seq "$LOAD_COUNT" | xargs -I{} -P "$PARALLEL" bash -c 'dispatch_one "$1"' _ {}
           END="$(date +%s%N)"
           WALL_MS="$(( (END - START) / 1000000 ))"
 
@@ -238,9 +272,22 @@ jobs:
           GCP="$(awk -F '\t' '$2=="google"{n++} END{print n+0}' /tmp/routes.tsv)"
           AWS="$(awk -F '\t' '$2=="aws"{n++} END{print n+0}' /tmp/routes.tsv)"
 
-          test "$TOTAL" -eq 30
+          test "$TOTAL" -eq "$LOAD_COUNT"
 
-          git add hive/bus/uplink
+          NEXT="$(( LOAD_COUNT * 2 ))"
+          [ "$NEXT" -gt "$LOAD_MAX" ] && NEXT="$LOAD_MAX"
+          mkdir -p hive/load-ramp
+          {
+            echo "CURRENT=$NEXT"
+            echo "MAX=$LOAD_MAX"
+            echo "LAST_BATCH=$LOAD_COUNT"
+            echo "LAST_WALL_MS=$WALL_MS"
+            echo "LAST_STATUS=CLEAN"
+            echo "LAST_RUN_ID=$GITHUB_RUN_ID"
+            echo "UPDATED_UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > hive/load-ramp/state.env
+
+          git add hive/bus/uplink hive/load-ramp/state.env
           git commit -m "Publish Function Land uplinks for run $GITHUB_RUN_ID"
           git pull --rebase origin main
           git push origin main
@@ -252,6 +299,8 @@ jobs:
             echo "|---|---:|"
             echo "| Active pool | $HEALTHY_POOL |"
             echo "| Parcels dispatched | $TOTAL |"
+            echo "| Parallel workers | $PARALLEL |"
+            echo "| Next clean-step batch | $NEXT |"
             echo "| Cloudflare returns | $CF |"
             echo "| Google returns | $GCP |"
             echo "| AWS returns | $AWS |"
