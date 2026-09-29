@@ -1,0 +1,74 @@
+name: Google Runtime Feed
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/google-runtime-feed.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  runtime-feed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Feed existing Google hive
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          test -n "$URI"
+
+          FIRST="$(curl --fail --silent --show-error --get --data-urlencode 'text=Many hands work. Bees return!' "$URI")"
+          echo "$FIRST" | jq -e '.words == 5 and .sentences == 2 and .paragraphs == 1 and .terminalPunctuation == true' >/dev/null
+
+          : > /tmp/results.tsv
+
+          run_batch() {
+            COUNT="$1"
+            PARALLEL="$2"
+            START="$(date +%s%N)"
+
+            seq "$COUNT" | xargs -I{} -P "$PARALLEL" sh -c '
+              curl --silent --show-error --get                 --output /dev/null                 --write-out "%{http_code}\n"                 --data-urlencode "text=Many hands work. Bees return!"                 "$0"
+            ' "$URI" > /tmp/status.txt
+
+            END="$(date +%s%N)"
+            MS="$(( (END - START) / 1000000 ))"
+            OK="$(grep -c '^200$' /tmp/status.txt || true)"
+            FAIL="$(( COUNT - OK ))"
+            printf '%s\t%s\t%s\t%s\t%s\n' "$COUNT" "$PARALLEL" "$MS" "$OK" "$FAIL" >> /tmp/results.tsv
+            test "$FAIL" -eq 0
+          }
+
+          run_batch 10 5
+          run_batch 50 10
+          run_batch 100 10
+
+          {
+            echo "## Google Runtime Feed"
+            echo
+            echo "| Requests | Parallel | Wall ms | OK | Fail |"
+            echo "|---:|---:|---:|---:|---:|"
+            while IFS="$(printf '\t')" read -r COUNT PARALLEL MS OK FAIL; do
+              echo "| $COUNT | $PARALLEL | $MS | $OK | $FAIL |"
+            done < /tmp/results.tsv
+            echo
+            echo "_Runtime-only feed: no Google function deployment occurs in this workflow._"
+          } >> "$GITHUB_STEP_SUMMARY"
