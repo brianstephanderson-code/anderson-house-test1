@@ -22,6 +22,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   id-token: write
 
 jobs:
@@ -166,4 +167,68 @@ jobs:
             echo "| Google deploy | $GOOGLE_STATE |"
             echo "| Cloudflare deploy | $CLOUDFLARE_STATE |"
             echo "| Cloudflare live answer | success |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+  usage:
+    if: ${{ always() && needs.health.result == 'success' }}
+    needs:
+      - health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Measure Function Land usage snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          JOBS_JSON="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100")"
+
+          echo "$JOBS_JSON" > /tmp/jobs.json
+
+          jq -r '
+            .jobs[]
+            | select(.started_at != null and .completed_at != null)
+            | [.name, .started_at, .completed_at, .conclusion]
+            | @tsv
+          ' /tmp/jobs.json > /tmp/job-times.tsv
+
+          TOTAL_SECONDS=0
+          {
+            echo "## Function Land Usage Snapshot"
+            echo
+            echo "| Lane | State | Runner seconds |"
+            echo "|---|---:|---:|"
+            while IFS=$'\t' read -r NAME START END STATE; do
+              START_EPOCH="$(date -d "$START" +%s)"
+              END_EPOCH="$(date -d "$END" +%s)"
+              SECONDS_USED=$((END_EPOCH - START_EPOCH))
+              TOTAL_SECONDS=$((TOTAL_SECONDS + SECONDS_USED))
+              printf '| %s | %s | %s |\n' "$NAME" "$STATE" "$SECONDS_USED"
+            done < /tmp/job-times.tsv
+            echo "| **Total GitHub runner time** |  | **$TOTAL_SECONDS** |"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          CF_METRICS="$(curl --fail --silent --show-error --get \
+            --output /tmp/cf-body.json \
+            --write-out '%{time_total}\t%{size_download}\t%{http_code}' \
+            --data-urlencode 'text=Many hands work. Bees return!' \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+
+          IFS=$'\t' read -r CF_SECONDS CF_BYTES CF_HTTP <<< "$CF_METRICS"
+
+          {
+            echo "### Live probe"
+            echo
+            echo "| Probe | Value |"
+            echo "|---|---:|"
+            echo "| Cloudflare HTTP | $CF_HTTP |"
+            echo "| Cloudflare response seconds | $CF_SECONDS |"
+            echo "| Cloudflare response bytes | $CF_BYTES |"
+            echo
+            echo "_This is the first consumption gauge: GitHub runner time plus live endpoint latency/size. Provider-side CPU, memory, invocation counts and quotas will be added separately._"
           } >> "$GITHUB_STEP_SUMMARY"
