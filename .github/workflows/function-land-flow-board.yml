@@ -15,6 +15,7 @@ on:
       - "hive/bus/acks/**"
       - "hive/bus/pending/**"
       - "hive/bus/closed/**"
+      - "hive/bus/resolved/**"
       - "hive/bus/superseded/**"
       - "hive/warehouse/communications/**"
       - ".github/workflows/function-land-flow-board.yml"
@@ -108,7 +109,7 @@ jobs:
             echo
             echo "**WAREHOUSE CLOSED LOOPS:** ${#closed[@]}"
             echo
-            echo "**Reading rule:** active baskets show only loops not yet closed. CLOSED loops are retired to the warehouse receipt ledger."
+            echo "**Reading rule:** live baskets contain only open transport copies. CLOSED copies are physically retired to warehouse evidence; the master work record stays with the work."
             echo
             echo "**Recovery:** BLOCKED -> local retry -> return/correlation -> UPLINK exception."
           } >> "$GITHUB_STEP_SUMMARY"

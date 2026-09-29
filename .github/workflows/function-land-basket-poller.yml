@@ -75,11 +75,37 @@ jobs:
         run: |
           set -euo pipefail
 
-          mkdir -p hive/bus/orders hive/bus/crosstalk hive/bus/uplink hive/bus/acks
+          mkdir -p hive/bus/orders hive/bus/crosstalk hive/bus/uplink hive/bus/acks hive/work/records
 
           value_of() {
             local key="$1" file="$2"
             awk -F= -v k="$key" '$1==k {sub(/^[^=]*=/,""); print; exit}' "$file"
+          }
+
+          ensure_master_record() {
+            local kind="$1" file="$2"
+            local id master from to type
+            id="$(value_of MESSAGE_ID "$file")"
+            [ -n "$id" ] || id="$(basename "$file" .msg)"
+            master="hive/work/records/$id.record"
+            [ -e "$master" ] && return 0
+
+            from="$(value_of FROM "$file")"
+            to="$(value_of TO "$file")"
+            type="$(value_of TYPE "$file")"
+
+            {
+              echo "WORK_ID=$id"
+              echo "RECORD_KIND=$kind"
+              echo "STATUS=ACTIVE"
+              echo "ORIGIN=$from"
+              echo "TARGET=$to"
+              echo "MESSAGE_TYPE=$type"
+              echo "COMMUNICATION_COPY=$file"
+              echo "COMMUNICATION_SHA256=$(sha256sum "$file" | awk '{print $1}')"
+              echo "RULE=MASTER_STAYS_WITH_WORK"
+              echo "CREATED_UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "$master"
           }
 
           invoke_provider() {
@@ -220,16 +246,18 @@ jobs:
 
           shopt -s nullglob
           for file in hive/bus/orders/*.msg; do
+            ensure_master_record ORDER "$file"
             process_order "$file"
           done
           for file in hive/bus/crosstalk/*.msg; do
+            ensure_master_record CROSSTALK "$file"
             process_crosstalk "$file"
           done
 
-          if git status --porcelain hive/bus/acks hive/bus/uplink | grep -q .; then
+          if git status --porcelain hive/bus/acks hive/bus/uplink hive/work/records | grep -q .; then
             git config user.name "Function Land Basket Poller"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add hive/bus/acks hive/bus/uplink
+            git add hive/bus/acks hive/bus/uplink hive/work/records
             git commit -m "Function Land basket returns"
             git pull --rebase origin main
             git push origin main

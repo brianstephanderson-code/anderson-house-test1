@@ -1,0 +1,5 @@
+MESSAGE_ID=recovery-36580436081-escalate
+STATUS=RESOLVED
+DISPOSITION=CONTROLLED_RECOVERY_TEST_COMPLETE
+REASON=This was the deliberately unrecoverable synthetic parcel used to prove escalation after three local retries.
+RESOLVED_UTC=2026-09-29T15:10:00Z

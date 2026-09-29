@@ -56,3 +56,18 @@ Promote to UPLINK only when one of these is true:
 - policy conflict exists
 - verified result is ready
 - local crosstalk cannot resolve the issue
+
+
+## Live-copy rule
+
+The files in ORDERS and CROSSTALK are communication copies.
+
+The durable master work record lives at:
+
+`hive/work/records/<WORK_ID>.record`
+
+When a communication reaches CLOSED, its transport copies leave the live baskets and are stored under:
+
+`hive/warehouse/communications/evidence/<MESSAGE_ID>/`
+
+The closure manifest and receipt preserve the audit trail without leaving finished messages floating in the active communication center.

@@ -1,0 +1,7 @@
+FUNCTION_ID=terminal_punctuation_verifier
+CANONICAL_PATH=function-lane/core/terminal_punctuation_verifier.mjs
+VERSION_COMMIT=bca29150916b290d0674b1fc580c2d2e088e3c7b
+STATUS=VERIFIED
+PROVIDERS=AWS,GOOGLE,CLOUDFLARE
+EVIDENCE=Successful Function Lane deploy plus repeated provider runtime returns with crosstalkVerification.passed=true
+WAREHOUSED_UTC=2026-09-29T15:10:00Z

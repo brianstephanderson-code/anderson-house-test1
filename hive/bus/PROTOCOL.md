@@ -96,3 +96,31 @@ For `TO=ALL` in Function Land, closure requires successful correlated returns fr
 BLOCKED is not CLOSED. A blocked loop remains active until recovery succeeds or management explicitly resolves/supersedes it.
 
 The original messages and returns remain as immutable evidence. The CLOSED receipt is the deduplication/retirement oracle, so communication copies do not float forever as dangling loops.
+
+
+## MASTER / COPY rule
+
+The work/function owns the master record.
+
+Path:
+
+`hive/work/records/<WORK_ID>.record`
+
+A message placed in ORDERS or CROSSTALK is a transport copy of that work state, not the master itself.
+
+Rule:
+
+`MASTER STAYS WITH WORK -> COMM COPY TRAVELS -> RETURN CORRELATES -> COPY CLOSES -> COPY ARCHIVES`
+
+The communication copy may move through baskets and be retired. The master record never depends on the continued existence of a live basket file.
+
+When the loop closes, the Closure Clerk:
+1. verifies the expected correlated return(s);
+2. writes the CLOSED receipt;
+3. writes the warehouse manifest;
+4. moves the sent copy and returned copies out of the live baskets into warehouse evidence;
+5. updates the master work record with the closure manifest.
+
+This makes a live basket a view of unfinished communication, not a permanent pile of historical messages.
+
+Management may explicitly resolve or supersede an abnormal loop. That disposition is recorded before the communication is warehoused.
