@@ -1,0 +1,222 @@
+name: Function Land Native Health Board
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/function-land-health-board.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  aws-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Read AWS native health
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+        run: |
+          CONFIG="$(aws lambda get-function-configuration --function-name "$FUNCTION_NAME")"
+          STATE="$(echo "$CONFIG" | jq -r '.State // "unknown"')"
+          UPDATE="$(echo "$CONFIG" | jq -r '.LastUpdateStatus // "unknown"')"
+          MEMORY="$(echo "$CONFIG" | jq -r '.MemorySize // "unknown"')"
+          TIMEOUT="$(echo "$CONFIG" | jq -r '.Timeout // "unknown"')"
+
+          START="$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ)"
+          END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          metric_sum () {
+            NAME="$1"
+            set +e
+            OUT="$(aws cloudwatch get-metric-statistics               --namespace AWS/Lambda               --metric-name "$NAME"               --dimensions "Name=FunctionName,Value=$FUNCTION_NAME"               --start-time "$START" --end-time "$END"               --period 3600 --statistics Sum --output json 2>/tmp/aws-cw-error)"
+            RC=$?
+            set -e
+            if [ "$RC" -eq 0 ]; then
+              echo "$OUT" | jq -r '[.Datapoints[].Sum] | add // 0'
+            else
+              echo "permission-missing"
+            fi
+          }
+
+          INV="$(metric_sum Invocations)"
+          ERR="$(metric_sum Errors)"
+          THR="$(metric_sum Throttles)"
+
+          set +e
+          DUR_JSON="$(aws cloudwatch get-metric-statistics             --namespace AWS/Lambda             --metric-name Duration             --dimensions "Name=FunctionName,Value=$FUNCTION_NAME"             --start-time "$START" --end-time "$END"             --period 3600 --statistics Average --output json 2>/tmp/aws-cw-duration-error)"
+          DUR_RC=$?
+          set -e
+          if [ "$DUR_RC" -eq 0 ]; then
+            DURATION="$(echo "$DUR_JSON" | jq -r '[.Datapoints[].Average] | if length==0 then 0 else add/length end')"
+          else
+            DURATION="permission-missing"
+          fi
+
+          {
+            echo "AWS_NATIVE state=$STATE last_update=$UPDATE memory_mb=$MEMORY timeout_s=$TIMEOUT invocations_1h=$INV errors_1h=$ERR throttles_1h=$THR avg_duration_ms=$DURATION"
+            echo "## AWS native health"
+            echo
+            echo "| Metric | Provider value |"
+            echo "|---|---:|"
+            echo "| Lambda state | $STATE |"
+            echo "| Last update | $UPDATE |"
+            echo "| Memory MB | $MEMORY |"
+            echo "| Timeout s | $TIMEOUT |"
+            echo "| Invocations (1h) | $INV |"
+            echo "| Errors (1h) | $ERR |"
+            echo "| Throttles (1h) | $THR |"
+            echo "| Avg duration ms | $DURATION |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  google-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Read Google native health
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          FUNCTION_JSON="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format=json)"
+          STATE="$(echo "$FUNCTION_JSON" | jq -r '.state // "unknown"')"
+          MEMORY="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.availableMemory // "unknown"')"
+          MAX_INSTANCES="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.maxInstanceCount // "provider-default"')"
+          URI="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.uri // empty')"
+
+          TOKEN="$(gcloud auth print-access-token)"
+          START="$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ)"
+          END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          set +e
+          REQ="$(curl --silent --show-error --get             -H "Authorization: Bearer $TOKEN"             --data-urlencode 'filter=metric.type="run.googleapis.com/request_count" AND resource.type="cloud_run_revision"'             --data-urlencode "interval.startTime=$START"             --data-urlencode "interval.endTime=$END"             "https://monitoring.googleapis.com/v3/projects/$PROJECT_ID/timeSeries")"
+          REQ_RC=$?
+          set -e
+
+          if [ "$REQ_RC" -eq 0 ] && [ "$(echo "$REQ" | jq -r '.error.code // empty')" = "" ]; then
+            REQUESTS="$(echo "$REQ" | jq --arg svc "$FUNCTION_NAME" '[.timeSeries[]? | select(.resource.labels.service_name==$svc) | .points[]?.value.int64Value | tonumber] | add // 0')"
+            GOOGLE_METRICS="ok"
+          else
+            REQUESTS="unavailable"
+            GOOGLE_METRICS="permission-or-api-gap"
+          fi
+
+          {
+            echo "GOOGLE_NATIVE state=$STATE memory=$MEMORY max_instances=$MAX_INSTANCES requests_1h=$REQUESTS monitoring=$GOOGLE_METRICS uri_present=$([ -n "$URI" ] && echo yes || echo no)"
+            echo "## Google native health"
+            echo
+            echo "| Metric | Provider value |"
+            echo "|---|---:|"
+            echo "| Function state | $STATE |"
+            echo "| Memory | $MEMORY |"
+            echo "| Max instances | $MAX_INSTANCES |"
+            echo "| Requests (1h) | $REQUESTS |"
+            echo "| Monitoring API | $GOOGLE_METRICS |"
+            echo "| Runtime URI present | $([ -n "$URI" ] && echo yes || echo no) |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  cloudflare-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read Cloudflare native health
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SCRIPT_NAME: ah-word-count
+        run: |
+          START="$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ)"
+          END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          QUERY='query WorkerHealth($accountTag: String!, $scriptName: String!, $start: Time!, $end: Time!) {
+            viewer {
+              accounts(filter: {accountTag: $accountTag}) {
+                workersInvocationsAdaptive(
+                  limit: 1
+                  filter: {scriptName: $scriptName, datetime_geq: $start, datetime_leq: $end}
+                ) {
+                  sum { requests errors subrequests }
+                  quantiles { cpuTimeP50 cpuTimeP99 }
+                }
+              }
+            }
+          }'
+
+          PAYLOAD="$(jq -nc             --arg q "$QUERY"             --arg account "$CF_ACCOUNT"             --arg script "$SCRIPT_NAME"             --arg start "$START"             --arg end "$END"             '{query:$q,variables:{accountTag:$account,scriptName:$script,start:$start,end:$end}}')"
+
+          RESP="$(curl --silent --show-error             -H "Authorization: Bearer $CF_TOKEN"             -H "Content-Type: application/json"             --data "$PAYLOAD"             https://api.cloudflare.com/client/v4/graphql)"
+
+          if [ "$(echo "$RESP" | jq -r '.errors | length // 0')" -gt 0 ]; then
+            REQUESTS="unavailable"
+            ERRORS="unavailable"
+            SUBREQUESTS="unavailable"
+            P50="unavailable"
+            P99="unavailable"
+            CF_METRICS="permission-or-api-gap"
+            echo "CLOUDFLARE_GRAPHQL_ERRORS=$(echo "$RESP" | jq -c '.errors')" 
+          else
+            ROW="$(echo "$RESP" | jq '.data.viewer.accounts[0].workersInvocationsAdaptive[0] // {}')"
+            REQUESTS="$(echo "$ROW" | jq -r '.sum.requests // 0')"
+            ERRORS="$(echo "$ROW" | jq -r '.sum.errors // 0')"
+            SUBREQUESTS="$(echo "$ROW" | jq -r '.sum.subrequests // 0')"
+            P50="$(echo "$ROW" | jq -r '.quantiles.cpuTimeP50 // 0')"
+            P99="$(echo "$ROW" | jq -r '.quantiles.cpuTimeP99 // 0')"
+            CF_METRICS="ok"
+          fi
+
+          {
+            echo "CLOUDFLARE_NATIVE requests_1h=$REQUESTS errors_1h=$ERRORS subrequests_1h=$SUBREQUESTS cpu_p50=$P50 cpu_p99=$P99 analytics=$CF_METRICS"
+            echo "## Cloudflare native health"
+            echo
+            echo "| Metric | Provider value |"
+            echo "|---|---:|"
+            echo "| Requests (1h) | $REQUESTS |"
+            echo "| Errors (1h) | $ERRORS |"
+            echo "| Subrequests (1h) | $SUBREQUESTS |"
+            echo "| CPU p50 | $P50 |"
+            echo "| CPU p99 | $P99 |"
+            echo "| Analytics API | $CF_METRICS |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+  board:
+    if: ${{ always() }}
+    needs:
+      - aws-health
+      - google-health
+      - cloudflare-health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Native provider health board state
+        env:
+          AWS_STATE: ${{ needs.aws-health.result }}
+          GOOGLE_STATE: ${{ needs.google-health.result }}
+          CLOUDFLARE_STATE: ${{ needs.cloudflare-health.result }}
+        run: |
+          {
+            echo "FUNCTION_LAND_NATIVE_BOARD aws=$AWS_STATE google=$GOOGLE_STATE cloudflare=$CLOUDFLARE_STATE"
+            echo "## Function Land native health board"
+            echo
+            echo "| Provider reader | State |"
+            echo "|---|---|"
+            echo "| AWS | $AWS_STATE |"
+            echo "| Google | $GOOGLE_STATE |"
+            echo "| Cloudflare | $CLOUDFLARE_STATE |"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
