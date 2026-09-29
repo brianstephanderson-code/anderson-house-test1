@@ -1,0 +1,136 @@
+name: Google Two-Job Warm Probe
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/google-two-job-warm-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: google-two-job-warm-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Resolve Google endpoint
+        id: endpoint
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          test -n "$URI"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Mint Google runtime token
+        id: idtoken
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ steps.endpoint.outputs.uri }}
+          create_credentials_file: false
+
+      - name: Publish two Google ORDERS
+        run: |
+          set -euo pipefail
+          mkdir -p hive/bus/orders
+          for N in 1 2; do
+            ID="google-warm-${GITHUB_RUN_ID}-$N"
+            {
+              echo "MESSAGE_ID=$ID"
+              echo "CHANNEL=ORDERS"
+              echo "FROM=MANAGEMENT"
+              echo "TO=GOOGLE"
+              echo "TYPE=WARM_PROBE"
+              echo "EXECUTOR=GOOGLE_TWO_JOB_PROBE"
+              echo "PAYLOAD=Google warm probe parcel $N. Bees return!"
+              echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "hive/bus/orders/$ID.msg"
+          done
+          git config user.name "Google Two-Job Probe"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hive/bus/orders
+          git commit -m "Publish two Google warm-probe orders $GITHUB_RUN_ID"
+          git pull --rebase origin main
+          git push origin main
+
+      - name: Execute two sequential runtime jobs
+        env:
+          URI: ${{ steps.endpoint.outputs.uri }}
+          ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
+        run: |
+          set -euo pipefail
+          mkdir -p hive/bus/uplink /tmp/google-probe
+          : > /tmp/google-probe/times.tsv
+
+          for N in 1 2; do
+            ID="google-warm-${GITHUB_RUN_ID}-$N"
+            TEXT="Google warm probe parcel $N. Bees return!"
+            METRICS="$(curl --fail --silent --show-error --get               --output "/tmp/google-probe/body-$N.json"               --write-out '%{time_total} %{http_code}'               -H "Authorization: Bearer $ID_TOKEN"               --data-urlencode "text=$TEXT"               "$URI")"
+            SECONDS="$(echo "$METRICS" | awk '{print $1}')"
+            HTTP="$(echo "$METRICS" | awk '{print $2}')"
+            BODY="$(jq -c . "/tmp/google-probe/body-$N.json")"
+            echo "$N	$SECONDS	$HTTP" >> /tmp/google-probe/times.tsv
+
+            {
+              echo "MESSAGE_ID=$ID"
+              echo "CHANNEL=UPLINK"
+              echo "FROM=GOOGLE"
+              echo "TO=MANAGEMENT"
+              echo "TYPE=ORDER_RESULT"
+              echo "STATUS=DONE"
+              echo "CORRELATION_ID=$ID"
+              echo "RESPONSE_SECONDS=$SECONDS"
+              echo "HTTP=$HTTP"
+              echo "RESULT_JSON=$BODY"
+              echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            } > "hive/bus/uplink/$ID.google.uplink"
+          done
+
+          T1="$(awk 'NR==1{print $2}' /tmp/google-probe/times.tsv)"
+          T2="$(awk 'NR==2{print $2}' /tmp/google-probe/times.tsv)"
+
+          git add hive/bus/uplink
+          git commit -m "Publish two Google warm-probe uplinks $GITHUB_RUN_ID"
+          git pull --rebase origin main
+          git push origin main
+
+          {
+            echo "## Google two-job runtime probe"
+            echo
+            echo "| Job | Runtime response seconds | HTTP |"
+            echo "|---|---:|---:|"
+            awk -F '\t' '{printf "| %s | %s | %s |\n",$1,$2,$3}' /tmp/google-probe/times.tsv
+            echo
+            echo "Job 1: **$T1 s**"
+            echo
+            echo "Job 2: **$T2 s**"
+            echo
+            echo "_No Google redeploy occurs here. The two calls are back-to-back runtime invocations; a faster second call can be consistent with a warm instance, but instance reuse is provider-controlled and not guaranteed._"
+          } >> "$GITHUB_STEP_SUMMARY"
