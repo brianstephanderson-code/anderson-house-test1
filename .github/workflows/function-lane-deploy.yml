@@ -297,73 +297,10 @@ jobs:
             echo "| Maximum instances | $MAX |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          METRICS="$(curl --fail --silent --show-error --get \
-            --output /tmp/google-body.json \
-            --write-out '%{time_total}\t%{size_download}\t%{http_code}' \
-            -H "Authorization: Bearer $ID_TOKEN" \
-            --data-urlencode 'text=Many hands work. Bees return!' \
-            "$URI")"
-          IFS=
-  health:
-    if: ${{ always() }}
-    needs:
-      - test
-      - cloudflare-check
-      - aws-check
-      - google-check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Aggregate independent door states
-        env:
-          TEST_STATE: ${{ needs.test.result }}
-          AWS_STATE: ${{ needs.aws-check.result }}
-          GOOGLE_STATE: ${{ needs.google-check.result }}
-          CLOUDFLARE_STATE: ${{ needs.cloudflare-check.result }}
-        run: |
-          {
-            echo "## Function Lane Aggregate"
-            echo
-            echo "| Door | State |"
-            echo "|---|---|"
-            echo "| Test | $TEST_STATE |"
-            echo "| AWS | $AWS_STATE |"
-            echo "| Google | $GOOGLE_STATE |"
-            echo "| Cloudflare | $CLOUDFLARE_STATE |"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          test "$TEST_STATE" = "success"
-          test "$AWS_STATE" = "success"
-          test "$GOOGLE_STATE" = "success"
-          test "$CLOUDFLARE_STATE" = "success"
-
-  usage:
-    if: ${{ always() && needs.health.result == 'success' }}
-    needs:
-      - health
-    runs-on: ubuntu-latest
-    steps:
-      - name: Measure run usage
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          JOBS_JSON="$(curl --fail --silent --show-error \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100")"
-
-          echo "$JOBS_JSON" > /tmp/jobs.json
-          TOTAL_SECONDS="$(jq '[.jobs[] | select(.started_at != null and .completed_at != null) | ((.completed_at|fromdateiso8601)-(.started_at|fromdateiso8601))] | add // 0' /tmp/jobs.json)"
-
-          {
-            echo "## Function Land Usage"
-            echo
-            echo "Completed runner seconds so far: **$TOTAL_SECONDS**"
-            echo
-            echo "_Each cloud door now reports independently; this final usage job waits only to make the whole-run total._"
-          } >> "$GITHUB_STEP_SUMMARY"
-\t' read -r SECONDS BYTES HTTP <<< "$METRICS"
+          METRICS="$(curl --fail --silent --show-error --get             --output /tmp/google-body.json             --write-out '%{time_total} %{size_download} %{http_code}'             -H "Authorization: Bearer $ID_TOKEN"             --data-urlencode 'text=Many hands work. Bees return!'             "$URI")"
+          SECONDS="$(echo "$METRICS" | awk '{print $1}')"
+          BYTES="$(echo "$METRICS" | awk '{print $2}')"
+          HTTP="$(echo "$METRICS" | awk '{print $3}')"
 
           BODY="$(cat /tmp/google-body.json)"
           node -e '
