@@ -125,62 +125,191 @@ jobs:
           source_dir: .build/google
 
 
-  health:
-    if: ${{ always() }}
+
+  cloudflare-check:
+    if: ${{ always() && needs.cloudflare.result == 'success' }}
     needs:
-      - test
       - cloudflare
-      - aws
-      - google
     runs-on: ubuntu-latest
     steps:
-      - name: Check deployment state
-        env:
-          TEST_STATE: ${{ needs.test.result }}
-          AWS_STATE: ${{ needs.aws.result }}
-          GOOGLE_STATE: ${{ needs.google.result }}
-          CLOUDFLARE_STATE: ${{ needs.cloudflare.result }}
+      - name: Live Cloudflare check
         run: |
-          printf "Function Lane health\n"
-          printf "test=%s\naws=%s\ngoogle=%s\ncloudflare=%s\n" "$TEST_STATE" "$AWS_STATE" "$GOOGLE_STATE" "$CLOUDFLARE_STATE"
-          test "$TEST_STATE" = "success"
-          test "$AWS_STATE" = "success"
-          test "$GOOGLE_STATE" = "success"
-          test "$CLOUDFLARE_STATE" = "success"
-
-      - name: Live Cloudflare smoke test
-        run: |
-          BODY="$(curl --fail --silent --show-error --get \
+          METRICS="$(curl --fail --silent --show-error --get \
+            --output /tmp/cf-body.json \
+            --write-out '%{time_total}\t%{size_download}\t%{http_code}' \
             --data-urlencode 'text=Many hands work. Bees return!' \
             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+
+          IFS=$'\t' read -r SECONDS BYTES HTTP <<< "$METRICS"
+          BODY="$(cat /tmp/cf-body.json)"
           echo "$BODY"
+
           node -e '
             const body = JSON.parse(process.argv[1]);
             if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true) {
-              console.error("Unexpected live result", body);
+              console.error("Unexpected Cloudflare live result", body);
               process.exit(1);
             }
           ' "$BODY"
 
-      - name: Publish health summary
-        env:
-          TEST_STATE: ${{ needs.test.result }}
-          AWS_STATE: ${{ needs.aws.result }}
-          GOOGLE_STATE: ${{ needs.google.result }}
-          CLOUDFLARE_STATE: ${{ needs.cloudflare.result }}
-        run: |
           {
-            echo "## Function Lane Health"
+            echo "## Cloudflare Door"
             echo
-            echo "| Joint | State |"
-            echo "|---|---|"
-            echo "| Test gate | $TEST_STATE |"
-            echo "| AWS deploy | $AWS_STATE |"
-            echo "| Google deploy | $GOOGLE_STATE |"
-            echo "| Cloudflare deploy | $CLOUDFLARE_STATE |"
-            echo "| Cloudflare live answer | success |"
+            echo "| Gauge | Value |"
+            echo "|---|---:|"
+            echo "| State | success |"
+            echo "| HTTP | $HTTP |"
+            echo "| Response seconds | $SECONDS |"
+            echo "| Response bytes | $BYTES |"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  aws-check:
+    concurrency:
+      group: function-lane-aws-ahhello
+      cancel-in-progress: false
+    if: ${{ always() && needs.aws.result == 'success' }}
+    needs:
+      - aws
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Live AWS check
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+        run: |
+          aws lambda invoke \
+            --function-name "$FUNCTION_NAME" \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"text":"Many hands work. Bees return!"}' \
+            /tmp/aws-response.json >/tmp/aws-meta.json
+
+          node -e '
+            const fs = require("fs");
+            const outer = JSON.parse(fs.readFileSync("/tmp/aws-response.json", "utf8"));
+            const body = typeof outer.body === "string" ? JSON.parse(outer.body) : outer;
+            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true) {
+              console.error("Unexpected AWS live result", body);
+              process.exit(1);
+            }
+          '
+
+          START="$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ)"
+          END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          set +e
+          INV_JSON="$(aws cloudwatch get-metric-statistics \
+            --namespace AWS/Lambda \
+            --metric-name Invocations \
+            --dimensions "Name=FunctionName,Value=$FUNCTION_NAME" \
+            --start-time "$START" --end-time "$END" --period 3600 \
+            --statistics Sum --output json 2>/tmp/aws-metric-error)"
+          RC=$?
+          set -e
+
+          {
+            echo "## AWS Door"
+            echo
+            echo "Live Lambda answer: **success**"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$RC" -eq 0 ]; then
+            INV="$(echo "$INV_JSON" | jq '[.Datapoints[].Sum] | add // 0')"
+            echo "Last-hour Lambda invocations: **$INV**" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "CloudWatch metrics: **telemetry permission still missing**" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  google-check:
+    concurrency:
+      group: function-lane-google-ahhello
+      cancel-in-progress: false
+    if: ${{ always() && needs.google.result == 'success' }}
+    needs:
+      - google
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Google live and capacity check
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          FUNCTION_JSON="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format=json)"
+          URI="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.uri // empty')"
+          MEMORY="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.availableMemory // "unknown"')"
+          MAX="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.maxInstanceCount // "provider default"')"
+
+          {
+            echo "## Google Door"
+            echo
+            echo "| Gauge | Value |"
+            echo "|---|---:|"
+            echo "| State | success |"
+            echo "| Configured memory | $MEMORY |"
+            echo "| Maximum instances | $MAX |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -n "$URI" ]; then
+            METRICS="$(curl --silent --show-error --get \
+              --output /tmp/google-body.json \
+              --write-out '%{time_total}\t%{size_download}\t%{http_code}' \
+              --data-urlencode 'text=Many hands work. Bees return!' \
+              "$URI")"
+            IFS=$'\t' read -r SECONDS BYTES HTTP <<< "$METRICS"
+            {
+              echo "| Live HTTP | $HTTP |"
+              echo "| Response seconds | $SECONDS |"
+              echo "| Response bytes | $BYTES |"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  health:
+    if: ${{ always() }}
+    needs:
+      - test
+      - cloudflare-check
+      - aws-check
+      - google-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate independent door states
+        env:
+          TEST_STATE: ${{ needs.test.result }}
+          AWS_STATE: ${{ needs.aws-check.result }}
+          GOOGLE_STATE: ${{ needs.google-check.result }}
+          CLOUDFLARE_STATE: ${{ needs.cloudflare-check.result }}
+        run: |
+          {
+            echo "## Function Lane Aggregate"
+            echo
+            echo "| Door | State |"
+            echo "|---|---|"
+            echo "| Test | $TEST_STATE |"
+            echo "| AWS | $AWS_STATE |"
+            echo "| Google | $GOOGLE_STATE |"
+            echo "| Cloudflare | $CLOUDFLARE_STATE |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          test "$TEST_STATE" = "success"
+          test "$AWS_STATE" = "success"
+          test "$GOOGLE_STATE" = "success"
+          test "$CLOUDFLARE_STATE" = "success"
 
   usage:
     if: ${{ always() && needs.health.result == 'success' }}
@@ -188,7 +317,7 @@ jobs:
       - health
     runs-on: ubuntu-latest
     steps:
-      - name: Measure Function Land usage snapshot
+      - name: Measure run usage
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -200,225 +329,12 @@ jobs:
             "https://api.github.com/repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100")"
 
           echo "$JOBS_JSON" > /tmp/jobs.json
-
-          jq -r '
-            .jobs[]
-            | select(.started_at != null and .completed_at != null)
-            | [.name, .started_at, .completed_at, .conclusion]
-            | @tsv
-          ' /tmp/jobs.json > /tmp/job-times.tsv
-
-          TOTAL_SECONDS=0
-          {
-            echo "## Function Land Usage Snapshot"
-            echo
-            echo "| Lane | State | Runner seconds |"
-            echo "|---|---:|---:|"
-            while IFS=$'\t' read -r NAME START END STATE; do
-              START_EPOCH="$(date -d "$START" +%s)"
-              END_EPOCH="$(date -d "$END" +%s)"
-              SECONDS_USED=$((END_EPOCH - START_EPOCH))
-              TOTAL_SECONDS=$((TOTAL_SECONDS + SECONDS_USED))
-              printf '| %s | %s | %s |\n' "$NAME" "$STATE" "$SECONDS_USED"
-            done < /tmp/job-times.tsv
-            echo "| **Total GitHub runner time** |  | **$TOTAL_SECONDS** |"
-            echo
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          CF_METRICS="$(curl --fail --silent --show-error --get \
-            --output /tmp/cf-body.json \
-            --write-out '%{time_total}\t%{size_download}\t%{http_code}' \
-            --data-urlencode 'text=Many hands work. Bees return!' \
-            'https://ah-word-count.brian-steph-anderson.workers.dev')"
-
-          IFS=$'\t' read -r CF_SECONDS CF_BYTES CF_HTTP <<< "$CF_METRICS"
+          TOTAL_SECONDS="$(jq '[.jobs[] | select(.started_at != null and .completed_at != null) | ((.completed_at|fromdateiso8601)-(.started_at|fromdateiso8601))] | add // 0' /tmp/jobs.json)"
 
           {
-            echo "### Live probe"
+            echo "## Function Land Usage"
             echo
-            echo "| Probe | Value |"
-            echo "|---|---:|"
-            echo "| Cloudflare HTTP | $CF_HTTP |"
-            echo "| Cloudflare response seconds | $CF_SECONDS |"
-            echo "| Cloudflare response bytes | $CF_BYTES |"
+            echo "Completed runner seconds so far: **$TOTAL_SECONDS**"
             echo
-            echo "_This is the first consumption gauge: GitHub runner time plus live endpoint latency/size. Provider-side CPU, memory, invocation counts and quotas will be added separately._"
+            echo "_Each cloud door now reports independently; this final usage job waits only to make the whole-run total._"
           } >> "$GITHUB_STEP_SUMMARY"
-
-
-  provider-usage:
-    concurrency:
-      group: function-lane-aws-ahhello
-      cancel-in-progress: false
-    if: ${{ always() && needs.usage.result == 'success' }}
-    needs:
-      - usage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials for telemetry
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
-
-      - name: Live AWS Lambda smoke test
-        env:
-          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
-        run: |
-          aws lambda invoke \
-            --function-name "$FUNCTION_NAME" \
-            --cli-binary-format raw-in-base64-out \
-            --payload '{"text":"Many hands work. Bees return!"}' \
-            /tmp/aws-lambda-response.json >/tmp/aws-invoke-meta.json
-
-          cat /tmp/aws-lambda-response.json
-
-          node -e '
-            const fs = require("fs");
-            const outer = JSON.parse(fs.readFileSync("/tmp/aws-lambda-response.json", "utf8"));
-            const body = typeof outer.body === "string" ? JSON.parse(outer.body) : outer;
-            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true) {
-              console.error("Unexpected AWS live result", body);
-              process.exit(1);
-            }
-          '
-
-      - name: Read AWS Lambda consumption
-        env:
-          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
-        run: |
-          START="$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ)"
-          END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
-          metric () {
-            local NAME="$1"
-            local STAT="$2"
-            aws cloudwatch get-metric-statistics \
-              --namespace AWS/Lambda \
-              --metric-name "$NAME" \
-              --dimensions "Name=FunctionName,Value=$FUNCTION_NAME" \
-              --start-time "$START" \
-              --end-time "$END" \
-              --period 3600 \
-              --statistics "$STAT" \
-              --output json
-          }
-
-          set +e
-          INV_JSON="$(metric Invocations Sum 2>/tmp/aws-metric-error)"
-          RC=$?
-          set -e
-
-          if [ "$RC" -ne 0 ]; then
-            {
-              echo "## AWS Consumption"
-              echo
-              echo "AWS live invocation: **success**"
-              echo
-              echo "CloudWatch consumption metrics: **not readable with the current deploy role yet**"
-              echo
-              echo "This is a telemetry-permission gap, not a Function Lane failure."
-            } >> "$GITHUB_STEP_SUMMARY"
-            cat /tmp/aws-metric-error
-            exit 0
-          fi
-
-          ERR_JSON="$(metric Errors Sum)"
-          DUR_JSON="$(metric Duration Average)"
-
-          INV="$(echo "$INV_JSON" | jq '[.Datapoints[].Sum] | add // 0')"
-          ERR="$(echo "$ERR_JSON" | jq '[.Datapoints[].Sum] | add // 0')"
-          AVG_MS="$(echo "$DUR_JSON" | jq '[.Datapoints[].Average] | if length == 0 then 0 else (add/length) end')"
-
-          {
-            echo "## AWS Consumption"
-            echo
-            echo "| Gauge | Last hour |"
-            echo "|---|---:|"
-            echo "| Lambda invocations | $INV |"
-            echo "| Lambda errors | $ERR |"
-            echo "| Average duration ms | $AVG_MS |"
-            echo "| Live Lambda answer | success |"
-            echo
-            echo "_CloudWatch metrics can arrive a little after the invocation, so very fresh activity may not appear immediately._"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-
-  google-usage:
-    concurrency:
-      group: function-lane-google-ahhello
-      cancel-in-progress: false
-    if: ${{ always() && needs.provider-usage.result == 'success' }}
-    needs:
-      - provider-usage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Authenticate to Google Cloud for telemetry
-        uses: google-github-actions/auth@v3
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v3
-
-      - name: Read Google Function Land consumption
-        env:
-          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
-          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
-        run: |
-          set +e
-          FUNCTION_JSON="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format=json 2>/tmp/gcp-function-error)"
-          RC=$?
-          set -e
-
-          if [ "$RC" -ne 0 ]; then
-            {
-              echo "## Google Consumption"
-              echo
-              echo "Google telemetry: **not readable with the current service account yet**"
-              echo
-              echo "This is a telemetry-permission gap, not a Function Lane failure."
-            } >> "$GITHUB_STEP_SUMMARY"
-            cat /tmp/gcp-function-error
-            exit 0
-          fi
-
-          SERVICE_URI="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.uri // empty')"
-          AVAILABLE_MEM="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.availableMemory // "unknown"')"
-          MAX_INSTANCES="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.maxInstanceCount // "provider default"')"
-          MIN_INSTANCES="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.minInstanceCount // 0')"
-
-          {
-            echo "## Google Consumption"
-            echo
-            echo "| Gauge | Value |"
-            echo "|---|---:|"
-            echo "| Configured memory | $AVAILABLE_MEM |"
-            echo "| Minimum instances | $MIN_INSTANCES |"
-            echo "| Maximum instances | $MAX_INSTANCES |"
-            echo "| Function endpoint discovered | $([ -n "$SERVICE_URI" ] && echo yes || echo no) |"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          if [ -n "$SERVICE_URI" ]; then
-            set +e
-            METRICS="$(curl --silent --show-error --get               --output /tmp/google-live-body.json               --write-out '%{time_total}\t%{size_download}\t%{http_code}'               --data-urlencode 'text=Many hands work. Bees return!'               "$SERVICE_URI")"
-            CURL_RC=$?
-            set -e
-
-            if [ "$CURL_RC" -eq 0 ]; then
-              IFS=$'\t' read -r G_SECONDS G_BYTES G_HTTP <<< "$METRICS"
-              {
-                echo
-                echo "### Google live probe"
-                echo
-                echo "| Probe | Value |"
-                echo "|---|---:|"
-                echo "| HTTP | $G_HTTP |"
-                echo "| Response seconds | $G_SECONDS |"
-                echo "| Response bytes | $G_BYTES |"
-              } >> "$GITHUB_STEP_SUMMARY"
-            fi
-          fi
