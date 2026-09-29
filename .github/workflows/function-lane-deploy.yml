@@ -20,10 +20,6 @@ on:
           - aws
           - google
 
-concurrency:
-  group: function-lane-deploy
-  cancel-in-progress: false
-
 permissions:
   contents: read
   actions: read
@@ -38,6 +34,9 @@ jobs:
         run: node --test function-lane/test/*.test.mjs
 
   cloudflare:
+    concurrency:
+      group: function-lane-cloudflare-ah-word-count
+      cancel-in-progress: false
     if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'cloudflare' }}
     needs: test
     runs-on: ubuntu-latest
@@ -58,6 +57,9 @@ jobs:
           workingDirectory: function-lane/cloudflare
 
   aws:
+    concurrency:
+      group: function-lane-aws-ahhello
+      cancel-in-progress: false
     if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'aws' }}
     needs: test
     runs-on: ubuntu-latest
@@ -87,6 +89,9 @@ jobs:
           role: ${{ vars.AWS_LAMBDA_EXECUTION_ROLE }}
 
   google:
+    concurrency:
+      group: function-lane-google-ahhello
+      cancel-in-progress: false
     if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'google' }}
     needs: test
     runs-on: ubuntu-latest
@@ -242,6 +247,9 @@ jobs:
 
 
   provider-usage:
+    concurrency:
+      group: function-lane-aws-ahhello
+      cancel-in-progress: false
     if: ${{ always() && needs.usage.result == 'success' }}
     needs:
       - usage
@@ -337,6 +345,9 @@ jobs:
 
 
   google-usage:
+    concurrency:
+      group: function-lane-google-ahhello
+      cancel-in-progress: false
     if: ${{ always() && needs.provider-usage.result == 'success' }}
     needs:
       - provider-usage
