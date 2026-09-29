@@ -232,3 +232,98 @@ jobs:
             echo
             echo "_This is the first consumption gauge: GitHub runner time plus live endpoint latency/size. Provider-side CPU, memory, invocation counts and quotas will be added separately._"
           } >> "$GITHUB_STEP_SUMMARY"
+
+
+  provider-usage:
+    if: ${{ always() && needs.usage.result == 'success' }}
+    needs:
+      - usage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials for telemetry
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Live AWS Lambda smoke test
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+        run: |
+          aws lambda invoke \
+            --function-name "$FUNCTION_NAME" \
+            --cli-binary-format raw-in-base64-out \
+            --payload '{"text":"Many hands work. Bees return!"}' \
+            /tmp/aws-lambda-response.json >/tmp/aws-invoke-meta.json
+
+          cat /tmp/aws-lambda-response.json
+
+          node -e '
+            const fs = require("fs");
+            const outer = JSON.parse(fs.readFileSync("/tmp/aws-lambda-response.json", "utf8"));
+            const body = typeof outer.body === "string" ? JSON.parse(outer.body) : outer;
+            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1) {
+              console.error("Unexpected AWS live result", body);
+              process.exit(1);
+            }
+          '
+
+      - name: Read AWS Lambda consumption
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+        run: |
+          START="$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ)"
+          END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          metric () {
+            local NAME="$1"
+            local STAT="$2"
+            aws cloudwatch get-metric-statistics \
+              --namespace AWS/Lambda \
+              --metric-name "$NAME" \
+              --dimensions "Name=FunctionName,Value=$FUNCTION_NAME" \
+              --start-time "$START" \
+              --end-time "$END" \
+              --period 3600 \
+              --statistics "$STAT" \
+              --output json
+          }
+
+          set +e
+          INV_JSON="$(metric Invocations Sum 2>/tmp/aws-metric-error)"
+          RC=$?
+          set -e
+
+          if [ "$RC" -ne 0 ]; then
+            {
+              echo "## AWS Consumption"
+              echo
+              echo "AWS live invocation: **success**"
+              echo
+              echo "CloudWatch consumption metrics: **not readable with the current deploy role yet**"
+              echo
+              echo "This is a telemetry-permission gap, not a Function Lane failure."
+            } >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/aws-metric-error
+            exit 0
+          fi
+
+          ERR_JSON="$(metric Errors Sum)"
+          DUR_JSON="$(metric Duration Average)"
+
+          INV="$(echo "$INV_JSON" | jq '[.Datapoints[].Sum] | add // 0')"
+          ERR="$(echo "$ERR_JSON" | jq '[.Datapoints[].Sum] | add // 0')"
+          AVG_MS="$(echo "$DUR_JSON" | jq '[.Datapoints[].Average] | if length == 0 then 0 else (add/length) end')"
+
+          {
+            echo "## AWS Consumption"
+            echo
+            echo "| Gauge | Last hour |"
+            echo "|---|---:|"
+            echo "| Lambda invocations | $INV |"
+            echo "| Lambda errors | $ERR |"
+            echo "| Average duration ms | $AVG_MS |"
+            echo "| Live Lambda answer | success |"
+            echo
+            echo "_CloudWatch metrics can arrive a little after the invocation, so very fresh activity may not appear immediately._"
+          } >> "$GITHUB_STEP_SUMMARY"
