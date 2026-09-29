@@ -97,6 +97,19 @@ jobs:
             esac
           }
 
+          invoke_with_recovery() {
+            local provider="$1" text="$2"
+            local attempt result
+            for attempt in 1 2 3; do
+              if result="$(invoke_provider "$provider" "$text")"; then
+                printf '%s' "$result"
+                return 0
+              fi
+              sleep "$attempt"
+            done
+            return 1
+          }
+
           target_matches() {
             local to
             to="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
@@ -124,7 +137,7 @@ jobs:
               out="hive/bus/uplink/$id.$provider.uplink"
               [ -e "$out" ] && continue
 
-              if result="$(invoke_provider "$provider" "$payload")"; then
+              if result="$(invoke_with_recovery "$provider" "$payload")"; then
                 {
                   echo "MESSAGE_ID=$id"
                   echo "CHANNEL=UPLINK"
@@ -134,6 +147,7 @@ jobs:
                   echo "STATUS=DONE"
                   echo "CORRELATION_ID=$id"
                   echo "RESULT_JSON=$result"
+                  echo "RECOVERY=3_LOCAL_ATTEMPTS"
                   echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
                 } > "$out"
               else
@@ -145,7 +159,8 @@ jobs:
                   echo "TYPE=ORDER_RESULT"
                   echo "STATUS=BLOCKED"
                   echo "CORRELATION_ID=$id"
-                  echo "REASON=PROVIDER_INVOKE_FAILED"
+                  echo "REASON=LOCAL_RETRY_EXHAUSTED"
+                  echo "RECOVERY=3_LOCAL_ATTEMPTS"
                   echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
                 } > "$out"
               fi
@@ -166,7 +181,7 @@ jobs:
               ack="hive/bus/acks/$id.$provider.ack"
               [ -e "$ack" ] && continue
 
-              if result="$(invoke_provider "$provider" "$payload")"; then
+              if result="$(invoke_with_recovery "$provider" "$payload")"; then
                 {
                   echo "MESSAGE_ID=$id"
                   echo "CHANNEL=CROSSTALK"
@@ -176,6 +191,7 @@ jobs:
                   echo "STATUS=DONE"
                   echo "CORRELATION_ID=$id"
                   echo "RESULT_JSON=$result"
+                  echo "RECOVERY=3_LOCAL_ATTEMPTS"
                   echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
                 } > "$ack"
               else
@@ -187,7 +203,8 @@ jobs:
                   echo "TYPE=CROSSTALK_EXCEPTION"
                   echo "STATUS=BLOCKED"
                   echo "CORRELATION_ID=$id"
-                  echo "REASON=PROVIDER_INVOKE_FAILED"
+                  echo "REASON=LOCAL_RETRY_EXHAUSTED"
+                  echo "RECOVERY=3_LOCAL_ATTEMPTS"
                   echo "UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
                 } > "hive/bus/uplink/$id.$provider.exception.uplink"
               fi

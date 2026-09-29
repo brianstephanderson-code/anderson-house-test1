@@ -183,6 +183,8 @@ jobs:
             SLOT="$(( (ID - 1) % COUNT ))"
             PROVIDER="${PROVIDERS[$SLOT]}"
             TEXT="Parcel $ID. Many hands work. Bees return!"
+            MESSAGE_ID="dispatch-${GITHUB_RUN_ID}-$ID"
+            UPPER="$(echo "$PROVIDER" | tr '[:lower:]' '[:upper:]')"
 
             if [ "$PROVIDER" = "cloudflare" ]; then
               BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "text=$TEXT" "$CLOUDFLARE_URI")"
@@ -223,7 +225,7 @@ jobs:
           }
 
           export -f dispatch_one
-          export HEALTHY_POOL GOOGLE_URI GOOGLE_ID_TOKEN AWS_FUNCTION_NAME CLOUDFLARE_URI
+          export HEALTHY_POOL GOOGLE_URI GOOGLE_ID_TOKEN AWS_FUNCTION_NAME CLOUDFLARE_URI GITHUB_RUN_ID
 
           START="$(date +%s%N)"
           seq 30 | xargs -I{} -P 12 bash -c 'dispatch_one "$1"' _ {}

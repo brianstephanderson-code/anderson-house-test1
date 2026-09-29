@@ -1,0 +1,66 @@
+name: Function Land Flow Board
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  board:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Count communication flow
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          orders=(hive/bus/orders/*.msg)
+          uplinks=(hive/bus/uplink/*.uplink)
+          acks=(hive/bus/acks/*.ack)
+
+          ORDER_TOTAL="${#orders[@]}"
+          UPLINK_TOTAL="${#uplinks[@]}"
+          ACK_TOTAL="${#acks[@]}"
+
+          ORDER_DONE=0
+          ORDER_BLOCKED=0
+          for f in "${orders[@]}"; do
+            id="$(awk -F= '$1=="MESSAGE_ID"{sub(/^[^=]*=/,"");print;exit}' "$f")"
+            [ -n "$id" ] || continue
+            matches=(hive/bus/uplink/"$id".*.uplink)
+            if [ "${#matches[@]}" -gt 0 ]; then
+              if grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
+                ORDER_BLOCKED=$((ORDER_BLOCKED+1))
+              else
+                ORDER_DONE=$((ORDER_DONE+1))
+              fi
+            fi
+          done
+
+          ORDER_PENDING=$((ORDER_TOTAL-ORDER_DONE-ORDER_BLOCKED))
+          if [ "$ORDER_PENDING" -lt 0 ]; then ORDER_PENDING=0; fi
+
+          CROSSTALK_TOTAL="$(find hive/bus/crosstalk -maxdepth 1 -type f -name '*.msg' 2>/dev/null | wc -l)"
+          CROSSTALK_OUT="$ACK_TOTAL"
+          CROSSTALK_PENDING=$((CROSSTALK_TOTAL-CROSSTALK_OUT))
+          if [ "$CROSSTALK_PENDING" -lt 0 ]; then CROSSTALK_PENDING=0; fi
+
+          UPLINK_BLOCKED="$(grep -l '^STATUS=BLOCKED$' hive/bus/uplink/*.uplink 2>/dev/null | wc -l || true)"
+          UPLINK_OUT=$((UPLINK_TOTAL-UPLINK_BLOCKED))
+
+          {
+            echo "## Anderson House Communication Flow"
+            echo
+            echo "| Lane | IN | PENDING | OUT | BLOCKED |"
+            echo "|---|---:|---:|---:|---:|"
+            echo "| ORDERS | $ORDER_TOTAL | $ORDER_PENDING | $ORDER_DONE | $ORDER_BLOCKED |"
+            echo "| CROSSTALK | $CROSSTALK_TOTAL | $CROSSTALK_PENDING | $CROSSTALK_OUT | 0 |"
+            echo "| UPLINK | $UPLINK_TOTAL | 0 | $UPLINK_OUT | $UPLINK_BLOCKED |"
+            echo
+            echo "**Recovery:** BLOCKED -> local retry -> return/correlation -> UPLINK exception."
+          } >> "$GITHUB_STEP_SUMMARY"

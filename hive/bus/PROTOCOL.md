@@ -57,3 +57,20 @@ hive/bus/acks/<MESSAGE_ID>.<WORKER>.ack
 - PAYLOAD is data, never shell code.
 - No hive executes arbitrary commands received over CROSSTALK.
 - Receipt existence is the deduplication oracle.
+
+
+## BLOCKED recovery gate
+
+BLOCKED is an exception state, not a normal terminal basket.
+
+Recovery order:
+
+1. LOCAL RETRY — the worker retries the same function locally up to the configured retry limit.
+2. RETURN TO ORIGIN — if local recovery cannot solve it and the originator can change the order, return the correlated exception to the originator.
+3. UPLINK EXCEPTION — if the originator cannot resolve it, or senior authority/policy is required, promote it to management.
+
+Rule:
+
+`BLOCKED -> LOCAL RETRY -> RETURN TO ORIGIN -> UPLINK EXCEPTION`
+
+Routine faults should be corrected below management whenever possible. Every retry/return keeps the original MESSAGE_ID or CORRELATION_ID so the loop remains traceable.
