@@ -32,16 +32,19 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Resolve Google endpoint
+      - name: Resolve Google endpoint and native state
         id: endpoint
         env:
           PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           REGION: ${{ vars.GCP_REGION || 'us-east1' }}
           FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
         run: |
-          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          FUNCTION_JSON="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format=json)"
+          URI="$(echo "$FUNCTION_JSON" | jq -r '.serviceConfig.uri // empty')"
+          STATE="$(echo "$FUNCTION_JSON" | jq -r '.state // "unknown"')"
           test -n "$URI"
           echo "uri=$URI" >> "$GITHUB_OUTPUT"
+          echo "state=$STATE" >> "$GITHUB_OUTPUT"
 
       - name: Mint Google runtime token
         id: idtoken
@@ -54,33 +57,101 @@ jobs:
           id_token_audience: ${{ steps.endpoint.outputs.uri }}
           create_credentials_file: false
 
-      - name: Dispatch 30 parcels across Function Land
+      - name: Read provider health and choose active pool
+        id: health
         env:
+          GOOGLE_URI: ${{ steps.endpoint.outputs.uri }}
+          GOOGLE_STATE: ${{ steps.endpoint.outputs.state }}
+          GOOGLE_ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
+          AWS_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+          CLOUDFLARE_URI: https://ah-word-count.brian-steph-anderson.workers.dev
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          HEALTHY=""
+
+          # AWS native health: state + recent errors/throttles.
+          AWS_JSON="$(aws lambda get-function-configuration --function-name "$AWS_FUNCTION_NAME")"
+          AWS_STATE="$(echo "$AWS_JSON" | jq -r '.State // "unknown"')"
+          AWS_UPDATE="$(echo "$AWS_JSON" | jq -r '.LastUpdateStatus // "unknown"')"
+          START="$(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ)"
+          END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          aws_metric_sum() {
+            NAME="$1"
+            aws cloudwatch get-metric-statistics               --namespace AWS/Lambda               --metric-name "$NAME"               --dimensions "Name=FunctionName,Value=$AWS_FUNCTION_NAME"               --start-time "$START" --end-time "$END"               --period 3600 --statistics Sum --output json |
+              jq -r '[.Datapoints[].Sum] | add // 0'
+          }
+          AWS_ERRORS="$(aws_metric_sum Errors)"
+          AWS_THROTTLES="$(aws_metric_sum Throttles)"
+          if [ "$AWS_STATE" = "Active" ] && [ "$AWS_UPDATE" = "Successful" ]              && awk "BEGIN {exit !($AWS_ERRORS == 0)}"              && awk "BEGIN {exit !($AWS_THROTTLES == 0)}"; then
+            HEALTHY="aws"
+          fi
+
+          # Google native health: provider state + authenticated live probe.
+          GOOGLE_HTTP="$(curl --silent --show-error --get             --output /tmp/google-health-body.json             --write-out '%{http_code}'             -H "Authorization: Bearer $GOOGLE_ID_TOKEN"             --data-urlencode 'text=Health probe. Bees return!'             "$GOOGLE_URI")"
+          if [ "$GOOGLE_STATE" = "ACTIVE" ] && [ "$GOOGLE_HTTP" = "200" ]; then
+            if [ -n "$HEALTHY" ]; then HEALTHY="$HEALTHY,google"; else HEALTHY="google"; fi
+          fi
+
+          # Cloudflare native health: analytics errors + live probe.
+          QUERY='query H($accountTag: String!, $scriptName: String!, $start: Time!, $end: Time!) {
+            viewer { accounts(filter: {accountTag: $accountTag}) {
+              workersInvocationsAdaptive(limit: 1, filter: {scriptName: $scriptName, datetime_geq: $start, datetime_leq: $end}) {
+                sum { errors }
+              }
+            }}
+          }'
+          PAYLOAD="$(jq -nc --arg q "$QUERY" --arg account "$CF_ACCOUNT"             --arg script "ah-word-count" --arg start "$START" --arg end "$END"             '{query:$q,variables:{accountTag:$account,scriptName:$script,start:$start,end:$end}}')"
+          CF_RESP="$(curl --silent --show-error             -H "Authorization: Bearer $CF_TOKEN"             -H "Content-Type: application/json"             --data "$PAYLOAD" https://api.cloudflare.com/client/v4/graphql)"
+          CF_ERRORS="$(echo "$CF_RESP" | jq -r '.data.viewer.accounts[0].workersInvocationsAdaptive[0].sum.errors // 0')"
+          CF_HTTP="$(curl --silent --show-error --get             --output /tmp/cf-health-body.json             --write-out '%{http_code}'             --data-urlencode 'text=Health probe. Bees return!'             "$CLOUDFLARE_URI")"
+          if [ "$CF_HTTP" = "200" ] && [ "$CF_ERRORS" = "0" ]; then
+            if [ -n "$HEALTHY" ]; then HEALTHY="$HEALTHY,cloudflare"; else HEALTHY="cloudflare"; fi
+          fi
+
+          test -n "$HEALTHY"
+          echo "pool=$HEALTHY" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Health-aware routing decision"
+            echo
+            echo "| Provider | Native health input | Eligible |"
+            echo "|---|---|---|"
+            echo "| AWS | state=$AWS_STATE update=$AWS_UPDATE errors_1h=$AWS_ERRORS throttles_1h=$AWS_THROTTLES | $([[ ",$HEALTHY," == *",aws,"* ]] && echo yes || echo no) |"
+            echo "| Google | state=$GOOGLE_STATE live_http=$GOOGLE_HTTP | $([[ ",$HEALTHY," == *",google,"* ]] && echo yes || echo no) |"
+            echo "| Cloudflare | errors_1h=$CF_ERRORS live_http=$CF_HTTP | $([[ ",$HEALTHY," == *",cloudflare,"* ]] && echo yes || echo no) |"
+            echo
+            echo "Active pool: **$HEALTHY**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Health-aware dispatch of 30 parcels
+        env:
+          HEALTHY_POOL: ${{ steps.health.outputs.pool }}
           GOOGLE_URI: ${{ steps.endpoint.outputs.uri }}
           GOOGLE_ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
           AWS_FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
           CLOUDFLARE_URI: https://ah-word-count.brian-steph-anderson.workers.dev
         run: |
           mkdir -p /tmp/function-land-results
-          : > /tmp/routes.tsv
+          rm -f /tmp/function-land-results/*.tsv /tmp/routes.tsv
 
           dispatch_one() {
             ID="$1"
-            SLOT="$(( (ID - 1) % 3 ))"
+            IFS=',' read -ra PROVIDERS <<< "$HEALTHY_POOL"
+            COUNT="${#PROVIDERS[@]}"
+            SLOT="$(( (ID - 1) % COUNT ))"
+            PROVIDER="${PROVIDERS[$SLOT]}"
             TEXT="Parcel $ID. Many hands work. Bees return!"
 
-            if [ "$SLOT" -eq 0 ]; then
-              PROVIDER="cloudflare"
-              BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "text=$TEXT"                 "$CLOUDFLARE_URI")"
+            if [ "$PROVIDER" = "cloudflare" ]; then
+              BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "text=$TEXT" "$CLOUDFLARE_URI")"
               echo "$BODY" | jq -e '.providerHive.provider == "cloudflare"' >/dev/null
 
-            elif [ "$SLOT" -eq 1 ]; then
-              PROVIDER="google"
-              BODY="$(curl --fail --silent --show-error --get                 -H "Authorization: Bearer $GOOGLE_ID_TOKEN"                 --data-urlencode "text=$TEXT"                 "$GOOGLE_URI")"
+            elif [ "$PROVIDER" = "google" ]; then
+              BODY="$(curl --fail --silent --show-error --get                 -H "Authorization: Bearer $GOOGLE_ID_TOKEN"                 --data-urlencode "text=$TEXT" "$GOOGLE_URI")"
               echo "$BODY" | jq -e '.providerHive.provider == "google"' >/dev/null
 
-            else
-              PROVIDER="aws"
+            elif [ "$PROVIDER" = "aws" ]; then
               aws lambda invoke                 --function-name "$AWS_FUNCTION_NAME"                 --cli-binary-format raw-in-base64-out                 --payload "$(jq -nc --arg text "$TEXT" '{text:$text}')"                 "/tmp/function-land-results/aws-$ID.json" >/dev/null
               node -e '
                 const fs=require("fs");
@@ -88,13 +159,15 @@ jobs:
                 const body=typeof outer.body==="string" ? JSON.parse(outer.body) : outer;
                 if (body?.providerHive?.provider !== "aws") process.exit(1);
               ' "/tmp/function-land-results/aws-$ID.json"
+            else
+              exit 1
             fi
 
             printf '%s\t%s\tOK\n' "$ID" "$PROVIDER" > "/tmp/function-land-results/$ID.tsv"
           }
 
           export -f dispatch_one
-          export GOOGLE_URI GOOGLE_ID_TOKEN AWS_FUNCTION_NAME CLOUDFLARE_URI
+          export HEALTHY_POOL GOOGLE_URI GOOGLE_ID_TOKEN AWS_FUNCTION_NAME CLOUDFLARE_URI
 
           START="$(date +%s%N)"
           seq 30 | xargs -I{} -P 12 bash -c 'dispatch_one "$1"' _ {}
@@ -102,29 +175,26 @@ jobs:
           WALL_MS="$(( (END - START) / 1000000 ))"
 
           cat /tmp/function-land-results/*.tsv | sort -n > /tmp/routes.tsv
-
           TOTAL="$(wc -l < /tmp/routes.tsv)"
           CF="$(awk -F '\t' '$2=="cloudflare"{n++} END{print n+0}' /tmp/routes.tsv)"
           GCP="$(awk -F '\t' '$2=="google"{n++} END{print n+0}' /tmp/routes.tsv)"
           AWS="$(awk -F '\t' '$2=="aws"{n++} END{print n+0}' /tmp/routes.tsv)"
 
           test "$TOTAL" -eq 30
-          test "$CF" -eq 10
-          test "$GCP" -eq 10
-          test "$AWS" -eq 10
 
           {
-            echo "## Function Land Dispatcher"
+            echo "## Function Land Health-Aware Dispatcher"
             echo
             echo "| Item | Result |"
             echo "|---|---:|"
+            echo "| Active pool | $HEALTHY_POOL |"
             echo "| Parcels dispatched | $TOTAL |"
             echo "| Cloudflare returns | $CF |"
             echo "| Google returns | $GCP |"
             echo "| AWS returns | $AWS |"
             echo "| Joined wall time (ms) | $WALL_MS |"
             echo
-            echo "**Route:** one dispatcher -> three provider hives -> one joined DONE."
+            echo "**Management rule:** unhealthy providers are removed from the active pool before work is cast."
             echo
-            echo "_No provider was redeployed in this workflow._"
+            echo "_No provider is redeployed by this workflow._"
           } >> "$GITHUB_STEP_SUMMARY"
