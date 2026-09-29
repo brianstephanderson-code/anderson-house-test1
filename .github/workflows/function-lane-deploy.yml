@@ -110,3 +110,60 @@ jobs:
           runtime: nodejs22
           entry_point: wordCount
           source_dir: .build/google
+
+
+  health:
+    if: ${{ always() }}
+    needs:
+      - test
+      - cloudflare
+      - aws
+      - google
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployment state
+        env:
+          TEST_STATE: ${{ needs.test.result }}
+          AWS_STATE: ${{ needs.aws.result }}
+          GOOGLE_STATE: ${{ needs.google.result }}
+          CLOUDFLARE_STATE: ${{ needs.cloudflare.result }}
+        run: |
+          printf "Function Lane health\n"
+          printf "test=%s\naws=%s\ngoogle=%s\ncloudflare=%s\n" "$TEST_STATE" "$AWS_STATE" "$GOOGLE_STATE" "$CLOUDFLARE_STATE"
+          test "$TEST_STATE" = "success"
+          test "$AWS_STATE" = "success"
+          test "$GOOGLE_STATE" = "success"
+          test "$CLOUDFLARE_STATE" = "success"
+
+      - name: Live Cloudflare smoke test
+        run: |
+          BODY="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'text=Many hands work. Bees return!' \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "$BODY"
+          node -e '
+            const body = JSON.parse(process.argv[1]);
+            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1) {
+              console.error("Unexpected live result", body);
+              process.exit(1);
+            }
+          ' "$BODY"
+
+      - name: Publish health summary
+        env:
+          TEST_STATE: ${{ needs.test.result }}
+          AWS_STATE: ${{ needs.aws.result }}
+          GOOGLE_STATE: ${{ needs.google.result }}
+          CLOUDFLARE_STATE: ${{ needs.cloudflare.result }}
+        run: |
+          {
+            echo "## Function Lane Health"
+            echo
+            echo "| Joint | State |"
+            echo "|---|---|"
+            echo "| Test gate | $TEST_STATE |"
+            echo "| AWS deploy | $AWS_STATE |"
+            echo "| Google deploy | $GOOGLE_STATE |"
+            echo "| Cloudflare deploy | $CLOUDFLARE_STATE |"
+            echo "| Cloudflare live answer | success |"
+          } >> "$GITHUB_STEP_SUMMARY"
