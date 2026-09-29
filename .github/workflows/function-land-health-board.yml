@@ -1,4 +1,5 @@
 name: Function Land Native Health Board
+# retest native telemetry after IAM propagation
 
 on:
   push:
