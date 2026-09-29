@@ -37,6 +37,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Refresh current main before basket work
+        run: git pull --ff-only origin main
+
       - name: Close and warehouse completed communication loops
         run: |
           set -euo pipefail
