@@ -14,6 +14,7 @@ on:
       - "hive/bus/uplink/**"
       - "hive/bus/acks/**"
       - "hive/bus/pending/**"
+      - "hive/bus/superseded/**"
       - ".github/workflows/function-land-flow-board.yml"
 
 permissions:
@@ -42,6 +43,9 @@ jobs:
           for f in "${orders[@]}"; do
             id="$(awk -F= '$1=="MESSAGE_ID"{sub(/^[^=]*=/,"");print;exit}' "$f")"
             [ -n "$id" ] || continue
+            if [ -e "hive/bus/superseded/$id.superseded" ]; then
+              continue
+            fi
             matches=(hive/bus/uplink/"$id".*.uplink)
 
             if [ "${#matches[@]}" -gt 0 ] && grep -q '^STATUS=BLOCKED$' "${matches[@]}" 2>/dev/null; then
