@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/sleepy-hollow-source-gate.yml'
+      - 'function-lane/core/candidate_tokens.mjs'
+      - 'function-lane/core/candidate_cleaner.mjs'
+      - 'function-lane/test/candidate_cleaner.test.mjs'
 
 permissions:
   contents: read
@@ -15,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Test reusable candidate cleaner
+        run: node --test function-lane/test/candidate_cleaner.test.mjs
       - name: Acquire canonical Gutenberg source
         run: |
           mkdir -p .build/sleepy-hollow
@@ -43,17 +48,19 @@ jobs:
           PY
           test -s .build/sleepy-hollow/working.txt
           cmp -s .build/sleepy-hollow/master.txt .build/sleepy-hollow/working.txt && exit 1 || true
-      - name: Run first real Irving parcel through candidate worker
+      - name: Detect and clean first real Irving parcel
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import { candidateTokenResultFor } from './function-lane/core/candidate_tokens.mjs';
+          import { cleanCandidateTokens } from './function-lane/core/candidate_cleaner.mjs';
           const text=fs.readFileSync('.build/sleepy-hollow/working.txt','utf8');
           const first=text.split(/\n\s*\n/).slice(0,8).join('\n\n');
-          const result=candidateTokenResultFor(first);
-          if (!result.candidateTokens) process.exit(1);
-          fs.writeFileSync('.build/sleepy-hollow/first-candidates.json',JSON.stringify(result,null,2));
-          console.log(JSON.stringify({characters:first.length,named:result.candidateTokens.namedReferences.slice(0,20),words:result.candidateTokens.wordCandidates.slice(0,40)},null,2));
+          const detected=candidateTokenResultFor(first);
+          const cleaned=cleanCandidateTokens(detected.candidateTokens);
+          fs.writeFileSync('.build/sleepy-hollow/first-candidates.json',JSON.stringify(detected,null,2));
+          fs.writeFileSync('.build/sleepy-hollow/first-cleaned.json',JSON.stringify(cleaned,null,2));
+          console.log(JSON.stringify(cleaned.candidateCleaner.counts,null,2));
           NODE
       - name: Preserve Source Gate evidence
         uses: actions/upload-artifact@v4
@@ -64,4 +71,5 @@ jobs:
             .build/sleepy-hollow/master.sha256
             .build/sleepy-hollow/working.txt
             .build/sleepy-hollow/first-candidates.json
+            .build/sleepy-hollow/first-cleaned.json
           retention-days: 90
