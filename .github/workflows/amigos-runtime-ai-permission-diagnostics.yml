@@ -1,0 +1,68 @@
+name: Amigos Runtime AI Permission Diagnostics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/amigos-runtime-ai-permission-diagnostics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  google-runtime-role:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Authenticate Google
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+      - name: Inspect Google function runtime identity
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        run: |
+          set -euo pipefail
+          gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format=json > /tmp/gcf.json
+          jq '{name,state,serviceConfig:{serviceAccountEmail:.serviceConfig.serviceAccountEmail,uri:.serviceConfig.uri}}' /tmp/gcf.json
+          SA="$(jq -r '.serviceConfig.serviceAccountEmail // empty' /tmp/gcf.json)"
+          echo "RUNTIME_SERVICE_ACCOUNT=$SA"
+          if [ -n "$SA" ]; then
+            gcloud projects get-iam-policy "$PROJECT_ID"               --flatten='bindings[].members'               --filter="bindings.members:serviceAccount:$SA"               --format='table(bindings.role,bindings.members)' || true
+          fi
+
+  aws-runtime-role:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+      - name: Inspect Lambda execution role
+        env:
+          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
+        run: |
+          set -euo pipefail
+          ROLE_ARN="$(aws lambda get-function-configuration --function-name "$FUNCTION_NAME" --query Role --output text)"
+          ROLE_NAME="${ROLE_ARN##*/}"
+          echo "RUNTIME_ROLE_ARN=$ROLE_ARN"
+          echo "RUNTIME_ROLE_NAME=$ROLE_NAME"
+          echo "ATTACHED_POLICIES"
+          aws iam list-attached-role-policies --role-name "$ROLE_NAME" || true
+          echo "INLINE_POLICIES"
+          NAMES="$(aws iam list-role-policies --role-name "$ROLE_NAME" --query 'PolicyNames[]' --output text 2>/dev/null || true)"
+          echo "$NAMES"
+          for NAME in $NAMES; do
+            echo "INLINE_POLICY=$NAME"
+            aws iam get-role-policy --role-name "$ROLE_NAME" --policy-name "$NAME" || true
+          done
