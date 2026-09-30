@@ -2,6 +2,8 @@ function textOf(x){
   if(typeof x==="string") return x;
   if(typeof x?.response==="string") return x.response;
   if(typeof x?.result?.response==="string") return x.result.response;
+  if(typeof x?.choices?.[0]?.message?.content==="string") return x.choices[0].message.content;
+  if(typeof x?.result?.choices?.[0]?.message?.content==="string") return x.result.choices[0].message.content;
   return "";
 }
 
@@ -33,8 +35,9 @@ export async function cloudflareAiCasts(question, ai){
       {role:"system",content:"Plan searches only. Never present your own answer as evidence."},
       {role:"user",content:prompt}
     ],
-    max_tokens:500,
-    temperature:0
+    max_completion_tokens:500,
+    temperature:0,
+    response_format:{type:"json_object"}
   });
 
   const parsed=parseJsonLoose(textOf(raw));
