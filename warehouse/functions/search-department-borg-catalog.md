@@ -276,3 +276,23 @@ DIRECT QUESTION -> AI PROVIDER -> NATIVE CITATION METADATA -> SOURCE-ONLY PARCEL
 - AWS attempted the same workflow but was denied before inference because the GitHub role lacks bedrock-mantle:CreateInference.
 - AWS is now hard-gated behind repository variable AWS_AI_PAID_OK=true and the live AI workflow is manual-only, preventing accidental paid calls.
 - Google is therefore LIVE PROVEN; AWS remains NOT YET LIVE PROVEN.
+
+
+## BOOKED / LIVE PROVEN — CLOUDFLARE AI BRAIN -> EXISTING SEARCH PLUMBING — 2026-09-30
+
+- New function: CLOUDFLARE_AI_CASTS.
+- Model used for live proof: @cf/meta/llama-3.2-3b-instruct through the Worker AI binding.
+- Exact human question:
+  - "I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+- Cloudflare AI was instructed to plan searches only and never act as evidence.
+- It returned multiple search casts plus an interpreted need/missing list.
+- Parser accepts both JSON and labeled-text output so the flow is not married to one model's formatting style.
+- The test prefers a bait-specific cast, then walks the remaining casts until a public search door returns results.
+- Live proof result:
+  - chosen cast: "What are the best baits for catching salmon in Western Australia in May?"
+  - SEARCH_WEB_PUBLIC returned 2 results.
+  - workflow emitted CLOUDFLARE_AI_BRAIN_TO_SEARCH_GREEN.
+- AI answer text is not evidence; only downstream source URLs can be promoted through the source/evidence gates.
+- This closes the Cloudflare reasoning path:
+  HUMAN QUESTION -> CLOUDFLARE AI SEARCH PLAN -> RECAST LIST -> EXISTING PUBLIC SEARCH DOORS -> SOURCE URLS -> SOURCE GATE -> LINDA.
+- Workers AI free allocation is 10,000 Neurons/day; on Workers Free, further usage fails after the free allocation rather than silently charging.
