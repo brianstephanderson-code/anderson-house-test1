@@ -56,7 +56,16 @@ export default {
     if (request.method === "POST") body = await request.json().catch(() => ({}));
     else {
       const u = new URL(request.url);
-      body = { text: u.searchParams.get("text") ?? "", type: u.searchParams.get("type") ?? "", query: u.searchParams.get("query") ?? "", limit: u.searchParams.get("limit") ?? 5 };
+      body = {
+        text: u.searchParams.get("text") ?? "",
+        type: u.searchParams.get("type") ?? "",
+        query: u.searchParams.get("query") ?? "",
+        limit: u.searchParams.get("limit") ?? 5,
+        url: u.searchParams.get("url") ?? "",
+        max_chars: u.searchParams.get("max_chars") ?? undefined,
+        max_links: u.searchParams.get("max_links") ?? undefined,
+        parent_ticket: u.searchParams.get("parent_ticket") ?? undefined
+      };
     }
     const type = String(body.type ?? "").toUpperCase();
     if (type === "SEARCH_DISCOVER_STREAM") return searchDiscoverStream(body.queries, body.limit ?? 5, body.parent_ticket ?? "SEARCH");
