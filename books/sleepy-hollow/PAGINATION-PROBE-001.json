@@ -1,0 +1,82 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "probe_id": "SH-PAGINATION-PROBE-001",
+  "state": "PAGINATION_MEASURED",
+  "source": {
+    "provider": "Project Gutenberg",
+    "ebook_id": 41,
+    "working_body_sha256": "14dfbab6784099770a04cfc20b67213929595d47078f14143980e0f87b4e1338",
+    "word_count": 12214,
+    "paragraph_count": 84
+  },
+  "method": {
+    "renderer": "ReportLab",
+    "purpose": "measure real PDF pagination under three candidate KDP trim profiles without choosing a final trim",
+    "bleed": false,
+    "reader_aids_inserted": false,
+    "note": "These are measured prototype page counts, not final publication page counts. Reader aids and later typographic refinements can change pagination."
+  },
+  "profiles": [
+    {
+      "profile_id": "KDP_5X8_PROBE",
+      "trim_inches": [
+        5.0,
+        8.0
+      ],
+      "font": "ReaderSerif",
+      "font_size_pt": 11,
+      "leading_pt": 14,
+      "probe_margins_inches": {
+        "inside": 0.5,
+        "outside": 0.5,
+        "top": 0.55,
+        "bottom": 0.55
+      },
+      "page_count": 62,
+      "kdp_inside_margin_min_inches_for_observed_page_count": 0.375,
+      "probe_inside_margin_meets_current_kdp_minimum": true,
+      "pdf": "kdp_5x8_probe.pdf"
+    },
+    {
+      "profile_id": "KDP_5_5X8_5_PROBE",
+      "trim_inches": [
+        5.5,
+        8.5
+      ],
+      "font": "ReaderSerif",
+      "font_size_pt": 11,
+      "leading_pt": 14,
+      "probe_margins_inches": {
+        "inside": 0.5,
+        "outside": 0.5,
+        "top": 0.55,
+        "bottom": 0.55
+      },
+      "page_count": 58,
+      "kdp_inside_margin_min_inches_for_observed_page_count": 0.375,
+      "probe_inside_margin_meets_current_kdp_minimum": true,
+      "pdf": "kdp_5_5x8_5_probe.pdf"
+    },
+    {
+      "profile_id": "KDP_6X9_PROBE",
+      "trim_inches": [
+        6.0,
+        9.0
+      ],
+      "font": "ReaderSerif",
+      "font_size_pt": 11,
+      "leading_pt": 14,
+      "probe_margins_inches": {
+        "inside": 0.5,
+        "outside": 0.5,
+        "top": 0.55,
+        "bottom": 0.55
+      },
+      "page_count": 53,
+      "kdp_inside_margin_min_inches_for_observed_page_count": 0.375,
+      "probe_inside_margin_meets_current_kdp_minimum": true,
+      "pdf": "kdp_6x9_probe.pdf"
+    }
+  ],
+  "next_state": "USE_MEASURED_PAGE_COUNT_TO_SELECT_OR_RECAST_PRINT_PROFILE"
+}
