@@ -164,3 +164,55 @@ DO NOT POLISH THE HUMAN SENTENCE INTO A SEARCH QUERY.
 Interpret the function of each meaningful part once, store that meaning in Blackboard STATE, and let each downstream function compile only the representation it needs.
 
 HUMAN LANGUAGE -> FUNCTIONS -> STATE -> SEARCH LANGUAGE.
+
+
+## BOOKED / LIVE PROVEN — WHAT + PLACE + BOUNDARY SEARCH FUNCTIONS — 2026-09-30
+
+- Search question role renamed from UNKNOWN to WHAT.
+- Live Blackboard state now carries WHAT explicitly.
+- Example live input:
+  - "I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+- Live functional interpretation:
+  - ACTION=fishing
+  - TARGET=salmon
+  - TIME=May
+  - ORIGIN=Perth
+  - BOUNDARY=<=200 kilometers
+  - ENVIRONMENT=beach
+  - WHAT=best bait
+- PLACE RESOLVER socket added as a replaceable function.
+- Current prototype provider: Open-Meteo Geocoding.
+- Live proof resolved Perth candidates visibly rather than hiding ambiguity:
+  - Perth, Western Australia
+  - Perth, Scotland
+  - Perth, North Dakota
+- Selected live origin: Perth, Western Australia (-31.95224, 115.8614).
+- Geographic distance checker is separate from the resolver.
+- Boundary math uses great-circle distance and supports kilometre/mile conversion.
+- Conservative evidence-boundary rule:
+  - a source only receives boundary credit when its own title is anchored to the resolved origin;
+  - unanchored place evidence remains UNVERIFIED rather than guessed.
+- Final live production proof:
+  - result OK=true
+  - sufficiency=FUNCTIONAL_PURPOSE_PROOF_WITH_BOUNDARY
+  - 3 readable relevant Perth-anchored sources passed the requested <=200 km boundary gate.
+- This closes the first function-first search loop:
+  HUMAN LANGUAGE -> FUNCTION INTERPRETER -> BLACKBOARD -> WHAT/TARGET/WHERE/WHEN/BOUNDARY/ENVIRONMENT -> QUERY COMPILER -> SEARCH -> RELEVANCE -> GEOGRAPHIC GATE -> SUFFICIENCY.
+
+### Browser Run emergency door — DEPLOYED / NOT YET FORCED-PROVEN
+
+- Cloudflare Browser Run binding is installed as a last-resort search door.
+- Workers Free currently provides a bounded free Browser Run allowance; Anderson House gates the browser fallback explicitly so ordinary deploy checks do not consume it.
+- Normal order:
+  API SEARCH DOORS -> RECAST -> still insufficient? -> ONE Browser Run search cast -> Linda.
+- Cloudflare accepted the Browser Run binding and deployment successfully.
+- The latest successful fishing production run did not need the browser fallback, so the browser-search function remains DEPLOYED/AVAILABLE but is not yet labelled live-proven.
+- Keep this door replaceable and quota-aware.
+
+### New search rule
+
+DO NOT SEARCH THE HUMAN SENTENCE.
+
+Interpret what each meaningful part DOES, store that as Blackboard STATE, then compile search representations from the functions.
+
+For search, WHAT is the answer sought; the other roles constrain that WHAT.
