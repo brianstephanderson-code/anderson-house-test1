@@ -2,6 +2,7 @@ import { providerHiveProfile } from "./core/provider_hive.mjs";
 import { searchDiscover } from "./search_discover.mjs";
 import { searchDiscoverLoc } from "./search_discover_loc.mjs";
 import { fetchText } from "./fetch_text.mjs";
+import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
@@ -72,6 +73,7 @@ export default {
         {door:"LIBRARY_OF_CONGRESS_JSON_API",ok:!!loc.ok,count:loc.results?.length??0}
       ],results});
     }
+    if (type === "READ_TEXT_LINKS") return Response.json(await readTextLinks(body.url,{maxChars:body.max_chars,maxLinks:body.max_links}));
     if (type === "FETCH_TEXT") return Response.json(await fetchText(body.url, body.max_chars));
     if (type === "SEARCH_DISCOVER_LOC") return Response.json(await searchDiscoverLoc(body.query ?? body.text, body.limit ?? 5));
     if (type === "SEARCH_DISCOVER") return Response.json(await searchDiscover(body.query ?? body.text, body.limit ?? 5));
