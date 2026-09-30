@@ -19,7 +19,7 @@ export function createSearchBlackboard(interpreted={}){
       origin:roles.origin??null,
       boundary:roles.boundary??null,
       environment:uniq(roles.environment||[]),
-      unknown:roles.unknown??null,
+      what:roles.what??null,
       desired_done:roles.desired_done??"verified answer"
     },
     casts:[],
