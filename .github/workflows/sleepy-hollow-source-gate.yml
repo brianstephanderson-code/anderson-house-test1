@@ -1,0 +1,67 @@
+name: Sleepy Hollow Source Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sleepy-hollow-source-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  source-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Acquire canonical Gutenberg source
+        run: |
+          mkdir -p .build/sleepy-hollow
+          curl --fail --silent --show-error --location \
+            https://www.gutenberg.org/cache/epub/41/pg41.txt \
+            --output .build/sleepy-hollow/master.txt
+          sha256sum .build/sleepy-hollow/master.txt | tee .build/sleepy-hollow/master.sha256
+      - name: Verify identity and boundaries
+        run: |
+          grep -Fq 'The Project Gutenberg eBook of The Legend of Sleepy Hollow' .build/sleepy-hollow/master.txt
+          grep -Fq 'Author: Washington Irving' .build/sleepy-hollow/master.txt
+          grep -Fq 'Release date: June 27, 2008 [eBook #41]' .build/sleepy-hollow/master.txt
+          grep -Fq 'Most recently updated: February 10, 2026' .build/sleepy-hollow/master.txt
+          grep -Fq '*** START OF THE PROJECT GUTENBERG EBOOK THE LEGEND OF SLEEPY HOLLOW ***' .build/sleepy-hollow/master.txt
+          grep -Fq '*** END OF THE PROJECT GUTENBERG EBOOK THE LEGEND OF SLEEPY HOLLOW ***' .build/sleepy-hollow/master.txt
+      - name: Make working copy of story body
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.build/sleepy-hollow/master.txt')
+          text=p.read_text(encoding='utf-8-sig')
+          start='*** START OF THE PROJECT GUTENBERG EBOOK THE LEGEND OF SLEEPY HOLLOW ***'
+          end='*** END OF THE PROJECT GUTENBERG EBOOK THE LEGEND OF SLEEPY HOLLOW ***'
+          body=text.split(start,1)[1].split(end,1)[0].strip()+"\n"
+          Path('.build/sleepy-hollow/working.txt').write_text(body,encoding='utf-8')
+          PY
+          test -s .build/sleepy-hollow/working.txt
+          cmp -s .build/sleepy-hollow/master.txt .build/sleepy-hollow/working.txt && exit 1 || true
+      - name: Run first real Irving parcel through candidate worker
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { candidateTokenResultFor } from './function-lane/core/candidate_tokens.mjs';
+          const text=fs.readFileSync('.build/sleepy-hollow/working.txt','utf8');
+          const first=text.split(/\n\s*\n/).slice(0,8).join('\n\n');
+          const result=candidateTokenResultFor(first);
+          if (!result.candidateTokens) process.exit(1);
+          fs.writeFileSync('.build/sleepy-hollow/first-candidates.json',JSON.stringify(result,null,2));
+          console.log(JSON.stringify({characters:first.length,named:result.candidateTokens.namedReferences.slice(0,20),words:result.candidateTokens.wordCandidates.slice(0,40)},null,2));
+          NODE
+      - name: Preserve Source Gate evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: sleepy-hollow-source-gate
+          path: |
+            .build/sleepy-hollow/master.txt
+            .build/sleepy-hollow/master.sha256
+            .build/sleepy-hollow/working.txt
+            .build/sleepy-hollow/first-candidates.json
+          retention-days: 90
