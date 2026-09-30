@@ -1,6 +1,8 @@
 # Sleepy Hollow — Reader Friction Survey 001
 
-Status: STAGED
+Status: DISPATCHED
+
+Mailbox order: `hive/bus/orders/sleepy-hollow-reader-friction-survey-001.msg`
 
 ## Purpose
 Survey the verified Project Gutenberg text of Washington Irving's *The Legend of Sleepy Hollow* for reader-friction candidates without modifying the source text.
