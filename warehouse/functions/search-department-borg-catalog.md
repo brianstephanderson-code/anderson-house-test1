@@ -18,6 +18,27 @@ CAST -> FIND -> BORG -> TEST -> WAREHOUSE -> REUSE
   - 6fc73397429d4b24e12a079e42c515fa2fce9753 — Borg text browser readable text and links pattern.
   - c6b71ad4e5983ade1832f96e3b1b957f7b6cdf1f — Wire borged text browser function into Three Amigos.
 
+### BOOKED REPAIR — Library of Congress door — 2026-09-30
+
+- STATE: the normal LOC JSON search door at `www.loc.gov/search/?fo=json` returned HTTP 403 from the Cloudflare Worker.
+- Proven cause boundary: the same query logic was valid; the blockage was the `www.loc.gov` security front door for that cloud-origin road.
+- Failed alternate carriers were preserved as evidence, not promoted:
+  - Reader carrier reached LOC's bot-verification page and later returned 429.
+  - Search carrier returned 401 without an API key.
+- Official fallback found: Library of Congress SRU catalog service on `http://lx2.loc.gov:210/LCDB`.
+- Independent proof: the GitHub-runner `LOC SRU Probe` passed both LOC's documented sample query and the Anderson House Washington Irving / Sleepy Hollow query.
+- LIVE 3 AMIGOS PROOF: deploy run 313 completed GREEN. The live LOC gate returned 5 LOC catalog records through `LIBRARY_OF_CONGRESS_SRU_CATALOG` with `route=OFFICIAL_SRU_FALLBACK`.
+- The generic FETCH_TEXT probe was decoupled from LOC's challenge page and now uses a neutral HTML page; it passed in the same green run.
+- In run 313 every live check passed: profile, SEARCH_DISCOVER, LOC, FETCH_TEXT, READ_TEXT_LINKS, SEARCH_END_TO_END_V1, and the 20-way return-as-ready benchmark.
+- Repair pattern borged: SOURCE BLOCKED -> KEEP AUTHORITY -> CHANGE OFFICIAL DOOR -> VERIFY OUTSIDE WORKER -> WIRE FALLBACK -> LIVE PROOF.
+- Key repair commits:
+  - c4b75b11cf27b344618fa4ad29c3b81975c6c4c8 — add official LOC SRU catalog fallback.
+  - d36d5dd436b2f070086db0d88d98a2bed9fcc7fa — route blocked LOC search to official SRU catalog.
+  - f069a47d1516a420932b6eb43768897a31748ffe — use documented LOC SRU port 210 endpoint.
+  - 8099dd3e69e729ccd9d1a5aeb02f0e156617e19a — probe official LOC SRU outside Cloudflare.
+  - 9c394bad9490a1fbc49b44fccd4e80efde8699fc — fix LOC live gate URL validation.
+  - 7d153d01781ed2afe92a3c5c88db85cbc991aa57 — decouple generic FETCH_TEXT probe from LOC challenge page.
+
 ## BOOKED / LIVE PROVEN — SEARCH_END_TO_END_V1 — 2026-09-30
 
 - Purpose: prove the search machine can walk end to end without gluing its small functions together.
