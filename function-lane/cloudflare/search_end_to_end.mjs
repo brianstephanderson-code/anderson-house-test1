@@ -4,6 +4,7 @@ import { searchWebPublic } from "./search_web_public.mjs";
 import { compileSearchQueries } from "./search_query_compiler.mjs";
 import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
+import { rankCandidatesByRelevance, semanticSufficiency } from "./search_relevance.mjs";
 
 export function verifyEvidenceParcel(candidate = {}, read = {}) {
   let publicHttp=false;
@@ -63,18 +64,12 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
     casts:webReturns.map(x=>({query:x.cast,ok:!!x.ok,count:x.results?.length??0,route:x.route??null,error:x.error??null}))
   };
 
-  const candidates=deduplicateResults([
-    ...normalizeResults(web.results,"OPEN_WEB"),
-    ...normalizeResults(wiki.results,"WIKIPEDIA_MEDIAWIKI_API"),
-    ...normalizeResults(loc.results,"LIBRARY_OF_CONGRESS_JSON_API")
-  ]);
-  const shortlist=candidates.slice(0,reads);
+  const candidates=deduplicateResults([\n    ...normalizeResults(web.results,"OPEN_WEB"),\n    ...normalizeResults(wiki.results,"WIKIPEDIA_MEDIAWIKI_API"),\n    ...normalizeResults(loc.results,"LIBRARY_OF_CONGRESS_JSON_API")\n  ]);\n  const rankedCandidates=rankCandidatesByRelevance(candidates,compiled.state);\n  const shortlist=rankedCandidates.slice(0,reads);
   const readReturns=await Promise.all(shortlist.map(async candidate=>{
     try { return verifyEvidenceParcel(candidate,await readTextLinks(candidate.url,{maxChars:chars,maxLinks:20})); }
     catch(e) { return verifyEvidenceParcel(candidate,{ok:false,error:String(e)}); }
   }));
-  const evidence=readReturns.filter(x=>x.integrity_verified);
-  const sufficiency=sufficiencyCheck(evidence);
+  const evidence=readReturns.filter(x=>x.integrity_verified);\n  const transportSufficiency=sufficiencyCheck(evidence);\n  const semantic=semanticSufficiency(evidence,compiled.state);\n  const sufficiency=semantic.summary;
 
   return {
     ok:sufficiency.sufficient,
@@ -91,17 +86,13 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
       collect:candidates.length>0,
       shortlist:shortlist.length>0,
       read:readReturns.some(x=>x.chars>=100),
-      verify:evidence.length>0,
-      sufficient:sufficiency.sufficient
+      verify:evidence.length>0,\n      relevance:semantic.summary.verified_relevant_evidence_count>0,\n      sufficient:sufficiency.sufficient
     },
     doors:[
       {door:"OPEN_WEB",ok:!!web.ok,count:web.results?.length??0,error:web.error??null,route:web.route??null,casts:web.casts},
       {door:"WIKIPEDIA_MEDIAWIKI_API",ok:!!wiki.ok,count:wiki.results?.length??0,error:wiki.error??null,query:primary},
       {door:"LIBRARY_OF_CONGRESS",ok:!!loc.ok,blocked:!!loc.blocked,count:loc.results?.length??0,error:loc.error??null,route:loc.route??null,query:primary}
     ],
-    candidate_count:candidates.length,
-    shortlist_count:shortlist.length,
-    evidence,
-    sufficiency
+    candidate_count:candidates.length,\n    shortlist_count:shortlist.length,\n    shortlist:shortlist.map(x=>({title:x.title,url:x.url,source_door:x.source_door,relevance:x.relevance})),\n    evidence:semantic.judged,\n    transport_sufficiency:transportSufficiency,\n    sufficiency
   };
 }
