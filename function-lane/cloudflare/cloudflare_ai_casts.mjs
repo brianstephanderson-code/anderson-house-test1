@@ -49,6 +49,7 @@ export async function cloudflareAiCasts(question, ai){
     interpreted_need:String(parsed?.interpreted_need??"").trim(),
     casts,
     missing:Array.isArray(parsed?.missing)?parsed.missing.map(x=>String(x)):[],
-    ai_answer_is_evidence:false
+    ai_answer_is_evidence:false,
+    ...(casts.length?{}:{debug_text_preview:textOf(raw).slice(0,1200),debug_keys:Object.keys(raw??{})})
   };
 }
