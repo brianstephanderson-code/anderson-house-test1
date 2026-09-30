@@ -2,7 +2,7 @@ import { providerHiveProfile } from "./core/provider_hive.mjs";
 import { searchDiscover } from "./search_discover.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
-  const qs = Array.isArray(queries) ? queries.map(x => String(x).trim()).filter(Boolean).slice(0, 10) : [];
+  const qs = Array.isArray(queries) ? queries.map(x => String(x).trim()).filter(Boolean).slice(0, 30) : [];
   const enc = new TextEncoder();
   const started = Date.now();
   const stream = new ReadableStream({
