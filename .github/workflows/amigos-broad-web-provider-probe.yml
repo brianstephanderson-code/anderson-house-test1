@@ -13,17 +13,20 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe open broad-web doors
+      - name: Probe no-key broad-web providers
         run: |
           set +e
-          Q='Perth Australia salmon fishing May best bait'
+          Q='Perth Western Australia salmon fishing May best bait'
+          test_url() {
+            NAME="$1"; URL="$2"
+            CODE=$(curl -L --max-time 20 -A 'Mozilla/5.0 AndersonHouse/1.0' -sS -o /tmp/body -w '%{http_code}' "$URL")
+            echo "=== $NAME HTTP=$CODE ==="
+            head -c 1200 /tmp/body | tr '\n' ' '
+            echo
+          }
 
-          echo '=== MWMBL ==='
-          CODE=$(curl -L --max-time 20 -sS -o /tmp/mwmbl --get             --data-urlencode "s=$Q"             -w '%{http_code}'             'https://api.mwmbl.org/api/v1/search/')
-          echo "MWMBL_STATUS=$CODE BYTES=$(wc -c </tmp/mwmbl)"
-          head -c 3000 /tmp/mwmbl; echo
-
-          echo '=== MARGINALIA ==='
-          CODE2=$(curl -L --max-time 20 -sS -o /tmp/marg             -H 'API-Key: public'             --get             --data-urlencode "query=$Q"             --data-urlencode 'count=10'             -w '%{http_code}'             'https://api2.marginalia-search.com/search')
-          echo "MARGINALIA_STATUS=$CODE2 BYTES=$(wc -c </tmp/marg)"
-          head -c 3000 /tmp/marg; echo
+          test_url "SEARX_ANONI_JSON" "https://search.anoni.net/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=json"
+          test_url "SEARX_FLOATING_JSON" "https://searx.thefloatinglab.world/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=json"
+          test_url "SEARX_MBUF_JSON" "https://searx.mbuf.net/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=json"
+          test_url "DUCKDUCKGO_HTML" "https://html.duckduckgo.com/html/?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')"
+          test_url "BING_RSS" "https://www.bing.com/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=rss"
