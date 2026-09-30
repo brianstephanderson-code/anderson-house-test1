@@ -1,0 +1,28 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "style_layout_version": "001",
+  "manual_lane_id": "SH-MANUAL-STYLE-001",
+  "state": "VERIFIED_DONE",
+  "purpose": "Define the Reader Edition literary style/layout contract independently of the 30 research parcels and independently of vendor-specific print dimensions.",
+  "ownership": {
+    "lane": "manual_chat",
+    "conflicts_with_research_batch": false,
+    "claimed_research_jobs": []
+  },
+  "input_state": "SHELL_READY_FOR_STYLE_AND_LAYOUT_RULES",
+  "transform": [
+    "Keep title, author, frame, epigraph, body, and reader-aid roles semantically separate.",
+    "Preserve source wording, order, paragraph anchors, and source hash.",
+    "Keep verified reader aids visually distinct and subordinate.",
+    "Forbid reader aids from replacing or interrupting Irving's source paragraphs.",
+    "Defer trim size, margins, bleed, pagination, and other vendor-specific constraints to a later current-policy production gate."
+  ],
+  "done": "STYLE_LAYOUT_RULES_READY",
+  "proof": [
+    "Reusable reader_style_layout_gate function created.",
+    "Tests protect source integrity and verified-only reader-aid admission.",
+    "Semantic roles can adapt without collapsing into one rigid style.",
+    "Vendor-specific layout is deliberately deferred, preserving the elastic production policy."
+  ],
+  "next_state": "READY_FOR_PLATFORM_SPECIFIC_RENDER_GATE"
+}
