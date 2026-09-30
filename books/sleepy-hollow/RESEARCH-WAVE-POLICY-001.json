@@ -1,0 +1,25 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "policy_id": "SH-RESEARCH-WAVE-POLICY-001",
+  "state": "ACTIVE",
+  "purpose": "Turn each completed research wave into the STATE for the next evidence-driven cast until the Reader Edition purpose is sufficient.",
+  "loop": "RETURN -> COMPRESS -> INSPECT -> IDENTIFY REMAINING/NEW HOLES -> DEDUPLICATE -> SHRED -> CAST NEXT WAVE -> VERIFY -> REPEAT UNTIL SUFFICIENT",
+  "rules": [
+    "Do not simply repeat the previous 30 questions.",
+    "Completed VERIFIED_READER_AID and NO_MATERIAL_AID jobs are closed and unavailable to later casts unless new contradictory evidence reopens them.",
+    "RECAST jobs keep the same parent job_id and name the missing evidence; child parcels may be created for materially different missing functions.",
+    "New questions may arise from contradictions, unexplained references, reader-friction holes, failed fit tests, uncovered dependencies, or newly exposed sections of the book.",
+    "Before dispatch, compare every proposed job against READY, CLAIMED, IN_PROGRESS, VERIFIED_READER_AID, NO_MATERIAL_AID, and RECAST records to prevent duplication.",
+    "Use the Full Policy Bridge Search and Fisherman's Net / Sufficiency Loop for every wave.",
+    "Prefer up to 30 useful independent jobs per wave; fewer is correct when fewer genuine holes exist.",
+    "The purpose defines sufficiency. Stop generating research jobs when remaining uncertainty would not materially improve the Reader Edition.",
+    "Preserve job lineage: wave_id, parent_job_id where applicable, paragraph_id, function_class, evidence doors, outcome, and warehouse receipt."
+  ],
+  "wave_naming": {
+    "first_wave": "sleepy-hollow-research-001",
+    "next_wave": "sleepy-hollow-research-002",
+    "pattern": "sleepy-hollow-research-NNN"
+  },
+  "next_wave_trigger": "A prior wave has enough returned/verified evidence to expose the next useful unresolved holes.",
+  "done": "RESEARCH_SUFFICIENT_FOR_READER_EDITION"
+}
