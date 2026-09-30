@@ -1,0 +1,80 @@
+name: Amigos Exact WA Salmon Bait
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/amigos-exact-wa-salmon-bait.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  exact-query:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Authenticate Google
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Run exact bait question through Google Amigo
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          Q='What are the best baits for catching salmon in Western Australia in May?'
+          TOKEN="$(gcloud auth print-access-token)"
+          ENDPOINT="https://aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/global/publishers/google/models/gemini-2.5-flash:generateContent"
+
+          jq -nc --arg q "$Q" '{
+            contents:[{role:"user",parts:[{text:$q}]}],
+            tools:[{googleSearch:{}}],
+            generationConfig:{temperature:0}
+          }' > /tmp/request.json
+
+          CODE="$(curl --silent --show-error             --output /tmp/response.json             --write-out '%{http_code}'             -X POST "$ENDPOINT"             -H "Authorization: Bearer $TOKEN"             -H "Content-Type: application/json"             --data-binary @/tmp/request.json)"
+
+          echo "GOOGLE_HTTP=$CODE"
+          test "$CODE" = "200"
+
+          node --input-type=module <<'NODE' > /tmp/parcel.json
+          import fs from "node:fs";
+          import {aiSourceParcel} from "./function-lane/core/ai_source_metadata.mjs";
+          const q="What are the best baits for catching salmon in Western Australia in May?";
+          const response=JSON.parse(fs.readFileSync("/tmp/response.json","utf8"));
+          console.log(JSON.stringify(aiSourceParcel("google",q,response)));
+          NODE
+
+          cat /tmp/parcel.json | jq .
+          jq -e '.ok and .source_count>0' /tmp/parcel.json >/dev/null
+
+          : > /tmp/gates.ndjson
+          jq -r '.sources[].url' /tmp/parcel.json | head -n 6 | while read -r URL; do
+            BODY="$(curl --fail --silent --show-error --get               --data-urlencode 'type=AI_SOURCE_GATE'               --data-urlencode "source=$URL"               --data-urlencode 'evidence_term=salmon'               --data-urlencode 'evidence_term=bait'               --data-urlencode 'evidence_term=pilchard'               --data-urlencode 'evidence_term=mulie'               --data-urlencode 'evidence_term=May'               'https://ah-word-count.brian-steph-anderson.workers.dev')"
+            printf '%s
+' "$BODY" >> /tmp/gates.ndjson
+          done
+
+          node - <<'NODE'
+          const fs=require("fs");
+          const rows=fs.readFileSync("/tmp/gates.ndjson","utf8").trim().split(/
++/).filter(Boolean).map(JSON.parse);
+          for(const r of rows){
+            const e=r.evidence?.[0]||{};
+            console.log(JSON.stringify({
+              ok:r.ok,
+              url:e.url||null,
+              evidence:(e.evidence||"").slice(0,700)
+            }));
+          }
+          NODE
