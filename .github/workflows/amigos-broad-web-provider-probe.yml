@@ -13,20 +13,17 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe SearXNG public doors
+      - name: Probe open broad-web doors
         run: |
           set +e
           Q='Perth Australia salmon fishing May best bait'
-          for BASE in             'https://search.anoni.net'             'https://searx.oloke.xyz'             'https://searxng.cups.moe'             'https://priv.au'
-          do
-            echo "=== $BASE ==="
-            URL="$BASE/search"
-            CODE=$(curl -L --max-time 20 -sS -o /tmp/out --get               --data-urlencode "q=$Q"               --data-urlencode 'format=json'               -w '%{http_code}' "$URL")
-            echo "JSON_STATUS=$CODE BYTES=$(wc -c </tmp/out)"
-            head -c 500 /tmp/out | tr '\n' ' '; echo
-            if [ "$CODE" != "200" ]; then
-              CODE2=$(curl -L --max-time 20 -sS -o /tmp/out2 --get                 --data-urlencode "q=$Q"                 -w '%{http_code}' "$URL")
-              echo "HTML_STATUS=$CODE2 BYTES=$(wc -c </tmp/out2)"
-              grep -o -m 3 -E 'https?://[^"<> ]+' /tmp/out2 | head -3
-            fi
-          done
+
+          echo '=== MWMBL ==='
+          CODE=$(curl -L --max-time 20 -sS -o /tmp/mwmbl --get             --data-urlencode "s=$Q"             -w '%{http_code}'             'https://api.mwmbl.org/api/v1/search/')
+          echo "MWMBL_STATUS=$CODE BYTES=$(wc -c </tmp/mwmbl)"
+          head -c 3000 /tmp/mwmbl; echo
+
+          echo '=== MARGINALIA ==='
+          CODE2=$(curl -L --max-time 20 -sS -o /tmp/marg             -H 'API-Key: public'             --get             --data-urlencode "query=$Q"             --data-urlencode 'count=10'             -w '%{http_code}'             'https://api2.marginalia-search.com/search')
+          echo "MARGINALIA_STATUS=$CODE2 BYTES=$(wc -c </tmp/marg)"
+          head -c 3000 /tmp/marg; echo
