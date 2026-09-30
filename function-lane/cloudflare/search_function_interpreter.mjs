@@ -58,11 +58,11 @@ export function interpretSearchInput(text=""){
     : /\bsearch(?:ing)?\b/i.test(raw) ? "searching"
     : "find information";
 
-  let unknown=null;
-  if(/\bbest\s+bait\b/i.test(raw)) unknown="best bait";
+  let what=null;
+  if(/\bbest\s+bait\b/i.test(raw)) what="best bait";
   else {
     const m=raw.match(/\bwhat\s+(?:is|are)\s+(?:the\s+)?(.+?)[?!.]*$/i);
-    if(m?.[1]) unknown=clean(m[1]);
+    if(m?.[1]) what=clean(m[1]);
   }
 
   return {
@@ -76,8 +76,8 @@ export function interpretSearchInput(text=""){
       origin,
       boundary,
       environment,
-      unknown,
-      desired_done:unknown ? `verified answer for ${unknown}` : "verified answer"
+      what,
+      desired_done:what ? `verified answer for ${what}` : "verified answer"
     }
   };
 }
