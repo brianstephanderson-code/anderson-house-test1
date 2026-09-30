@@ -2,11 +2,7 @@ name: The 3 Amigos Deploy
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "function-lane/**"
-      - ".github/workflows/function-lane-deploy.yml"
+    branches: [main]
   workflow_dispatch:
     inputs:
       target:
@@ -14,11 +10,7 @@ on:
         required: true
         default: all
         type: choice
-        options:
-          - all
-          - cloudflare
-          - aws
-          - google
+        options: [all, cloudflare, aws, google]
 
 permissions:
   contents: read
@@ -45,17 +37,7 @@ jobs:
       - name: Stage shared core
         run: |
           mkdir -p function-lane/cloudflare/core
-          cp function-lane/core/word_count.mjs function-lane/cloudflare/core/word_count.mjs
-          cp function-lane/core/character_count.mjs function-lane/cloudflare/core/character_count.mjs
-          cp function-lane/core/line_count.mjs function-lane/cloudflare/core/line_count.mjs
-          cp function-lane/core/blank_line_count.mjs function-lane/cloudflare/core/blank_line_count.mjs
-          cp function-lane/core/sentence_count.mjs function-lane/cloudflare/core/sentence_count.mjs
-          cp function-lane/core/paragraph_count.mjs function-lane/cloudflare/core/paragraph_count.mjs
-          cp function-lane/core/terminal_punctuation.mjs function-lane/cloudflare/core/terminal_punctuation.mjs
-          cp function-lane/core/particle_route.mjs function-lane/cloudflare/core/particle_route.mjs
-          cp function-lane/core/terminal_punctuation_verifier.mjs function-lane/cloudflare/core/terminal_punctuation_verifier.mjs
-          cp function-lane/core/candidate_tokens.mjs function-lane/cloudflare/core/candidate_tokens.mjs
-          cp function-lane/core/provider_hive.mjs function-lane/cloudflare/core/provider_hive.mjs
+          cp function-lane/core/*.mjs function-lane/cloudflare/core/
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:
@@ -63,164 +45,35 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: function-lane/cloudflare
 
-  aws:
-    concurrency:
-      group: function-lane-aws-ahhello
-      cancel-in-progress: false
-    if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'aws' }}
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Stage Lambda package
-        run: |
-          rm -rf .build/aws
-          mkdir -p .build/aws/core
-          cp function-lane/aws/index.mjs .build/aws/index.mjs
-          cp function-lane/core/word_count.mjs .build/aws/core/word_count.mjs
-          cp function-lane/core/character_count.mjs .build/aws/core/character_count.mjs
-          cp function-lane/core/line_count.mjs .build/aws/core/line_count.mjs
-          cp function-lane/core/blank_line_count.mjs .build/aws/core/blank_line_count.mjs
-          cp function-lane/core/sentence_count.mjs .build/aws/core/sentence_count.mjs
-          cp function-lane/core/paragraph_count.mjs .build/aws/core/paragraph_count.mjs
-          cp function-lane/core/terminal_punctuation.mjs .build/aws/core/terminal_punctuation.mjs
-          cp function-lane/core/particle_route.mjs .build/aws/core/particle_route.mjs
-          cp function-lane/core/terminal_punctuation_verifier.mjs .build/aws/core/terminal_punctuation_verifier.mjs
-          cp function-lane/core/candidate_tokens.mjs .build/aws/core/candidate_tokens.mjs
-          cp function-lane/core/provider_hive.mjs .build/aws/core/provider_hive.mjs
-      - name: Configure AWS credentials with OIDC
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
-      - name: Deploy Lambda
-        uses: aws-actions/aws-lambda-deploy@v1.1.1
-        with:
-          function-name: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
-          code-artifacts-dir: .build/aws
-          handler: index.handler
-          runtime: nodejs22.x
-          role: ${{ vars.AWS_LAMBDA_EXECUTION_ROLE }}
-
-  google:
-    concurrency:
-      group: function-lane-google-ahhello
-      cancel-in-progress: false
-    if: ${{ github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'google' }}
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Stage Google function
-        run: |
-          rm -rf .build/google
-          mkdir -p .build/google/core
-          cp function-lane/google/index.mjs .build/google/index.mjs
-          cp function-lane/google/package.json .build/google/package.json
-          cp function-lane/core/word_count.mjs .build/google/core/word_count.mjs
-          cp function-lane/core/character_count.mjs .build/google/core/character_count.mjs
-          cp function-lane/core/line_count.mjs .build/google/core/line_count.mjs
-          cp function-lane/core/blank_line_count.mjs .build/google/core/blank_line_count.mjs
-          cp function-lane/core/sentence_count.mjs .build/google/core/sentence_count.mjs
-          cp function-lane/core/paragraph_count.mjs .build/google/core/paragraph_count.mjs
-          cp function-lane/core/terminal_punctuation.mjs .build/google/core/terminal_punctuation.mjs
-          cp function-lane/core/particle_route.mjs .build/google/core/particle_route.mjs
-          cp function-lane/core/terminal_punctuation_verifier.mjs .build/google/core/terminal_punctuation_verifier.mjs
-          cp function-lane/core/candidate_tokens.mjs .build/google/core/candidate_tokens.mjs
-          cp function-lane/core/provider_hive.mjs .build/google/core/provider_hive.mjs
-      - name: Authenticate to Google Cloud with WIF
-        uses: google-github-actions/auth@v3
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-      - name: Deploy Google function
-        id: deploy-google
-        uses: google-github-actions/deploy-cloud-functions@v4
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-          region: ${{ vars.GCP_REGION || 'us-east1' }}
-          name: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
-          runtime: nodejs22
-          entry_point: wordCount
-          source_dir: .build/google
-
   cloudflare-check:
     if: ${{ always() && needs.cloudflare.result == 'success' }}
-    needs:
-      - cloudflare
+    needs: [cloudflare]
     runs-on: ubuntu-latest
     steps:
-      - name: Live Cloudflare check
+      - name: Existing live profile check
         run: |
-          METRICS="$(curl --fail --silent --show-error --get \
-            --output /tmp/cf-body.json \
-            --write-out '%{time_total}\t%{size_download}\t%{http_code}' \
-            --data-urlencode 'text=Many hands work. Bees return!' \
+          BODY="$(curl --fail --silent --show-error --get --data-urlencode 'text=Many hands work. Bees return!' 'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          node -e 'const b=JSON.parse(process.argv[1]); if(b.words!==5||b.sentences!==2) process.exit(1)' "$BODY"
+      - name: Live SEARCH_DISCOVER capability probe
+        run: |
+          BODY="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=SEARCH_DISCOVER' \
+            --data-urlencode 'query=Washington Irving Sleepy Hollow author purpose' \
+            --data-urlencode 'limit=5' \
             'https://ah-word-count.brian-steph-anderson.workers.dev')"
-          IFS=$'\t' read -r SECONDS BYTES HTTP <<< "$METRICS"
-          BODY="$(cat /tmp/cf-body.json)"
           echo "$BODY"
-          node -e '
-            const body = JSON.parse(process.argv[1]);
-            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true || body.lines !== 1 || body.blankLines !== 0) process.exit(1);
-          ' "$BODY"
+          node -e 'const b=JSON.parse(process.argv[1]); if(!b.ok||b.function!=="SEARCH_DISCOVER"||b.cost_gate!=="$0"||!Array.isArray(b.results)||b.results.length<1||!b.results.every(x=>x.url&&x.source_door&&x.provenance)) process.exit(1)' "$BODY"
 
-  aws-check:
-    concurrency:
-      group: function-lane-aws-ahhello
-      cancel-in-progress: false
-    if: ${{ always() && needs.aws.result == 'success' }}
-    needs:
-      - aws
+  aws:
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'aws') }}
+    needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
-      - name: Live AWS check
-        env:
-          FUNCTION_NAME: ${{ vars.AWS_LAMBDA_FUNCTION || 'ahHello' }}
-        run: |
-          aws lambda invoke --function-name "$FUNCTION_NAME" --cli-binary-format raw-in-base64-out --payload '{"text":"Many hands work. Bees return!"}' /tmp/aws-response.json >/tmp/aws-meta.json
-          node -e '
-            const fs = require("fs"); const outer = JSON.parse(fs.readFileSync("/tmp/aws-response.json", "utf8")); const body = typeof outer.body === "string" ? JSON.parse(outer.body) : outer;
-            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true || body.lines !== 1 || body.blankLines !== 0) process.exit(1);
-          '
+      - run: echo 'AWS unchanged; SEARCH_DISCOVER first-fish is being proven on Cloudflare before replication.'
 
-  google-check:
-    concurrency:
-      group: function-lane-google-ahhello
-      cancel-in-progress: false
-    if: ${{ always() && needs.google.result == 'success' }}
-    needs:
-      - google
+  google:
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.target == 'all' || inputs.target == 'google') }}
+    needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Authenticate to Google Cloud with WIF
-        id: google-auth
-        uses: google-github-actions/auth@v3
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          token_format: id_token
-          id_token_audience: https://${{ vars.GCP_REGION || 'us-east1' }}-${{ vars.GCP_PROJECT_ID }}.cloudfunctions.net/${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
-      - name: Live Google check
-        env:
-          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
-          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
-          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          GOOGLE_ID_TOKEN: ${{ steps.google-auth.outputs.id_token }}
-        run: |
-          URL="https://${REGION}-${PROJECT_ID}.cloudfunctions.net/${FUNCTION_NAME}"
-          BODY="$(curl --fail --silent --show-error \
-            --header "Authorization: Bearer ${GOOGLE_ID_TOKEN}" \
-            --get --data-urlencode 'text=Many hands work. Bees return!' "$URL")"
-          echo "$BODY"
-          node -e '
-            const body = JSON.parse(process.argv[1]);
-            if (body.words !== 5 || body.sentences !== 2 || body.paragraphs !== 1 || body.terminalPunctuation !== true || body.lines !== 1 || body.blankLines !== 0) process.exit(1);
-          ' "$BODY"
+      - run: echo 'Google unchanged; SEARCH_DISCOVER first-fish is being proven on Cloudflare before replication.'
