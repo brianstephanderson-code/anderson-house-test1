@@ -163,7 +163,7 @@ def main():
         "method": {
             "renderer": "ReportLab",
             "purpose": "measure real PDF pagination under three candidate KDP trim profiles without choosing a final trim",
-            "bleed": false,
+            "bleed": False,
             "reader_aids_inserted": false,
             "note": "These are measured prototype page counts, not final publication page counts. Reader aids and later typographic refinements can change pagination."
         },
