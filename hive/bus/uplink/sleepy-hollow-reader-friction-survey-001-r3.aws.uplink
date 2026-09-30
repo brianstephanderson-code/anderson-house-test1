@@ -1,0 +1,10 @@
+MESSAGE_ID=sleepy-hollow-reader-friction-survey-001-r3
+CHANNEL=UPLINK
+FROM=AWS
+TO=MANAGEMENT
+TYPE=ORDER_RESULT
+STATUS=DONE
+CORRELATION_ID=sleepy-hollow-reader-friction-survey-001-r3
+RESULT_JSON={"words":6,"sentences":1,"paragraphs":1,"terminalPunctuation":false,"particleRoute":{"particle":"terminal_punctuation","returnsTo":"text_profile","backupTo":"function_lane_checkpoint","crosstalk":["terminal_punctuation_verifier"]},"crosstalkVerification":{"by":"terminal_punctuation_verifier","passed":true},"uplink":{"via":"primary","to":"text_profile"},"characters":53,"lines":1,"blankLines":0,"providerHive":{"provider":"aws","mode":"fanout-join","workerCount":7,"workers":["word_count","sentence_count","paragraph_count","terminal_punctuation","character_count","line_count","blank_line_count"],"elapsedMs":1}}
+RECOVERY=3_LOCAL_ATTEMPTS
+UTC=2026-09-30T03:30:33Z
