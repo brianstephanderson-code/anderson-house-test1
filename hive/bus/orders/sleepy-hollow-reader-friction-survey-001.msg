@@ -1,0 +1,11 @@
+MESSAGE_ID=sleepy-hollow-reader-friction-survey-001
+CHANNEL=ORDERS
+FROM=MANAGEMENT
+TO=ALL
+TYPE=BOOK_PRODUCTION_SURVEY
+EXECUTOR=DISPATCHER
+JOB_SPEC=warehouse/jobs/sleepy-hollow/reader-friction-survey-001.md
+PURPOSE=Survey Sleepy Hollow for reader-friction candidates while preserving Irving source unchanged
+STATE=STAGED
+DONE=Return candidate map for evidence gathering and later annotation decisions
+RULE=FIT_BOTH_WAYS
