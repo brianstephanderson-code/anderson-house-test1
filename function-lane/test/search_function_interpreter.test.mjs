@@ -14,7 +14,7 @@ test("interprets the function of each part of the Perth fishing request",()=>{
   assert.equal(i.roles.boundary.value,200);
   assert.equal(i.roles.boundary.operator,"<=");
   assert.ok(i.roles.environment.includes("beach"));
-  assert.equal(i.roles.unknown,"best bait");
+  assert.equal(i.roles.what,"best bait");
 
   const b=createSearchBlackboard(i);
   assert.equal(b.state.target,"salmon");
