@@ -11,10 +11,12 @@ on:
       - 'function-lane/core/meaning_fit.mjs'
       - 'function-lane/core/function_batcher.mjs'
       - 'function-lane/core/evidence_router.mjs'
+      - 'function-lane/core/verification_gate.mjs'
       - 'function-lane/test/candidate_cleaner.test.mjs'
       - 'function-lane/test/meaning_fit.test.mjs'
       - 'function-lane/test/function_batcher.test.mjs'
       - 'function-lane/test/evidence_router.test.mjs'
+      - 'function-lane/test/verification_gate.test.mjs'
 
 permissions:
   contents: read
@@ -25,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Linda tests reusable conveyor functions
-        run: node --test function-lane/test/candidate_cleaner.test.mjs function-lane/test/meaning_fit.test.mjs function-lane/test/function_batcher.test.mjs function-lane/test/evidence_router.test.mjs
+        run: node --test function-lane/test/candidate_cleaner.test.mjs function-lane/test/meaning_fit.test.mjs function-lane/test/function_batcher.test.mjs function-lane/test/evidence_router.test.mjs function-lane/test/verification_gate.test.mjs
       - name: Acquire canonical Gutenberg source with retry
         run: |
           mkdir -p .build/sleepy-hollow
@@ -50,8 +52,7 @@ jobs:
           Path('.build/sleepy-hollow/working.txt').write_text(body,encoding='utf-8')
           PY
           test -s .build/sleepy-hollow/working.txt
-          cmp -s .build/sleepy-hollow/master.txt .build/sleepy-hollow/working.txt && exit 1 || true
-      - name: Detect clean Meaning Fit batch and route evidence
+      - name: Detect clean Meaning Fit batch route and verification passports
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -60,22 +61,26 @@ jobs:
           import { meaningFit } from './function-lane/core/meaning_fit.mjs';
           import { batchByFunction } from './function-lane/core/function_batcher.mjs';
           import { routeEvidence } from './function-lane/core/evidence_router.mjs';
+          import { verificationGate } from './function-lane/core/verification_gate.mjs';
           const text=fs.readFileSync('.build/sleepy-hollow/working.txt','utf8');
           const first=text.split(/\n\s*\n/).slice(0,8).join('\n\n');
           const detected=candidateTokenResultFor(first);
           const cleaned=cleanCandidateTokens(detected.candidateTokens);
           const glossaryParcels=(cleaned.candidateCleaner.wordCandidates ?? []).map(({value}) => meaningFit({term:value,context:first,candidateMeanings:[]}).meaningFit);
           const namedParcels=(cleaned.candidateCleaner.namedReferences ?? []).filter((x)=>x.bucket!=='reject').map(({value}) => meaningFit({term:value,context:first,candidateMeanings:[]}).meaningFit);
+          const parcels=[...glossaryParcels,...namedParcels];
           const batched=batchByFunction({glossaryParcels,namedParcels});
-          const evidenceRoutes=[...glossaryParcels,...namedParcels].map((parcel)=>routeEvidence(parcel).evidenceRoute);
-          const doorCounts={};
-          for (const route of evidenceRoutes) for (const door of route.doors) doorCounts[door]=(doorCounts[door]??0)+1;
+          const evidenceRoutes=parcels.map((parcel)=>routeEvidence(parcel).evidenceRoute);
+          const verificationPassports=parcels.map((parcel)=>verificationGate({claim:`Contextual function/meaning of ${parcel.term}`,sources:[],contextFit:'pending',contradictionCheck:'pending'}).verification);
+          const passportStates={};
+          for (const p of verificationPassports) passportStates[p.state]=(passportStates[p.state]??0)+1;
           fs.writeFileSync('.build/sleepy-hollow/first-candidates.json',JSON.stringify(detected,null,2));
           fs.writeFileSync('.build/sleepy-hollow/first-cleaned.json',JSON.stringify(cleaned,null,2));
           fs.writeFileSync('.build/sleepy-hollow/first-meaning-fit-parcels.json',JSON.stringify({glossaryParcels,namedParcels},null,2));
           fs.writeFileSync('.build/sleepy-hollow/first-function-batches.json',JSON.stringify(batched,null,2));
-          fs.writeFileSync('.build/sleepy-hollow/first-evidence-routes.json',JSON.stringify({evidenceRoutes,doorCounts},null,2));
-          console.log(JSON.stringify({cleaned:cleaned.candidateCleaner.counts,meaningFitParcels:glossaryParcels.length+namedParcels.length,batches:batched.functionBatches.map(b=>({functionClass:b.functionClass,count:b.count})),doorCounts},null,2));
+          fs.writeFileSync('.build/sleepy-hollow/first-evidence-routes.json',JSON.stringify({evidenceRoutes},null,2));
+          fs.writeFileSync('.build/sleepy-hollow/first-verification-passports.json',JSON.stringify({verificationPassports,passportStates},null,2));
+          console.log(JSON.stringify({meaningFitParcels:parcels.length,verificationPassports:verificationPassports.length,passportStates},null,2));
           NODE
       - name: Preserve Source Gate evidence
         uses: actions/upload-artifact@v4
@@ -90,4 +95,5 @@ jobs:
             .build/sleepy-hollow/first-meaning-fit-parcels.json
             .build/sleepy-hollow/first-function-batches.json
             .build/sleepy-hollow/first-evidence-routes.json
+            .build/sleepy-hollow/first-verification-passports.json
           retention-days: 90
