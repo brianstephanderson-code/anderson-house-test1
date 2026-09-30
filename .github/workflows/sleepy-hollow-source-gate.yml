@@ -8,7 +8,9 @@ on:
       - '.github/workflows/sleepy-hollow-source-gate.yml'
       - 'function-lane/core/candidate_tokens.mjs'
       - 'function-lane/core/candidate_cleaner.mjs'
+      - 'function-lane/core/meaning_fit.mjs'
       - 'function-lane/test/candidate_cleaner.test.mjs'
+      - 'function-lane/test/meaning_fit.test.mjs'
 
 permissions:
   contents: read
@@ -18,8 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Test reusable candidate cleaner
-        run: node --test function-lane/test/candidate_cleaner.test.mjs
+      - name: Linda tests reusable conveyor functions
+        run: node --test function-lane/test/candidate_cleaner.test.mjs function-lane/test/meaning_fit.test.mjs
       - name: Acquire canonical Gutenberg source
         run: |
           mkdir -p .build/sleepy-hollow
@@ -48,19 +50,27 @@ jobs:
           PY
           test -s .build/sleepy-hollow/working.txt
           cmp -s .build/sleepy-hollow/master.txt .build/sleepy-hollow/working.txt && exit 1 || true
-      - name: Detect and clean first real Irving parcel
+      - name: Detect clean and prepare Meaning Fit parcels
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
           import { candidateTokenResultFor } from './function-lane/core/candidate_tokens.mjs';
           import { cleanCandidateTokens } from './function-lane/core/candidate_cleaner.mjs';
+          import { meaningFit } from './function-lane/core/meaning_fit.mjs';
           const text=fs.readFileSync('.build/sleepy-hollow/working.txt','utf8');
           const first=text.split(/\n\s*\n/).slice(0,8).join('\n\n');
           const detected=candidateTokenResultFor(first);
           const cleaned=cleanCandidateTokens(detected.candidateTokens);
+          const glossaryParcels=(cleaned.candidateCleaner.wordCandidates ?? []).map(({value}) =>
+            meaningFit({term:value, context:first, candidateMeanings:[]}).meaningFit
+          );
+          const namedParcels=(cleaned.candidateCleaner.namedReferences ?? [])
+            .filter((x) => x.bucket !== 'reject')
+            .map(({value}) => meaningFit({term:value, context:first, candidateMeanings:[]}).meaningFit);
           fs.writeFileSync('.build/sleepy-hollow/first-candidates.json',JSON.stringify(detected,null,2));
           fs.writeFileSync('.build/sleepy-hollow/first-cleaned.json',JSON.stringify(cleaned,null,2));
-          console.log(JSON.stringify(cleaned.candidateCleaner.counts,null,2));
+          fs.writeFileSync('.build/sleepy-hollow/first-meaning-fit-parcels.json',JSON.stringify({glossaryParcels,namedParcels},null,2));
+          console.log(JSON.stringify({cleaned:cleaned.candidateCleaner.counts,meaningFitParcels:glossaryParcels.length+namedParcels.length},null,2));
           NODE
       - name: Preserve Source Gate evidence
         uses: actions/upload-artifact@v4
@@ -72,4 +82,5 @@ jobs:
             .build/sleepy-hollow/working.txt
             .build/sleepy-hollow/first-candidates.json
             .build/sleepy-hollow/first-cleaned.json
+            .build/sleepy-hollow/first-meaning-fit-parcels.json
           retention-days: 90
