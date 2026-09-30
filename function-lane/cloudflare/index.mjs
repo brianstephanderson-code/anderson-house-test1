@@ -1,6 +1,6 @@
 import { providerHiveProfile } from "./core/provider_hive.mjs";
 import { searchDiscover } from "./search_discover.mjs";
-import { searchDiscoverLoc } from "./search_discover_loc.mjs";
+import { searchDiscoverLocRoute } from "./search_discover_loc_route.mjs";
 import { fetchText } from "./fetch_text.mjs";
 import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
@@ -72,7 +72,7 @@ export default {
     if (type === "SEARCH_MULTI_DOOR") {
       const query=body.query ?? body.text;
       const limit=body.limit ?? 5;
-      const [wiki,loc]=await Promise.all([searchDiscover(query,limit),searchDiscoverLoc(query,limit)]);
+      const [wiki,loc]=await Promise.all([searchDiscover(query,limit),searchDiscoverLocRoute(query,limit)]);
       const results=deduplicateResults([
         ...normalizeResults(wiki.results,"WIKIPEDIA_MEDIAWIKI_API"),
         ...normalizeResults(loc.results,"LIBRARY_OF_CONGRESS_JSON_API")
@@ -84,7 +84,7 @@ export default {
     }
     if (type === "READ_TEXT_LINKS") return Response.json(await readTextLinks(body.url,{maxChars:body.max_chars,maxLinks:body.max_links}));
     if (type === "FETCH_TEXT") return Response.json(await fetchText(body.url, body.max_chars));
-    if (type === "SEARCH_DISCOVER_LOC") return Response.json(await searchDiscoverLoc(body.query ?? body.text, body.limit ?? 5));
+    if (type === "SEARCH_DISCOVER_LOC") return Response.json(await searchDiscoverLocRoute(body.query ?? body.text, body.limit ?? 5));
     if (type === "SEARCH_DISCOVER") return Response.json(await searchDiscover(body.query ?? body.text, body.limit ?? 5));
     return Response.json(await providerHiveProfile(body.text ?? "", "cloudflare"));
   },
