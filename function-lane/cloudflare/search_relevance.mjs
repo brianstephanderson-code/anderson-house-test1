@@ -10,7 +10,7 @@ function keywords(v=""){
 function functionalFocus(state={}){
   return uniq([
     state.action,
-    ...keywords(state.unknown),
+    ...keywords(state.what),
     ...(Array.isArray(state.environment)?state.environment:[])
   ].filter(Boolean));
 }
@@ -62,7 +62,7 @@ export function evidenceRelevance(evidence={}, state={}) {
   const target=String(state.target??"").trim();
   const origin=String(state.origin??"").trim();
   const environment=Array.isArray(state.environment)?state.environment:[];
-  const unknownTerms=keywords(state.unknown);
+  const unknownTerms=keywords(state.what);
 
   const target_hit=target ? has(hay,target) : true;
   const origin_hit=origin ? has(hay,origin) : true;
@@ -87,8 +87,8 @@ export function semanticSufficiency(evidence=[], state={}) {
       sufficient_for:"SEMANTIC_PURPOSE_PROOF",
       verified_relevant_evidence_count:relevant.length,
       reason:relevant.length>0
-        ? "At least one readable verified source matches the Blackboard target, place, environment and unknown."
-        : "Readable evidence exists, but none yet matches the Blackboard target, place, environment and unknown."
+        ? "At least one readable verified source matches the Blackboard target, place, environment and what."
+        : "Readable evidence exists, but none yet matches the Blackboard target, place, environment and what."
     }
   };
 }
