@@ -1,0 +1,58 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "contract_set": "SH-KDP-PRINT-CANDIDATES-001",
+  "state": "CANDIDATE_PRINT_CONTRACTS_READY",
+  "source_probe": "books/sleepy-hollow/PAGINATION-PROBE-001.json",
+  "policy_checked_utc": "2026-09-30",
+  "format": "paperback",
+  "interior_bleed": false,
+  "source_integrity": {
+    "working_body_sha256": "14dfbab6784099770a04cfc20b67213929595d47078f14143980e0f87b4e1338",
+    "source_text_unchanged": true
+  },
+  "candidates": [
+    {
+      "trim_inches": [
+        5,
+        8
+      ],
+      "measured_page_count": 62,
+      "kdp_min_inside_inches": 0.375,
+      "kdp_min_outside_inches": 0.25,
+      "probe_inside_inches": 0.5,
+      "probe_outside_inches": 0.5,
+      "current_gate_status": "PASS_FOR_PROTOTYPE_RENDER"
+    },
+    {
+      "trim_inches": [
+        5.5,
+        8.5
+      ],
+      "measured_page_count": 58,
+      "kdp_min_inside_inches": 0.375,
+      "kdp_min_outside_inches": 0.25,
+      "probe_inside_inches": 0.5,
+      "probe_outside_inches": 0.5,
+      "current_gate_status": "PASS_FOR_PROTOTYPE_RENDER"
+    },
+    {
+      "trim_inches": [
+        6,
+        9
+      ],
+      "measured_page_count": 53,
+      "kdp_min_inside_inches": 0.375,
+      "kdp_min_outside_inches": 0.25,
+      "probe_inside_inches": 0.5,
+      "probe_outside_inches": 0.5,
+      "current_gate_status": "PASS_FOR_PROTOTYPE_RENDER"
+    }
+  ],
+  "decision_policy": [
+    "Do not pick a final trim merely because one has fewer pages.",
+    "Compare reader experience, physical feel, cost, note density, and later reader-aid insertion before selecting the production trim.",
+    "If reader aids materially change page count, rerun pagination and recalculate the inside margin.",
+    "Keep KDP-specific constraints in this adapter layer rather than the master literary function."
+  ],
+  "next_state": "COMPARE_READER_EXPERIENCE_AND_COST_THEN_SELECT_PRINT_PROFILE"
+}
