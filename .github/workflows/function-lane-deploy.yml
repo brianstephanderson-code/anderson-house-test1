@@ -74,6 +74,17 @@ jobs:
           BODY="$(curl --fail --silent --show-error --get --data-urlencode 'type=FETCH_TEXT' --data-urlencode 'url=https://www.loc.gov/item/ihas.200197495/' --data-urlencode 'max_chars=12000' 'https://ah-word-count.brian-steph-anderson.workers.dev')"
           echo "$BODY" > /tmp/fetch-text.json
           node -e 'const fs=require("fs");const b=JSON.parse(fs.readFileSync("/tmp/fetch-text.json","utf8")); if(!b.ok||b.function!=="FETCH_TEXT"||!b.provenance||typeof b.text!=="string"||b.text.length<100||b.text.length>12000||/<script|<style|<img/i.test(b.text)) process.exit(1); console.log("FETCH_TEXT_OK chars="+b.chars+" url="+b.url); console.log("TEXT_SAMPLE "+b.text.slice(0,500));'
+      - name: Live Borged readable-text-plus-links probe
+        run: |
+          BODY="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=READ_TEXT_LINKS' \
+            --data-urlencode 'url=https://www.loc.gov/item/ihas.200197495/' \
+            --data-urlencode 'max_chars=6000' \
+            --data-urlencode 'max_links=25' \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "$BODY" > /tmp/read-text-links.json
+          node -e 'const fs=require("fs"); const b=JSON.parse(fs.readFileSync("/tmp/read-text-links.json","utf8")); if(!b.ok||b.function!=="READ_TEXT_LINKS"||!b.provenance||typeof b.text!=="string"||b.text.length<100||b.text.length>6000||!Array.isArray(b.links)||b.links.length<1||b.links.length>25||b.link_count!==b.links.length||b.links.some(x=>!/^https?:\/\//.test(x.url))||/<script|<style|<img|<form/i.test(b.text)) process.exit(1); console.log("READ_TEXT_LINKS_OK chars="+b.chars+" links="+b.link_count+" url="+b.url); console.log("TEXT_SAMPLE "+b.text.slice(0,300)); console.log("LINK_SAMPLE "+b.links.slice(0,5).map(x=>x.url).join(" | "));'
+
       - name: Priority 20-way return-as-ready benchmark
         run: |
           cat > /tmp/benchmark.json <<'JSON'
