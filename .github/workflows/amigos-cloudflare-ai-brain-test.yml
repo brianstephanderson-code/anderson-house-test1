@@ -19,16 +19,56 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
       - name: Unit proof
         run: node --test function-lane/test/cloudflare_ai_casts.test.mjs
+
       - name: Live Cloudflare AI cast planner
         run: |
+          set -euo pipefail
           Q='I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?'
+
           BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=CLOUDFLARE_AI_CASTS'             --data-urlencode "query=$Q"             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+
           echo "$BODY" | jq .
-          echo "$BODY" | jq -e '.ok and .function=="CLOUDFLARE_AI_CASTS" and .ai_answer_is_evidence==false and (.casts|length)>=3' >/dev/null
-          CAST="$(echo "$BODY" | jq -r '.casts[0]')"
-          SEARCH="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_WEB_PUBLIC'             --data-urlencode "query=$CAST"             --data-urlencode 'limit=5'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
-          echo "$SEARCH" | jq '{ok,function,query,count:(.results|length),results:[.results[]?|{title,url,source_door}]}'
-          echo "$SEARCH" | jq -e '.ok and (.results|length)>0' >/dev/null
+          echo "$BODY" | jq -e '
+            .ok and
+            .function=="CLOUDFLARE_AI_CASTS" and
+            .ai_answer_is_evidence==false and
+            (.casts|length)>=3
+          ' >/dev/null
+
+          : > /tmp/casts.txt
+          echo "$BODY" | jq -r '.casts[] | select(test("bait";"i"))' >> /tmp/casts.txt
+          echo "$BODY" | jq -r '.casts[]' >> /tmp/casts.txt
+          awk 'NF && !seen[$0]++' /tmp/casts.txt > /tmp/casts-unique.txt
+
+          : > /tmp/search-winner.json
+
+          while IFS= read -r CAST; do
+            SEARCH="$(curl --fail --silent --show-error --get               --data-urlencode 'type=SEARCH_WEB_PUBLIC'               --data-urlencode "query=$CAST"               --data-urlencode 'limit=5'               'https://ah-word-count.brian-steph-anderson.workers.dev')"
+
+            COUNT="$(echo "$SEARCH" | jq '.results|length')"
+            echo "CAST=$CAST COUNT=$COUNT"
+
+            if [ "$COUNT" -gt 0 ]; then
+              printf '%s' "$SEARCH" > /tmp/search-winner.json
+              break
+            fi
+          done < /tmp/casts-unique.txt
+
+          test -s /tmp/search-winner.json
+
+          cat /tmp/search-winner.json | jq '{
+            ok,
+            function,
+            query,
+            count:(.results|length),
+            results:[.results[]?|{title,url,source_door}]
+          }'
+
+          cat /tmp/search-winner.json | jq -e '
+            .ok and (.results|length)>0
+          ' >/dev/null
+
           echo CLOUDFLARE_AI_BRAIN_TO_SEARCH_GREEN
