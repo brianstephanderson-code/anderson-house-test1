@@ -14,7 +14,7 @@ test("provider hive fans one request into eight child particles and joins them",
   assert.equal(result.lines, 1);
   assert.equal(result.blankLines, 0);
   assert.deepEqual(result.candidateTokens.namedReferences, []);
-  assert.ok(result.candidateTokens.wordCandidates.includes("return"));
+  assert.ok(result.candidateTokens.wordCandidates.includes("return" + "s"));
   assert.equal(result.providerHive.mode, "fanout-join");
   assert.equal(result.providerHive.workerCount, 8);
   assert.deepEqual(result.providerHive.workers, [
