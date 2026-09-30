@@ -1,0 +1,64 @@
+name: Amigos Native AI Source Plumbing Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "function-lane/core/ai_source_metadata.mjs"
+      - "function-lane/test/ai_source_metadata.test.mjs"
+      - ".github/workflows/amigos-native-ai-source-plumbing-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-source-plumbing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Unit proof - AI prose cannot enter source parcel
+        run: node --test function-lane/test/ai_source_metadata.test.mjs
+
+      - name: Google native-metadata shape into live Anderson House source gate
+        run: |
+          QUESTION="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+          node --input-type=module <<'NODE' > /tmp/google-parcel.json
+          import {aiSourceParcel} from "./function-lane/core/ai_source_metadata.mjs";
+          const q="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?";
+          const providerResponse={
+            candidates:[{
+              content:{parts:[{text:"WRONG AI WORDS MUST NOT SURVIVE"}]},
+              groundingMetadata:{groundingChunks:[
+                {web:{uri:"https://perthfishingtv.com.au/slide-bait-rig-for-salmon/",title:"Slide Bait Rig for Salmon"}}
+              ]}
+            }]
+          };
+          console.log(JSON.stringify(aiSourceParcel("google",q,providerResponse)));
+          NODE
+          jq -e '.ok and .provider=="google" and .source_count==1 and (.policy|contains("SOURCE_LINKS_ONLY"))' /tmp/google-parcel.json >/dev/null
+          ! grep -q 'WRONG AI WORDS' /tmp/google-parcel.json
+          URL="$(jq -r '.sources[0].url' /tmp/google-parcel.json)"
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=AI_SOURCE_GATE'             --data-urlencode "source=$URL"             --data-urlencode 'evidence_term=bait'             --data-urlencode 'evidence_term=salmon'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "GOOGLE_SOURCE_GATE=$BODY"
+          echo "$BODY" | jq -e '.ok and .ai_answer_discarded==true and .source_count==1 and (.evidence|length)>=1' >/dev/null
+
+      - name: AWS native-metadata shape into live Anderson House source gate
+        run: |
+          node --input-type=module <<'NODE' > /tmp/aws-parcel.json
+          import {aiSourceParcel} from "./function-lane/core/ai_source_metadata.mjs";
+          const q="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?";
+          const providerResponse={
+            output:[{type:"message",content:[{type:"output_text",text:"WRONG AWS WORDS MUST NOT SURVIVE",annotations:[
+              {type:"url_citation",url:"https://perthfishingtv.com.au/slide-bait-rig-for-salmon/",title:"Slide Bait Rig for Salmon"}
+            ]}]}]
+          };
+          console.log(JSON.stringify(aiSourceParcel("aws",q,providerResponse)));
+          NODE
+          jq -e '.ok and .provider=="aws" and .source_count==1 and (.policy|contains("SOURCE_LINKS_ONLY"))' /tmp/aws-parcel.json >/dev/null
+          ! grep -q 'WRONG AWS WORDS' /tmp/aws-parcel.json
+          URL="$(jq -r '.sources[0].url' /tmp/aws-parcel.json)"
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=AI_SOURCE_GATE'             --data-urlencode "source=$URL"             --data-urlencode 'evidence_term=bait'             --data-urlencode 'evidence_term=salmon'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "AWS_SOURCE_GATE=$BODY"
+          echo "$BODY" | jq -e '.ok and .ai_answer_discarded==true and .source_count==1 and (.evidence|length)>=1' >/dev/null
