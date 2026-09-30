@@ -42,8 +42,7 @@ jobs:
             generationConfig:{temperature:0}
           }' > /tmp/request.json
 
-          CODE="$(curl --silent --show-error             --output /tmp/response.json             --write-out '%{http_code}'             -X POST "$ENDPOINT"             -H "Authorization: Bearer $TOKEN"             -H "Content-Type: application/json"             --data-binary @/tmp/request.json)"
-
+          CODE="$(curl --silent --show-error --output /tmp/response.json --write-out '%{http_code}' -X POST "$ENDPOINT" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data-binary @/tmp/request.json)"
           echo "GOOGLE_HTTP=$CODE"
           test "$CODE" = "200"
 
@@ -60,15 +59,13 @@ jobs:
 
           : > /tmp/gates.ndjson
           jq -r '.sources[].url' /tmp/parcel.json | head -n 6 | while read -r URL; do
-            BODY="$(curl --fail --silent --show-error --get               --data-urlencode 'type=AI_SOURCE_GATE'               --data-urlencode "source=$URL"               --data-urlencode 'evidence_term=salmon'               --data-urlencode 'evidence_term=bait'               --data-urlencode 'evidence_term=pilchard'               --data-urlencode 'evidence_term=mulie'               --data-urlencode 'evidence_term=May'               'https://ah-word-count.brian-steph-anderson.workers.dev')"
-            printf '%s
-' "$BODY" >> /tmp/gates.ndjson
+            BODY="$(curl --fail --silent --show-error --get --data-urlencode 'type=AI_SOURCE_GATE' --data-urlencode "source=$URL" --data-urlencode 'evidence_term=salmon' --data-urlencode 'evidence_term=bait' --data-urlencode 'evidence_term=pilchard' --data-urlencode 'evidence_term=mulie' --data-urlencode 'evidence_term=May' 'https://ah-word-count.brian-steph-anderson.workers.dev')"
+            echo "$BODY" >> /tmp/gates.ndjson
           done
 
           node - <<'NODE'
           const fs=require("fs");
-          const rows=fs.readFileSync("/tmp/gates.ndjson","utf8").trim().split(/
-+/).filter(Boolean).map(JSON.parse);
+          const rows=fs.readFileSync("/tmp/gates.ndjson","utf8").trim().split(String.fromCharCode(10)).filter(Boolean).map(JSON.parse);
           for(const r of rows){
             const e=r.evidence?.[0]||{};
             console.log(JSON.stringify({
