@@ -110,3 +110,57 @@ For every useful thing found, ask two questions:
 2. What reusable function or workflow is hiding inside how it works?
 
 The second catch goes to the Warehouse.
+
+
+## BOOKED / LIVE PROVEN — FUNCTION-FIRST SEARCH INTERPRETER + BLACKBOARD — 2026-09-30
+
+- Purpose: let a human speak/write naturally while the Search Department works from meaning rather than grammar.
+- Flow: HUMAN TEXT -> FUNCTION INTERPRETER -> BLACKBOARD STATE -> QUERY COMPILER -> SEARCH DOORS -> RELEVANCE -> bounded RECAST -> semantic sufficiency.
+- SEARCH_FUNCTION_INTERPRETER extracts functional roles instead of polishing wording:
+  - ACTION
+  - TARGET
+  - TIME
+  - ORIGIN
+  - BOUNDARY
+  - ENVIRONMENT
+  - UNKNOWN
+  - DESIRED_DONE
+- SEARCH_BLACKBOARD stores those roles as one common STATE parcel for downstream functions.
+- SEARCH_QUERY_COMPILER now compiles from Blackboard STATE rather than directly mining the raw sentence.
+- SEARCH_RELEVANCE and SEARCH_RECAST now read the same Blackboard fields.
+- Linda semantic gate now requires evidence to match TARGET + ORIGIN + ENVIRONMENT + the UNKNOWN's useful keyword(s), rather than accepting any merely readable page.
+- Bounded donut: if the first evidence set is insufficient, issue one materially different recast round, merge returns, re-rank, re-read, and judge again.
+- LIVE PROOF: Amigos Fishing Production Test run 13, attempt 2.
+- Exact human input: "I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+- Interpreted STATE:
+  - ACTION=fishing
+  - TARGET=salmon
+  - TIME=May
+  - ORIGIN=Perth
+  - BOUNDARY=<=200 kilometers
+  - ENVIRONMENT=beach
+  - UNKNOWN=best bait
+- Compiler casts included:
+  - salmon Perth beach may best bait
+  - "salmon" Perth beach may best bait
+  - salmon fishing Perth beach best bait
+  - "salmon" AND Perth AND beach AND may AND best bait
+- The first cast family was thin during this live run, so the donut recast automatically.
+- RECAST_CORE returned 8 open-web candidates; 12 candidates existed after merge.
+- Linda rejected irrelevant readable pages and accepted at least one source containing salmon + Perth + beach + bait evidence.
+- Final live result: OK=true; SEMANTIC_PURPOSE_PROOF=true.
+- Key implementation commits:
+  - bf1260c3bde76a26c9fc51a469e862e42eb69dab — add function-first search input interpreter.
+  - c7cf42ca696421cb92b21d0985e0e6eba161a15b — add search Blackboard STATE parcel.
+  - 043fa2e437cc6bc48a2579fe18566b302f6b6ca0 — compile search queries from functional Blackboard STATE.
+  - 4f7ee9386215538f48634eab157e2ccd5096af77 — move relevance to Blackboard functional STATE.
+  - 72b6bd8b1de586d3bbc6fb233a28fa37204b2a76 — move recast to Blackboard functional STATE.
+  - 310c1fa7b85fbda702110181b002029f4987f2ec — expose Interpreter -> Blackboard -> Compiler in live search.
+  - 563858cf152770a893057c3493bf7e26bec61c27 — require evidence to address the Blackboard UNKNOWN.
+
+### New core rule
+DO NOT POLISH THE HUMAN SENTENCE INTO A SEARCH QUERY.
+
+Interpret the function of each meaningful part once, store that meaning in Blackboard STATE, and let each downstream function compile only the representation it needs.
+
+HUMAN LANGUAGE -> FUNCTIONS -> STATE -> SEARCH LANGUAGE.
