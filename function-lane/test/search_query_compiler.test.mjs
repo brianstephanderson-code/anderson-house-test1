@@ -15,7 +15,7 @@ test("compiler consumes functional Blackboard state",()=>{
   assert.equal(out.state.origin,"Perth");
   assert.deepEqual(out.state.time,["may"]);
   assert.ok(out.state.environment.includes("beach"));
-  assert.equal(out.state.unknown,"best bait");
+  assert.equal(out.state.what,"best bait");
   assert.ok(out.queries.some(x=>x.kind==="FUNCTIONAL_BOOLEAN"&&x.query.includes("AND")));
   assert.ok(out.queries.some(x=>x.query.toLowerCase().includes("salmon")));
   assert.ok(out.queries.some(x=>x.query.toLowerCase().includes("beach")));
