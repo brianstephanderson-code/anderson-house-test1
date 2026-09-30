@@ -67,10 +67,12 @@ export default {
         max_chars: u.searchParams.get("max_chars") ?? undefined,
         max_links: u.searchParams.get("max_links") ?? undefined,
         read_limit: u.searchParams.get("read_limit") ?? undefined,
-        parent_ticket: u.searchParams.get("parent_ticket") ?? undefined
+        parent_ticket: u.searchParams.get("parent_ticket") ?? undefined,
+        browser_fallback: u.searchParams.get("browser_fallback") ?? undefined
       };
     }
     const type = String(body.type ?? "").toUpperCase();
+    const browserFallbackRequested = body.browser_fallback === true || ["1","true","yes","on"].includes(String(body.browser_fallback ?? "").toLowerCase());
     if (type === "SEARCH_DISCOVER_STREAM") return searchDiscoverStream(body.queries, body.limit ?? 5, body.parent_ticket ?? "SEARCH");
     if (type === "SEARCH_MULTI_DOOR") {
       const query=body.query ?? body.text;
@@ -86,7 +88,7 @@ export default {
       ],results});
     }
     if (type === "SEARCH_WEB_PUBLIC") return Response.json(await searchWebPublic(body.query ?? body.text, body.limit ?? 10));
-    if (type === "SEARCH_END_TO_END_V1") return Response.json(await searchEndToEndV1(body.query ?? body.text,{limit:body.limit,readLimit:body.read_limit,maxChars:body.max_chars,browserBinding:env?.BROWSER??null}));
+    if (type === "SEARCH_END_TO_END_V1") return Response.json(await searchEndToEndV1(body.query ?? body.text,{limit:body.limit,readLimit:body.read_limit,maxChars:body.max_chars,browserBinding:browserFallbackRequested?(env?.BROWSER??null):null}));
     if (type === "READ_TEXT_LINKS") return Response.json(await readTextLinks(body.url,{maxChars:body.max_chars,maxLinks:body.max_links}));
     if (type === "FETCH_TEXT") return Response.json(await fetchText(body.url, body.max_chars));
     if (type === "SEARCH_DISCOVER_LOC") return Response.json(await searchDiscoverLocRoute(body.query ?? body.text, body.limit ?? 5));
