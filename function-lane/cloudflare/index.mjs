@@ -6,6 +6,7 @@ import { readTextLinks } from "./read_text_links.mjs";
 import { searchEndToEndV1 } from "./search_end_to_end.mjs";
 import { searchWebPublic } from "./search_web_public.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
+import { aiSourceGate } from "./search_ai_source_gate.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
   const qs = Array.isArray(queries) ? queries.map(x => String(x).trim()).filter(Boolean).slice(0, 30) : [];
@@ -68,11 +69,15 @@ export default {
         max_links: u.searchParams.get("max_links") ?? undefined,
         read_limit: u.searchParams.get("read_limit") ?? undefined,
         parent_ticket: u.searchParams.get("parent_ticket") ?? undefined,
-        browser_fallback: u.searchParams.get("browser_fallback") ?? undefined
+        browser_fallback: u.searchParams.get("browser_fallback") ?? undefined,
+        answer: u.searchParams.get("answer") ?? undefined,
+        sources: u.searchParams.getAll("source"),
+        evidence_terms: u.searchParams.getAll("evidence_term")
       };
     }
     const type = String(body.type ?? "").toUpperCase();
     const browserFallbackRequested = body.browser_fallback === true || ["1","true","yes","on"].includes(String(body.browser_fallback ?? "").toLowerCase());
+    if (type === "AI_SOURCE_GATE") return Response.json(await aiSourceGate({answer:body.answer,sources:body.sources},{evidenceTerms:body.evidence_terms??[]}));
     if (type === "SEARCH_DISCOVER_STREAM") return searchDiscoverStream(body.queries, body.limit ?? 5, body.parent_ticket ?? "SEARCH");
     if (type === "SEARCH_MULTI_DOOR") {
       const query=body.query ?? body.text;
