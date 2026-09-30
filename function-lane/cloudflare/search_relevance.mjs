@@ -28,7 +28,7 @@ export function relevanceSignals(candidate={}, state={}) {
 export function rankCandidatesByRelevance(candidates=[], state={}) {
   return (Array.isArray(candidates)?candidates:[])
     .map((candidate,index)=>({candidate,index,signals:relevanceSignals(candidate,state)}))
-    .sort((a,b)=>b.signals.score-a.signals.score || a.index-b.index)
+    .sort((a,b)=>{\n      const as=a.signals.subject_hit?1:0, bs=b.signals.subject_hit?1:0;\n      if(bs!==as) return bs-as;\n      const al=a.signals.location_hits.length?1:0, bl=b.signals.location_hits.length?1:0;\n      if(bl!==al) return bl-al;\n      return b.signals.score-a.signals.score || a.index-b.index;\n    })
     .map(x=>({...x.candidate,relevance:x.signals}));
 }
 
