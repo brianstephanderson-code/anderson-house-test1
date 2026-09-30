@@ -1,0 +1,25 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "function_id": "SH-MANUAL-ASSEMBLER-001",
+  "state": "VERIFIED_DONE",
+  "purpose": "Prepare the actual Reader Edition join so verified research can be inserted as separate support the moment returns arrive.",
+  "ownership": {
+    "lane": "manual_chat",
+    "research_jobs_claimed": [],
+    "conflicts_with_research_batch": false
+  },
+  "state_transform_done": {
+    "state": "Reader-aid admissions exist or will arrive independently from research.",
+    "transform": "Join only READY_FOR_ASSEMBLY aids to their stable paragraph anchors while preserving source paragraphs byte-for-byte.",
+    "done": "READER_EDITION_ASSEMBLED with source-integrity verification available."
+  },
+  "invariants": [
+    "Source paragraph text remains unchanged.",
+    "Reader aids remain a separate subordinate layer.",
+    "Held, recast, and no-insert returns never leak into reader-facing support.",
+    "Duplicate job identities are rejected.",
+    "Source mutation permission is rejected.",
+    "The same function works with zero, some, or all verified aids."
+  ],
+  "next_state": "WHEN_REAL_VERIFIED_AIDS_RETURN_ASSEMBLE_THEM_THEN_QA_AND_REPAGINATE"
+}
