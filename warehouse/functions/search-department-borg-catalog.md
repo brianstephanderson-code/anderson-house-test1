@@ -230,3 +230,31 @@ For search, WHAT is the answer sought; the other roles constrain that WHAT.
 - Gemini/Google Search grounding and AWS Bedrock Web Search reasoning sockets are not yet wired into this repository, so the full AI-to-source loop is not yet marked proven.
 
 DIRECT HUMAN QUESTION -> AI SEARCH -> SOURCE LINKS -> DISCARD AI WORDS FOR PROOF -> READ SOURCE -> VERIFY -> SUFFICIENT? -> RECAST or DONE.
+
+
+## BOOKED / LIVE PROVEN — NATIVE AI CITATION -> SOURCE GATE — 2026-09-30
+
+- New reusable function: AI_NATIVE_SOURCE_PARCEL.
+- Purpose: accept provider-native AI response metadata and allow ONLY source URLs/titles into the evidence pipe.
+- Google shapes supported:
+  - Gemini GenerateContent groundingMetadata.groundingChunks[].web.
+  - Gemini Interactions model_output text annotations of type url_citation.
+- AWS shape supported:
+  - Amazon Bedrock Responses output[].content[].annotations[] of type url_citation.
+- The provider's generated answer text is intentionally not copied into the parcel.
+- Policy label: AI_WORDS_ARE_LEADS_SOURCE_LINKS_ONLY_ENTER_EVIDENCE_PIPE.
+- Unit proof: 4/4 tests passed.
+- Live plumbing proof: GitHub Actions run 36731640413.
+- Test deliberately inserted incorrect Google- and AWS-shaped AI prose. Both prose strings disappeared before the evidence stage.
+- The surviving source URL was passed through the existing live AI_SOURCE_GATE.
+- The live Cloudflare reader opened the source, extracted salmon/bait evidence, and preserved provenance.
+- Result: GREEN for both provider-native response shapes.
+- Implementation commits:
+  - 3799ba7c0c6ecb511c5e562b9ff671bd6cf81a78 — add provider-native AI source metadata adapter.
+  - 7ad28f6e090fda273774ae336d5bab5b0766aa6d — test source-only parcels.
+  - 06bd55b89f6c6f92d9092acae24e1f27ed4e9ee1 — prove native AI citations feed source-first plumbing.
+- Current boundary: this proves PROVIDER RESPONSE SHAPE -> SOURCE LINK -> OUR READER -> EVIDENCE.
+- Not yet claimed: a live Gemini/Google Search request or live Bedrock Web Search request generated those citations in Anderson House itself.
+- Cost gate remains in force: do not automatically cross into paid model/search calls.
+
+DIRECT QUESTION -> AI PROVIDER -> NATIVE CITATION METADATA -> SOURCE-ONLY PARCEL -> AI_SOURCE_GATE -> READ SOURCE -> LINDA -> SUFFICIENT? -> RECAST or DONE.
