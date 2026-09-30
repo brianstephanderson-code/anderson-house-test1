@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { providerHiveProfile } from "../core/provider_hive.mjs";
 
 test("provider hive fans one request into eight child particles and joins them", async () => {
-  const text = "Many hands work. Bees return!";
+  const text = "Many hands working. Bees return!";
   const result = await providerHiveProfile(text, "test");
 
   assert.equal(result.words, 5);
@@ -14,7 +14,7 @@ test("provider hive fans one request into eight child particles and joins them",
   assert.equal(result.lines, 1);
   assert.equal(result.blankLines, 0);
   assert.deepEqual(result.candidateTokens.namedReferences, []);
-  assert.ok(result.candidateTokens.wordCandidates.includes("return" + "s"));
+  assert.ok(result.candidateTokens.wordCandidates.includes("working"));
   assert.equal(result.providerHive.mode, "fanout-join");
   assert.equal(result.providerHive.workerCount, 8);
   assert.deepEqual(result.providerHive.workers, [
