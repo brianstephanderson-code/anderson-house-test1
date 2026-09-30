@@ -1,6 +1,7 @@
 import { searchDiscover } from "./search_discover.mjs";
 import { searchDiscoverLocRoute } from "./search_discover_loc_route.mjs";
 import { searchWebPublic } from "./search_web_public.mjs";
+import { compileSearchQueries } from "./search_query_compiler.mjs";
 import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 
@@ -41,11 +42,26 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
   const reads=Math.max(1,Math.min(Number(readLimit)||3,5));
   const chars=Math.max(1000,Math.min(Number(maxChars)||4000,12000));
 
-  const [wiki,loc,web]=await Promise.all([
-    searchDiscover(q,n).catch(e=>({ok:false,function:"SEARCH_DISCOVER",error:String(e),results:[]})),
-    searchDiscoverLocRoute(q,n).catch(e=>({ok:false,function:"SEARCH_DISCOVER_LOC",error:String(e),results:[]})),
-    searchWebPublic(q,n).catch(e=>({ok:false,function:"SEARCH_WEB_PUBLIC",error:String(e),results:[]}))
+  const compiled=compileSearchQueries(q,4);
+  const casts=(compiled.queries||[]).map(x=>x.query).filter(Boolean);
+  const primary=casts[0]||q;
+
+  const [wiki,loc,webReturns]=await Promise.all([
+    searchDiscover(primary,n).catch(e=>({ok:false,function:"SEARCH_DISCOVER",error:String(e),results:[]})),
+    searchDiscoverLocRoute(primary,n).catch(e=>({ok:false,function:"SEARCH_DISCOVER_LOC",error:String(e),results:[]})),
+    Promise.all(casts.map(async cast=>{
+      try { return {cast,...await searchWebPublic(cast,n)}; }
+      catch(e) { return {cast,ok:false,function:"SEARCH_WEB_PUBLIC",error:String(e),results:[]}; }
+    }))
   ]);
+
+  const webResults=deduplicateResults(webReturns.flatMap(x=>normalizeResults(x.results,"OPEN_WEB")));
+  const web={
+    ok:webResults.length>0,
+    results:webResults,
+    route:"QUERY_COMPILER_MULTI_CAST",
+    casts:webReturns.map(x=>({query:x.cast,ok:!!x.ok,count:x.results?.length??0,route:x.route??null,error:x.error??null}))
+  };
 
   const candidates=deduplicateResults([
     ...normalizeResults(web.results,"OPEN_WEB"),
@@ -64,8 +80,14 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
     ok:sufficiency.sufficient,
     function:"SEARCH_END_TO_END_V1",
     query:q,
+    query_compiler:{
+      function:compiled.function,
+      state:compiled.state,
+      casts:compiled.queries
+    },
     stages:{
       cast:true,
+      compile:casts.length>0,
       collect:candidates.length>0,
       shortlist:shortlist.length>0,
       read:readReturns.some(x=>x.chars>=100),
@@ -73,9 +95,9 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
       sufficient:sufficiency.sufficient
     },
     doors:[
-      {door:"OPEN_WEB",ok:!!web.ok,count:web.results?.length??0,error:web.error??null,route:web.route??null},
-      {door:"WIKIPEDIA_MEDIAWIKI_API",ok:!!wiki.ok,count:wiki.results?.length??0,error:wiki.error??null},
-      {door:"LIBRARY_OF_CONGRESS",ok:!!loc.ok,blocked:!!loc.blocked,count:loc.results?.length??0,error:loc.error??null,route:loc.route??null}
+      {door:"OPEN_WEB",ok:!!web.ok,count:web.results?.length??0,error:web.error??null,route:web.route??null,casts:web.casts},
+      {door:"WIKIPEDIA_MEDIAWIKI_API",ok:!!wiki.ok,count:wiki.results?.length??0,error:wiki.error??null,query:primary},
+      {door:"LIBRARY_OF_CONGRESS",ok:!!loc.ok,blocked:!!loc.blocked,count:loc.results?.length??0,error:loc.error??null,route:loc.route??null,query:primary}
     ],
     candidate_count:candidates.length,
     shortlist_count:shortlist.length,
