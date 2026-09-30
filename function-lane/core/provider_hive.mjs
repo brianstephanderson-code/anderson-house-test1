@@ -5,6 +5,7 @@ import { punctuationResultFor } from "./terminal_punctuation.mjs";
 import { characterResultFor } from "./character_count.mjs";
 import { lineResultFor } from "./line_count.mjs";
 import { blankLineResultFor } from "./blank_line_count.mjs";
+import { candidateTokenResultFor } from "./candidate_tokens.mjs";
 
 const CHILDREN = Object.freeze([
   ["word_count", resultFor],
@@ -14,6 +15,7 @@ const CHILDREN = Object.freeze([
   ["character_count", characterResultFor],
   ["line_count", lineResultFor],
   ["blank_line_count", blankLineResultFor],
+  ["candidate_tokens", candidateTokenResultFor],
 ]);
 
 export async function providerHiveProfile(text = "", provider = "provider") {
