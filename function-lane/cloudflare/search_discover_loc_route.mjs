@@ -26,6 +26,7 @@ export async function searchDiscoverLocRoute(query, limit=5) {
     error:"ALL_LOC_ROUTES_FAILED",
     direct_error:direct.error,
     bridge_error:bridged.error,
+    bridge_sample:bridged.sample ?? "",
     results:[]
   };
 }
