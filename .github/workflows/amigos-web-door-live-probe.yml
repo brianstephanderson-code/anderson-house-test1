@@ -1,0 +1,31 @@
+name: Amigos Web Door Live Probe
+
+on:
+  push:
+    paths:
+      - ".github/workflows/amigos-web-door-live-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe deployed SEARCH_WEB_PUBLIC door health
+        run: |
+          Q='Perth Australia salmon fishing May best bait'
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_WEB_PUBLIC'             --data-urlencode "query=$Q"             --data-urlencode 'limit=10'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "SEARCH_WEB_PUBLIC_RESULT=$BODY"
+          printf '%s' "$BODY" > web-result.json
+          node - <<'NODE'
+          const fs=require("fs");
+          const b=JSON.parse(fs.readFileSync("web-result.json","utf8"));
+          console.log("OK", b.ok);
+          console.log("ROUTE", b.route);
+          console.log("HEALTH", JSON.stringify(b.health||null));
+          console.log("DOORS", JSON.stringify(b.doors||[]));
+          console.log("RESULT_COUNT", (b.results||[]).length);
+          for (const [i,r] of (b.results||[]).entries()) console.log("RESULT_"+(i+1),JSON.stringify(r));
+          NODE
