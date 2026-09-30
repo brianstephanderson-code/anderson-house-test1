@@ -23,7 +23,7 @@ export async function searchDiscoverLocSru(query, limit=5) {
   if(!q) return {ok:false,function:"SEARCH_DISCOVER_LOC_SRU",error:"EMPTY_QUERY",results:[]};
 
   const n=Math.max(1,Math.min(Number(limit)||5,10));
-  const u=new URL("https://lx2.loc.gov/sru/lcdb");
+  const u=new URL("http://lx2.loc.gov:210/LCDB");
   u.searchParams.set("version","1.1");
   u.searchParams.set("operation","searchRetrieve");
   u.searchParams.set("query",'"'+q.replace(/"/g," ")+'"');
