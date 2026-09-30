@@ -1,0 +1,54 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "platform_gate_version": "001",
+  "manual_lane_id": "SH-MANUAL-KDP-GATE-001",
+  "state": "VERIFIED_DONE",
+  "purpose": "Add an elastic KDP-specific render gate without hard-wiring KDP rules into the literary/master function.",
+  "ownership": {
+    "lane": "manual_chat",
+    "conflicts_with_research_batch": false,
+    "claimed_research_jobs": []
+  },
+  "input_state": "STYLE_LAYOUT_RULES_READY",
+  "platform": "Amazon KDP",
+  "specification_checked_utc": "2026-09-30",
+  "official_evidence": [
+    {
+      "door": "official/institutional",
+      "finding": "Paperback custom trim range is 4-8.5 inches wide by 6-11.69 inches high; sizes over 6.12 wide or 9 high are large trim.",
+      "source": "KDP Print Options"
+    },
+    {
+      "door": "official/institutional",
+      "finding": "Bleed manuscripts add 0.125 inch to width and 0.25 inch to height; outside margins are at least 0.25 no-bleed or 0.375 with bleed; gutter minimum rises by page-count band.",
+      "source": "KDP Set Trim Size, Bleed, and Margins / Paperback Submission Guidelines"
+    },
+    {
+      "door": "official/institutional",
+      "finding": "EPUB is supported for ebooks and KDP recommends checking the file with Kindle Previewer.",
+      "source": "KDP supported eBook manuscript formats"
+    }
+  ],
+  "end_user_evidence": [
+    {
+      "door": "end-user/operator",
+      "finding": "Recent KDP users repeatedly report bleed/page-size mismatch and gutter/page-count mistakes as rejection or preview problems."
+    },
+    {
+      "door": "end-user/operator",
+      "finding": "Operators report that a clean preview does not always eliminate the need to verify actual page dimensions and bleed before final publication."
+    }
+  ],
+  "elastic_design": [
+    "Literary style/layout stays platform-neutral.",
+    "KDP constraints live in a dated adapter/gate that can be replaced when Amazon changes rules.",
+    "Trim choice is not forced by the master function.",
+    "Gutter is not guessed before pagination; the gate returns NEEDS_PAGINATION until page count exists.",
+    "EPUB and paperback remain separate render paths."
+  ],
+  "current_result": {
+    "paperback": "KDP gate ready; first actual Sleepy Hollow print render still needs trim choice plus test pagination.",
+    "ebook": "KDP EPUB render contract ready for a future test render."
+  },
+  "next_state": "RUN_SLEEPY_HOLLOW_TEST_PAGINATION_AND_RENDER"
+}
