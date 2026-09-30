@@ -10,24 +10,22 @@ function uniq(xs=[]){
 }
 
 export function buildSearchRecasts(state={}, priorQueries=[], maxVariants=4){
-  const subject=String(state.subject??"").trim();
-  const place=Array.isArray(state.locations)&&state.locations.length?String(state.locations[0]).trim():"";
-  const content=Array.isArray(state.content)?state.content.map(x=>String(x).toLowerCase()):[];
-  const hasAustralia=content.includes("australia");
-  const focus=content.includes("bait") ? "bait" : content.includes("best") ? "best" : "";
-  const region=hasAustralia ? "Australia" : "";
+  const target=String(state.target??"").trim();
+  const origin=String(state.origin??"").trim();
+  const action=String(state.action??"").trim();
+  const unknown=String(state.unknown??"").trim();
+  const environment=Array.isArray(state.environment)?state.environment:[];
+  const times=Array.isArray(state.time)?state.time:[];
 
   const variants=[
-    {kind:"RECAST_SIMPLE",query:uniq([subject,place,region,focus]).join(" ")},
-    {kind:"RECAST_FISHING",query:uniq([subject,"fishing",place,region,focus]).join(" ")},
-    {kind:"RECAST_PHRASE",query:uniq([subject?('"'+subject+'"'):"",place,region,focus]).join(" ")}
+    {kind:"RECAST_CORE",query:uniq([target,origin,...environment,unknown]).join(" ")},
+    {kind:"RECAST_ACTION",query:uniq([target,action,origin,...environment,unknown]).join(" ")},
+    {kind:"RECAST_TIME",query:uniq([target,origin,...environment,...times,unknown]).join(" ")},
+    {kind:"RECAST_PHRASE",query:uniq([target?('"'+target+'"'):"",origin,...environment,unknown]).join(" ")}
   ];
 
-  if(subject.toLowerCase()==="salmon" && hasAustralia){
-    variants.push(
-      {kind:"RECAST_GEO_SPECIES_HYPOTHESIS",query:uniq(['"Australian salmon"',place,"bait"]).join(" ")},
-      {kind:"RECAST_GEO_SPECIES_HYPOTHESIS",query:'"Australian salmon" "Western Australia" bait'}
-    );
+  if(target.toLowerCase()==="salmon" && /\bperth\b/i.test(origin)){
+    variants.push({kind:"RECAST_SPECIES_HYPOTHESIS",query:uniq(['"Australian salmon"',origin,...environment,unknown]).join(" ")});
   }
 
   const prior=new Set((priorQueries||[]).map(x=>String(x).toLowerCase().replace(/\s+/g," ").trim()));
