@@ -7,6 +7,29 @@ function textOf(x){
   return "";
 }
 
+
+function parseLabeledText(t){
+  const text=String(t??"");
+  const lines=text.split(/\r?\n/);
+  const casts=[], missing=[];
+  let mode="";
+  let interpreted="";
+  for(const line of lines){
+    const x=line.trim();
+    if(/^interpreted need\s*:/i.test(x)){ mode="need"; continue; }
+    if(/^casts\s*:/i.test(x)){ mode="casts"; continue; }
+    if(/^missing\s*:/i.test(x)){ mode="missing"; continue; }
+    const m=x.match(/^[-*•]\s*(.+)$/);
+    if(!m) continue;
+    const v=m[1].replace(/^["']|["']$/g,"").trim();
+    if(!v) continue;
+    if(mode==="casts") casts.push(v);
+    else if(mode==="missing") missing.push(v);
+    else if(mode==="need") interpreted+=(interpreted?" ":"")+v;
+  }
+  return {interpreted_need:interpreted,casts,missing};
+}
+
 function parseJsonLoose(s){
   const t=String(s??"").trim().replace(/^\`\`\`(?:json)?\s*/i,"").replace(/\s*\`\`\`$/,"");
   try{return JSON.parse(t);}catch{}
@@ -36,7 +59,9 @@ export async function cloudflareAiCasts(question, ai){
     temperature:0
   });
 
-  const parsed=parseJsonLoose(textOf(raw));
+  const rawText=textOf(raw);
+  let parsed=parseJsonLoose(rawText);
+  if(!Array.isArray(parsed?.casts) || parsed.casts.length===0) parsed=parseLabeledText(rawText);
   const casts=(Array.isArray(parsed?.casts)?parsed.casts:[])
     .map(x=>String(x??"").trim()).filter(Boolean).slice(0,5);
 
@@ -50,6 +75,6 @@ export async function cloudflareAiCasts(question, ai){
     casts,
     missing:Array.isArray(parsed?.missing)?parsed.missing.map(x=>String(x)):[],
     ai_answer_is_evidence:false,
-    ...(casts.length?{}:{debug_text_preview:textOf(raw).slice(0,1200),debug_keys:Object.keys(raw??{})})
+    ...(casts.length?{}:{debug_text_preview:rawText.slice(0,1200),debug_keys:Object.keys(raw??{})})
   };
 }
