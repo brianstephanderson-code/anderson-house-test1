@@ -1,0 +1,32 @@
+name: Amigos Extra Web Doors Probe
+
+on:
+  push:
+    paths:
+      - ".github/workflows/amigos-extra-web-doors-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Wiby Brave Yahoo Qwant
+        run: |
+          set +e
+          Q='Perth Australia salmon fishing May best bait'
+          enc() { python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "$1"; }
+          E="$(enc "$Q")"
+          probe() {
+            NAME="$1"; URL="$2"
+            CODE=$(curl -L --max-time 20 -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36' -sS -o /tmp/body -w '%{http_code}' "$URL")
+            echo "=== $NAME HTTP=$CODE BYTES=$(wc -c </tmp/body) ==="
+            head -c 3500 /tmp/body | tr '\n' ' '
+            echo
+          }
+          probe "WIBY_JSON" "https://wiby.me/json/?q=$E"
+          probe "BRAVE_HTML" "https://search.brave.com/search?q=$E&source=web"
+          probe "YAHOO_HTML" "https://search.yahoo.com/search?p=$E"
+          probe "QWANT_API" "https://api.qwant.com/v3/search/web?q=$E&count=10&safesearch=1&t=web"
