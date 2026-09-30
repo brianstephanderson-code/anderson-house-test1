@@ -5,6 +5,17 @@ Parent rule: when a useful tool, site, workflow, or system is encountered, extra
 ## Harvest loop
 CAST -> FIND -> BORG -> TEST -> WAREHOUSE -> REUSE
 
+## BOOKED / IMPLEMENTED — 2026-09-30
+
+- READ_TEXT_LINKS is now a live reusable 3 Amigos function.
+- It accepts a public HTTP/HTTPS URL, follows redirects, strips non-reading furniture, returns bounded readable text, extracts normalized unique HTTP/HTTPS links, and preserves final-URL provenance.
+- It rejects localhost/private-network targets and unsupported content types.
+- It remains separate from FETCH_TEXT so either small function can be replaced or improved independently.
+- The function is wired into the common 3 Amigos worker interface as type READ_TEXT_LINKS.
+- Proven implementation commits:
+  - 6fc73397429d4b24e12a079e42c515fa2fce9753 — Borg text browser readable text and links pattern.
+  - c6b71ad4e5983ade1832f96e3b1b957f7b6cdf1f — Wire borged text browser function into Three Amigos.
+
 ## Borged functions
 
 ### CAST
@@ -28,6 +39,7 @@ CAST -> FIND -> BORG -> TEST -> WAREHOUSE -> REUSE
 - PRESERVE_LINKS — retain useful outbound/link structure separately from display furniture.
 - BOUND_PAYLOAD — cap returned material to a useful size.
 - KEEP_PROVENANCE — keep original/final URL and source door attached to every parcel.
+- READ_TEXT_LINKS — composed live socket implementing the READ family while keeping the underlying small functions conceptually separate.
 
 ### EVIDENCE
 - SHORTLIST — cheaply select promising leads before deeper fetch/read.
