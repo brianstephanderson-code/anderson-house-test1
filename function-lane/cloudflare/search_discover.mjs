@@ -12,7 +12,13 @@ export async function searchDiscover(query, limit = 5) {
   u.searchParams.set("srlimit", String(n));
   u.searchParams.set("format", "json");
   u.searchParams.set("origin", "*");
-  const r = await fetch(u, { headers: { "accept": "application/json" } });
+  const r = await fetch(u, {
+    headers: {
+      "accept": "application/json",
+      "user-agent": "AndersonHouse-SearchDiscover/1.0 (https://github.com/brianstephanderson-code/anderson-house-test1)",
+      "api-user-agent": "AndersonHouse-SearchDiscover/1.0 (https://github.com/brianstephanderson-code/anderson-house-test1)"
+    }
+  });
   if (!r.ok) return { ok: false, function: "SEARCH_DISCOVER", error: `HTTP_${r.status}`, results: [] };
   const j = await r.json();
   const results = (j?.query?.search ?? []).map(x => ({
