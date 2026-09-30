@@ -1,0 +1,40 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "shell_version": "001",
+  "manual_lane_id": "SH-MANUAL-SHELL-001",
+  "state": "VERIFIED_DONE",
+  "purpose": "Create a non-destructive Reader Edition shell while the 30 research parcels run independently.",
+  "source": {
+    "provider": "Project Gutenberg",
+    "ebook_id": 41,
+    "source_gate_run": 36685757485,
+    "frozen_master_sha256": "6847c02f49c9ff8a5e2a0e8f49842bf3bffc7f5a87216c895a6b64f26ecf9353",
+    "working_copy_sha256": "14dfbab6784099770a04cfc20b67213929595d47078f14143980e0f87b4e1338",
+    "working_copy_bytes": 69928,
+    "working_copy_paragraphs": 84,
+    "working_copy_words": 12214
+  },
+  "ownership": {
+    "lane": "manual_chat",
+    "conflicts_with_research_batch": false,
+    "claimed_research_jobs": []
+  },
+  "shell_contract": {
+    "paragraph_ids": "P001-P084",
+    "source_text_mutation": "forbidden",
+    "support_attachment_key": [
+      "job_id",
+      "paragraph_id"
+    ],
+    "reader_facing_admission": "VERIFIED_READER_AID only",
+    "no_material_aid": "retain as evidence; do not insert",
+    "recast": "retain as unresolved evidence; do not insert"
+  },
+  "done_proof": [
+    "Reusable reader_edition_shell function created.",
+    "Tests enforce stable paragraph anchors and reader-aid admission.",
+    "Source hash and text remain separate from support metadata.",
+    "Research batch can return independently and attach later by job_id + paragraph_id."
+  ],
+  "next_state": "SHELL_READY_FOR_STYLE_AND_LAYOUT_RULES"
+}
