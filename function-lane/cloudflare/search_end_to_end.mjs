@@ -9,6 +9,7 @@ import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 import { rankCandidatesByRelevance, semanticSufficiency } from "./search_relevance.mjs";
 import { buildSearchRecasts } from "./search_recast.mjs";
 import { resolvePlace } from "./search_place_resolver.mjs";
+import { applyBoundaryEvidence } from "./search_boundary_evidence.mjs";
 
 export function verifyEvidenceParcel(candidate = {}, read = {}) {
   let publicHttp=false;
@@ -133,7 +134,25 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
   }
 
   const {shortlist,readReturns,evidence,transportSufficiency,semantic}=phase;
-  const sufficiency=semantic.summary;
+  const boundaryEvidence=applyBoundaryEvidence(semantic.judged,compiled.state);
+  const boundaryRequired=!!compiled.state.boundary;
+  const qualifiedEvidence=boundaryEvidence.filter(x=>
+    x.integrity_verified &&
+    x.semantic_relevance?.relevant &&
+    (!boundaryRequired || x.boundary_verification?.pass)
+  );
+  const sufficiency={
+    sufficient:qualifiedEvidence.length>0,
+    sufficient_for:boundaryRequired?"FUNCTIONAL_PURPOSE_PROOF_WITH_BOUNDARY":"SEMANTIC_PURPOSE_PROOF",
+    verified_relevant_evidence_count:qualifiedEvidence.length,
+    reason:qualifiedEvidence.length>0
+      ? (boundaryRequired
+        ? "At least one readable relevant source also has a verified geographic anchor inside the requested boundary."
+        : "At least one readable verified source matches the Blackboard functional purpose.")
+      : (boundaryRequired
+        ? "Relevant evidence exists, but no source yet has a verified geographic anchor inside the requested boundary."
+        : "No readable verified source yet matches the Blackboard functional purpose.")
+  };
   const allWebResults=deduplicateResults(allWebReturns.flatMap(x=>normalizeResults(x.results,"OPEN_WEB")));
 
   return {
@@ -163,6 +182,7 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
       read:readReturns.some(x=>x.chars>=100),
       verify:evidence.length>0,
       relevance:semantic.summary.verified_relevant_evidence_count>0,
+      boundary:!boundaryRequired || qualifiedEvidence.length>0,
       sufficient:sufficiency.sufficient
     },
     doors:[
@@ -175,8 +195,9 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
     recast,
     shortlist_count:shortlist.length,
     shortlist:shortlist.map(x=>({title:x.title,url:x.url,source_door:x.source_door,relevance:x.relevance})),
-    evidence:semantic.judged,
+    evidence:boundaryEvidence,
     transport_sufficiency:transportSufficiency,
+    semantic_sufficiency:semantic.summary,
     sufficiency
   };
 }
