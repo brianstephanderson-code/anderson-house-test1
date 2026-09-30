@@ -1,0 +1,38 @@
+name: Google Grant Vertex AI User
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/google-grant-vertex-user.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  grant:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate Google
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Grant Vertex AI User to existing service account
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          gcloud projects add-iam-policy-binding "$PROJECT_ID"             --member="serviceAccount:$SERVICE_ACCOUNT"             --role="roles/aiplatform.user"             --condition=None             --quiet
+
+          gcloud projects get-iam-policy "$PROJECT_ID"             --flatten="bindings[].members"             --filter="bindings.role:roles/aiplatform.user AND bindings.members:serviceAccount:$SERVICE_ACCOUNT"             --format='value(bindings.role)' | grep -qx 'roles/aiplatform.user'
+
+          echo "VERTEX_AI_USER_GRANTED"
