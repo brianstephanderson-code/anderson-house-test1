@@ -22,6 +22,7 @@ jobs:
             --data-urlencode 'limit=8' \
             --data-urlencode 'read_limit=5' \
             --data-urlencode 'max_chars=5000' \
+            --data-urlencode 'browser_fallback=1' \
             'https://ah-word-count.brian-steph-anderson.workers.dev')"
           echo "AMIGOS_FISHING_RESULT=$BODY"
           printf '%s' "$BODY" > fishing-result.json
@@ -35,6 +36,7 @@ jobs:
           console.log("BLACKBOARD", JSON.stringify(b.blackboard));
           console.log("QUERY_COMPILER", JSON.stringify(b.query_compiler));
           console.log("RECAST", JSON.stringify(b.recast));
+          console.log("BROWSER_FALLBACK", JSON.stringify(b.browser_fallback));
           console.log("SHORTLIST", JSON.stringify(b.shortlist));
           console.log("DOORS", JSON.stringify(b.doors));
           console.log("CANDIDATE_COUNT", b.candidate_count);
