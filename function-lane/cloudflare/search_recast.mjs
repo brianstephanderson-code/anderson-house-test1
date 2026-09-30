@@ -13,19 +13,19 @@ export function buildSearchRecasts(state={}, priorQueries=[], maxVariants=4){
   const target=String(state.target??"").trim();
   const origin=String(state.origin??"").trim();
   const action=String(state.action??"").trim();
-  const unknown=String(state.unknown??"").trim();
+  const what=String(state.what??"").trim();
   const environment=Array.isArray(state.environment)?state.environment:[];
   const times=Array.isArray(state.time)?state.time:[];
 
   const variants=[
-    {kind:"RECAST_CORE",query:uniq([target,origin,...environment,unknown]).join(" ")},
-    {kind:"RECAST_ACTION",query:uniq([target,action,origin,...environment,unknown]).join(" ")},
-    {kind:"RECAST_TIME",query:uniq([target,origin,...environment,...times,unknown]).join(" ")},
-    {kind:"RECAST_PHRASE",query:uniq([target?('"'+target+'"'):"",origin,...environment,unknown]).join(" ")}
+    {kind:"RECAST_CORE",query:uniq([target,origin,...environment,what]).join(" ")},
+    {kind:"RECAST_ACTION",query:uniq([target,action,origin,...environment,what]).join(" ")},
+    {kind:"RECAST_TIME",query:uniq([target,origin,...environment,...times,what]).join(" ")},
+    {kind:"RECAST_PHRASE",query:uniq([target?('"'+target+'"'):"",origin,...environment,what]).join(" ")}
   ];
 
   if(target.toLowerCase()==="salmon" && /\bperth\b/i.test(origin)){
-    variants.push({kind:"RECAST_SPECIES_HYPOTHESIS",query:uniq(['"Australian salmon"',origin,...environment,unknown]).join(" ")});
+    variants.push({kind:"RECAST_SPECIES_HYPOTHESIS",query:uniq(['"Australian salmon"',origin,...environment,what]).join(" ")});
   }
 
   const prior=new Set((priorQueries||[]).map(x=>String(x).toLowerCase().replace(/\s+/g," ").trim()));
