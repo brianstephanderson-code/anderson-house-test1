@@ -12,6 +12,8 @@ CAST -> FIND -> BORG -> TEST -> WAREHOUSE -> REUSE
 - It rejects localhost/private-network targets and unsupported content types.
 - It remains separate from FETCH_TEXT so either small function can be replaced or improved independently.
 - The function is wired into the common 3 Amigos worker interface as type READ_TEXT_LINKS.
+- LIVE PROOF: GitHub Actions run 289 tested the deployed Cloudflare Worker and passed READ_TEXT_LINKS with 167 readable characters, 1 normalized HTTP/HTTPS link, and final-URL provenance.
+- Plumbing bug found and fixed: GET requests were dropping url/max_chars/max_links before dispatch; fixed in commit 2b71c5f5b5f6902ad48bda1210031d0caf6546ff.
 - Proven implementation commits:
   - 6fc73397429d4b24e12a079e42c515fa2fce9753 — Borg text browser readable text and links pattern.
   - c6b71ad4e5983ade1832f96e3b1b957f7b6cdf1f — Wire borged text browser function into Three Amigos.
