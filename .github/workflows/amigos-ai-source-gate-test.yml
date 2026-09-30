@@ -1,0 +1,37 @@
+name: Amigos AI Source Gate Test
+
+on:
+  push:
+    paths:
+      - ".github/workflows/amigos-ai-source-gate-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deliberately wrong AI answer must be discarded
+        run: |
+          BODY="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=AI_SOURCE_GATE' \
+            --data-urlencode 'answer=Use marshmallows. This AI answer is deliberately wrong.' \
+            --data-urlencode 'source=https://perthfishingtv.com.au/slide-bait-rig-for-salmon/' \
+            --data-urlencode 'evidence_term=bait' \
+            --data-urlencode 'evidence_term=salmon' \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "AI_SOURCE_GATE_RESULT=$BODY"
+          node -e '
+            const b=JSON.parse(process.argv[1]);
+            const s=JSON.stringify(b).toLowerCase();
+            if(!b.ok) process.exit(1);
+            if(b.function!=="AI_SOURCE_GATE") process.exit(1);
+            if(b.ai_answer_discarded!==true) process.exit(1);
+            if(s.includes("marshmallows")) process.exit(1);
+            if(!Array.isArray(b.evidence)||!b.evidence.length||!b.evidence.some(x=>x.ok&&/bait|salmon/i.test(x.evidence||""))) process.exit(1);
+            console.log("SOURCE_FIRST_GATE_GREEN");
+            console.log("POLICY",b.policy);
+            console.log("EVIDENCE",b.evidence[0].evidence);
+          ' "$BODY"
