@@ -1,5 +1,5 @@
 const HEADER_NOISE = /^(?:AMONG THE PAPERS|OF THE LATE|THE LEGEND|SLEEPY HOLLOW)$/i;
-const SENTENCE_LEAK = /[.!?]\s+[A-Z]/;
+const SENTENCE_LEAK = /[!?]\s+[A-Z]|\.\s+[A-Z][a-z]/;
 
 export function cleanCandidateTokens(candidateTokens = {}) {
   const named = candidateTokens.namedReferences ?? [];
