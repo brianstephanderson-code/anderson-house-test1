@@ -1,3 +1,7 @@
 name = "ah-word-count"
 main = "index.mjs"
-compatibility_date = "2026-09-28"
+compatibility_date = "2026-09-30"
+compatibility_flags = ["nodejs_compat"]
+
+[browser]
+binding = "BROWSER"
