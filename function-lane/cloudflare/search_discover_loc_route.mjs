@@ -25,9 +25,12 @@ export async function searchDiscoverLocRoute(query, limit=5) {
     ok:false,
     function:"SEARCH_DISCOVER_LOC",
     error:"ALL_OFFICIAL_LOC_ROUTES_FAILED",
+    blocked:Boolean(direct.blocked || direct.error==="HTTP_403" || direct.error==="HTTP_429"),
     direct_error:direct.error,
     sru_error:sru.error,
     sru_sample:sru.sample ?? "",
+    source_door:"LIBRARY_OF_CONGRESS_JSON_API",
+    provenance:direct.provenance ?? "https://www.loc.gov/search/?fo=json",
     results:[]
   };
 }
