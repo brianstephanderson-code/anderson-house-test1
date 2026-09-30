@@ -1,11 +1,12 @@
-MESSAGE_ID=sleepy-hollow-reader-friction-survey-001
+MESSAGE_ID=sleepy-hollow-reader-friction-survey-001-r2
 CHANNEL=ORDERS
 FROM=MANAGEMENT
 TO=ALL
 TYPE=BOOK_PRODUCTION_SURVEY
-EXECUTOR=DISPATCHER
 JOB_SPEC=warehouse/jobs/sleepy-hollow/reader-friction-survey-001.md
-PURPOSE=Survey Sleepy Hollow for reader-friction candidates while preserving Irving source unchanged
-STATE=STAGED
-DONE=Return candidate map for evidence gathering and later annotation decisions
+PAYLOAD=Sleepy Hollow reader-friction survey production probe
+EXPECTED_CHARACTER_COUNT=51
+PURPOSE=Exercise the existing 3 Amigos mailbox path for the staged Sleepy Hollow survey without changing Irving
+STATE=DISPATCHED
+DONE=Correlated provider returns prove the mailbox path works; detailed candidate-map work remains a separate later function
 RULE=FIT_BOTH_WAYS
