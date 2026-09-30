@@ -38,6 +38,7 @@ export async function searchDiscoverLocViaReader(query, limit=5) {
     source_door:"LIBRARY_OF_CONGRESS_VIA_READER",
     provenance:carrier,
     authority_url:target.toString(),
+    sample:text.slice(0,2500),
     results:[]
   };
 
