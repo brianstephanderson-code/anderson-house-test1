@@ -9,7 +9,7 @@ test("recast works from functional Blackboard state",()=>{
     time:["may"],
     environment:["beach"],
     action:"fishing",
-    unknown:"best bait"
+    what:"best bait"
   };
   const out=buildSearchRecasts(state,["salmon Perth beach may best bait"],5);
   assert.ok(out.some(x=>x.query.toLowerCase().includes("salmon")));
