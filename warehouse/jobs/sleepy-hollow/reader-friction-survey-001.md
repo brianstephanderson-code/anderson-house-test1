@@ -56,4 +56,5 @@ For each candidate return:
 ## DONE
 A candidate map suitable for evidence gathering and later annotation decisions, with the Irving source unchanged.
 
+Status stays DISPATCHED until a correlated mailbox return proves completion.
 This parcel is a production survey, not permission to publish or alter the source master.
