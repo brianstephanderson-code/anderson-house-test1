@@ -1,5 +1,6 @@
 const HEADER_NOISE = /^(?:AMONG THE PAPERS|OF THE LATE|THE LEGEND|SLEEPY HOLLOW)$/i;
 const SENTENCE_LEAK = /[!?]\s+[A-Z]|\.\s+[A-Z][a-z]/;
+const TITLE_ABBREVIATION = /\b(?:St|Mr|Mrs|Ms|Dr|Prof)\.\s+[A-Z]/;
 
 export function cleanCandidateTokens(candidateTokens = {}) {
   const named = candidateTokens.namedReferences ?? [];
@@ -11,7 +12,7 @@ export function cleanCandidateTokens(candidateTokens = {}) {
     if (HEADER_NOISE.test(value.trim())) {
       bucket = 'reject';
       reason = 'title/header fragment';
-    } else if (SENTENCE_LEAK.test(value)) {
+    } else if (SENTENCE_LEAK.test(value) && !TITLE_ABBREVIATION.test(value)) {
       bucket = 'reject';
       reason = 'sentence-boundary leak';
     } else if (/^[A-Z\s]+$/.test(value) && value.length > 3) {
