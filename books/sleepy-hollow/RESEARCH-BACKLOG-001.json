@@ -1,0 +1,444 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "author": "Washington Irving",
+  "source": "Project Gutenberg eBook #41",
+  "batch_id": "sleepy-hollow-research-001",
+  "created_utc": "2026-09-30T08:20:00Z",
+  "purpose": "Resolve the first 30 reader-friction and named-reference holes from the opening source-gate sample, using the Anderson House search pattern, so only verified useful reader aids advance.",
+  "parent_state": "SOURCE_GATE_GREEN_WORKING_COPY_CREATED",
+  "target_count": 30,
+  "rule": "PURPOSE -> STATE -> HOLE -> CAST -> COLLECT -> COMPARE -> FIT -> TEST -> VERIFY -> ASSEMBLE -> WAREHOUSE",
+  "done_criteria": [
+    "Contextual function is stated without changing Irving's text.",
+    "Material factual/meaning claims use traceable evidence and independent-origin checking where needed.",
+    "Period fit and local-context fit are checked.",
+    "Contradictions or alternate senses are recorded rather than hidden.",
+    "Return is either VERIFIED_READER_AID, NO_MATERIAL_AID, or RECAST with the missing evidence named.",
+    "Every return preserves job_id and is eligible for marriage back to this batch."
+  ],
+  "jobs": [
+    {
+      "job_id": "SH-001-01",
+      "function_class": "named_reference",
+      "term": "CASTLE OF INDOLENCE",
+      "local_context": "The opening epigraph ends with “CASTLE OF INDOLENCE.”",
+      "question": "Identify the quoted work/author and explain what the epigraph is doing here.",
+      "search_doors": [
+        "local-context",
+        "bibliographic-source",
+        "literary-reference",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-02",
+      "function_class": "named_reference",
+      "term": "DIEDRICH KNICKERBOCKER",
+      "local_context": "The story is presented as “FOUND AMONG THE PAPERS OF THE LATE DIEDRICH KNICKERBOCKER.”",
+      "question": "Identify Knickerbocker and explain the framing function for Irving's tale.",
+      "search_doors": [
+        "local-context",
+        "Irving-primary/context",
+        "literary-reference",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-03",
+      "function_class": "named_reference",
+      "term": "High German",
+      "local_context": "Irving says Sleepy Hollow may have been bewitched by “a High German doctor.”",
+      "question": "Determine the period meaning/reference of “High German” here and whether a reader note is useful.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "historical-language-source",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-04",
+      "function_class": "named_reference",
+      "term": "Master Hendrick Hudson",
+      "local_context": "Irving says the area was discovered by “Master Hendrick Hudson.”",
+      "question": "Identify the historical referent and the function of this allusion in context.",
+      "search_doors": [
+        "local-context",
+        "official-history",
+        "biographical-reference",
+        "period-source"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-05",
+      "function_class": "named_reference",
+      "term": "Revolutionary War",
+      "local_context": "The headless horseman is said to be a Hessian killed during the Revolutionary War.",
+      "question": "Give only the minimum historical context needed to understand the claim in the story.",
+      "search_doors": [
+        "local-context",
+        "official-history",
+        "historical-reference",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-06",
+      "function_class": "named_reference",
+      "term": "Sleepy Hollow Boys",
+      "local_context": "The rustic lads of the glen are called “the Sleepy Hollow Boys.”",
+      "question": "Decide whether this is a local label created by the narration or a reference needing explanation.",
+      "search_doors": [
+        "local-context",
+        "Irving-primary/context",
+        "place-history",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-07",
+      "function_class": "named_reference",
+      "term": "St. Nicholas",
+      "local_context": "Dutch navigators are said to implore the protection of St. Nicholas when crossing the Tappan Zee.",
+      "question": "Identify the relevant St. Nicholas tradition and its narrative function without overexplaining.",
+      "search_doors": [
+        "local-context",
+        "historical-religious-reference",
+        "Dutch/New-Netherland-history",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-08",
+      "function_class": "named_reference",
+      "term": "Tappan Zee",
+      "local_context": "Irving names the broad expansion of the Hudson as the Tappan Zee.",
+      "question": "Identify the place and any period naming context material to a reader.",
+      "search_doors": [
+        "local-context",
+        "official-geography/history",
+        "historical-map/reference",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-09",
+      "function_class": "named_reference",
+      "term": "Greensburgh",
+      "local_context": "Irving says the nearby port is called Greensburgh by some.",
+      "question": "Resolve the historical/geographic reference and spelling without silently correcting Irving.",
+      "search_doors": [
+        "local-context",
+        "official-local-history",
+        "historical-map/gazetteer",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-10",
+      "function_class": "named_reference",
+      "term": "Tarry Town",
+      "local_context": "Irving says the port is more generally known as Tarry Town.",
+      "question": "Resolve the historical place name and the joke/folk etymology function in the passage.",
+      "search_doors": [
+        "local-context",
+        "official-local-history",
+        "historical-map/gazetteer",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-11",
+      "function_class": "lexical",
+      "term": "denominated",
+      "local_context": "Irving calls the river expansion “denominated by the ancient Dutch navigators the Tappan Zee.”",
+      "question": "Resolve the period/contextual sense of “denominated.”",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-12",
+      "function_class": "lexical",
+      "term": "inveterate",
+      "local_context": "The housewives complain of their husbands' “inveterate propensity” to linger at the tavern.",
+      "question": "Resolve “inveterate” in this phrase and test whether it creates real reader friction.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-13",
+      "function_class": "lexical",
+      "term": "advert",
+      "local_context": "The narrator says he merely “advert[s] to it” for precision.",
+      "question": "Resolve the period sense of “advert to” and whether a brief note is warranted.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-14",
+      "function_class": "lexical",
+      "term": "repose",
+      "local_context": "A brook has enough murmur to “lull one to repose.”",
+      "question": "Resolve the contextual sense and decide whether the word needs support.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-15",
+      "function_class": "lexical",
+      "term": "tranquillity",
+      "local_context": "The quail and woodpecker barely break the “uniform tranquillity.”",
+      "question": "Resolve the sense and reader-friction level.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-16",
+      "function_class": "lexical",
+      "term": "stripling",
+      "local_context": "The narrator recalls that “when a stripling” he went squirrel-shooting.",
+      "question": "Resolve the period meaning and likely modern-reader friction.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-17",
+      "function_class": "lexical",
+      "term": "reverberated",
+      "local_context": "The gunshot was “prolonged and reverberated by the angry echoes.”",
+      "question": "Resolve the contextual function and decide if explanation adds value.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-18",
+      "function_class": "lexical",
+      "term": "sequestered",
+      "local_context": "Sleepy Hollow is described as a “sequestered glen.”",
+      "question": "Resolve the contextual sense and reader-friction level.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-19",
+      "function_class": "lexical",
+      "term": "rustic",
+      "local_context": "Its lads are described as “rustic.”",
+      "question": "Resolve the sense/register here and avoid importing a modern pejorative meaning unless supported.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "register-evidence",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-20",
+      "function_class": "lexical",
+      "term": "pervade",
+      "local_context": "A dreamy influence seems to “pervade the very atmosphere.”",
+      "question": "Resolve the sense and reader-friction level.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-21",
+      "function_class": "cultural_lexical",
+      "term": "powwows",
+      "local_context": "Irving says an Indigenous chief “held his powwows there.”",
+      "question": "Resolve the period usage, cultural reference, and any modern-reader/context issue without rewriting the source.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "Indigenous/history-source",
+        "period-usage",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-22",
+      "function_class": "lexical",
+      "term": "reverie",
+      "local_context": "The inhabitants are said to walk in “a continual reverie.”",
+      "question": "Resolve the contextual sense and reader-friction level.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-23",
+      "function_class": "lexical",
+      "term": "marvellous",
+      "local_context": "The inhabitants hold “marvellous beliefs.”",
+      "question": "Resolve the period/contextual sense, including whether it means wonderful or supernatural/extraordinary here.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-24",
+      "function_class": "lexical",
+      "term": "trances",
+      "local_context": "The inhabitants “are subject to trances and visions.”",
+      "question": "Resolve the period/contextual sense without medicalizing the fictional passage.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-25",
+      "function_class": "lexical",
+      "term": "ninefold",
+      "local_context": "The nightmare appears “with her whole ninefold.”",
+      "question": "Determine what “ninefold” refers to here; this is a high-priority ambiguity and may require recast across literary/folklore sources.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "folklore/literary-reference",
+        "annotated-edition",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-26",
+      "function_class": "lexical",
+      "term": "gambols",
+      "local_context": "The nightmare's ninefold makes the valley the favorite scene of her “gambols.”",
+      "question": "Resolve the contextual sense and tone.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-27",
+      "function_class": "lexical",
+      "term": "apparition",
+      "local_context": "The dominant spirit is “the apparition of a figure on horseback, without a head.”",
+      "question": "Resolve the contextual sense and whether support is useful.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "usage-evidence"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-28",
+      "function_class": "historical_lexical",
+      "term": "Hessian",
+      "local_context": "The ghost is said to be a “Hessian trooper.”",
+      "question": "Explain the historical referent at the minimum level needed to understand the story and verify period fit.",
+      "search_doors": [
+        "local-context",
+        "official-history",
+        "historical-dictionary",
+        "military-history/reference",
+        "annotated-edition"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-29",
+      "function_class": "lexical",
+      "term": "spectre",
+      "local_context": "The narrator calls the headless horseman a “spectre.”",
+      "question": "Resolve the contextual sense and period spelling/register.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "period-usage"
+      ],
+      "state": "READY"
+    },
+    {
+      "job_id": "SH-001-30",
+      "function_class": "lexical",
+      "term": "belated",
+      "local_context": "The ghost is in a hurry because he is “belated.”",
+      "question": "Resolve the older contextual sense and whether a reader note is warranted.",
+      "search_doors": [
+        "local-context",
+        "historical-dictionary",
+        "modern-dictionary",
+        "period-usage"
+      ],
+      "state": "READY"
+    }
+  ]
+}
