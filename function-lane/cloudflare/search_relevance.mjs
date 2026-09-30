@@ -2,10 +2,15 @@ function norm(v=""){ return String(v??"").toLowerCase().replace(/[^a-z0-9]+/g," 
 function has(hay,needle){ const n=norm(needle); return !!n && norm(hay).includes(n); }
 function uniq(xs=[]){ const out=[]; const seen=new Set(); for(const x of xs){ const k=norm(x); if(!k||seen.has(k)) continue; seen.add(k); out.push(x); } return out; }
 
+function keywords(v=""){
+  const stop=new Set(["a","an","the","is","are","what","which","best","good","better","most"]);
+  return uniq(norm(v).split(" ").filter(x=>x.length>2&&!stop.has(x)));
+}
+
 function functionalFocus(state={}){
   return uniq([
     state.action,
-    state.unknown,
+    ...keywords(state.unknown),
     ...(Array.isArray(state.environment)?state.environment:[])
   ].filter(Boolean));
 }
@@ -32,7 +37,7 @@ export function relevanceSignals(candidate={}, state={}) {
   if(target && target_hit) score+=10;
   if(origin && origin_hit) score+=6;
   score+=environment_hits.length*3;
-  score+=time_hits.length*1;
+  score+=time_hits.length;
   score+=focus_hits.length*2;
   if(/\.gov\.|\.edu\.|gov\.au|org\.au/.test(url.toLowerCase())) score+=1;
 
@@ -57,21 +62,19 @@ export function evidenceRelevance(evidence={}, state={}) {
   const target=String(state.target??"").trim();
   const origin=String(state.origin??"").trim();
   const environment=Array.isArray(state.environment)?state.environment:[];
-  const unknown=String(state.unknown??"").trim();
-  const action=String(state.action??"").trim();
+  const unknownTerms=keywords(state.unknown);
 
   const target_hit=target ? has(hay,target) : true;
   const origin_hit=origin ? has(hay,origin) : true;
   const environment_hits=environment.filter(x=>has(hay,x));
-  const purpose_terms=uniq([unknown,action].filter(Boolean));
-  const purpose_hits=purpose_terms.filter(x=>has(hay,x));
+  const unknown_hits=unknownTerms.filter(x=>has(hay,x));
 
   const place_ok=!origin || origin_hit;
-  const purpose_ok=purpose_terms.length===0 || purpose_hits.length>0;
   const environment_ok=environment.length===0 || environment_hits.length>0;
-  const relevant=Boolean(target_hit && place_ok && purpose_ok && environment_ok);
+  const unknown_ok=unknownTerms.length===0 || unknown_hits.length>0;
+  const relevant=Boolean(target_hit && place_ok && environment_ok && unknown_ok);
 
-  return {relevant,target_hit,origin_hit,environment_hits,purpose_hits};
+  return {relevant,target_hit,origin_hit,environment_hits,unknown_hits};
 }
 
 export function semanticSufficiency(evidence=[], state={}) {
@@ -84,8 +87,8 @@ export function semanticSufficiency(evidence=[], state={}) {
       sufficient_for:"SEMANTIC_PURPOSE_PROOF",
       verified_relevant_evidence_count:relevant.length,
       reason:relevant.length>0
-        ? "At least one readable verified source matches the Blackboard target, place, environment and purpose."
-        : "Readable evidence exists, but none yet matches the Blackboard target, place, environment and purpose."
+        ? "At least one readable verified source matches the Blackboard target, place, environment and unknown."
+        : "Readable evidence exists, but none yet matches the Blackboard target, place, environment and unknown."
     }
   };
 }
