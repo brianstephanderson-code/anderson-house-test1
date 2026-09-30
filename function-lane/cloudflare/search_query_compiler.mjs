@@ -1,6 +1,6 @@
 const MONTHS=new Set("january february march april may june july august september october november december".split(" "));
 const STOP=new Set(`
-a an and are as at be because been but by can could did do does for from get go going had has have how i i'd i'll i'm if in into is it its like me my of on or our please should so some than that the their them then there they this to under up want was we were what when where which who why will with within would you your
+a an and are as at be because been but by can could did do does for from get go going had has have how i i'd i'll i'm if in into is it its like me my of on or our please should so some than that the their them then there they this to under up want was we were what when where which who why will with within would you your don out
 `.trim().split(/\s+/));
 
 function words(text="") {
