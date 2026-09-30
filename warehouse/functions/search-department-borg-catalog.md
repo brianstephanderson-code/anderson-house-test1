@@ -18,6 +18,19 @@ CAST -> FIND -> BORG -> TEST -> WAREHOUSE -> REUSE
   - 6fc73397429d4b24e12a079e42c515fa2fce9753 — Borg text browser readable text and links pattern.
   - c6b71ad4e5983ade1832f96e3b1b957f7b6cdf1f — Wire borged text browser function into Three Amigos.
 
+## BOOKED / LIVE PROVEN — SEARCH_END_TO_END_V1 — 2026-09-30
+
+- Purpose: prove the search machine can walk end to end without gluing its small functions together.
+- Flow: CAST -> MULTI-DOOR DISCOVERY -> NORMALIZE/DEDUP -> SHORTLIST -> READ -> PROVENANCE VERIFY -> SUFFICIENCY.
+- Live proof: The 3 Amigos Deploy run 309.
+- Result: 5 candidates discovered; 3 shortlisted pages completed the read + provenance chain.
+- First verified evidence parcel: Wikipedia Old Dutch Church of Sleepy Hollow, 4,151 readable characters.
+- Door state during proof: Wikipedia GREEN; LOC unavailable to that concurrent child, without stopping the parent flow.
+- Separate LOC probe in the same run returned 5 official Library of Congress SRU catalog records through OFFICIAL_SRU_FALLBACK after the direct JSON door returned HTTP 403.
+- Meaning of verification here: transport/integrity + provenance chain only. It does not claim the page proves a research conclusion.
+- Sufficiency label: END_TO_END_TRANSPORT_PROOF.
+- Implementation commit: b781408e042df4f0a98e1028c63a54b016ba4c47.
+
 ## Borged functions
 
 ### CAST
