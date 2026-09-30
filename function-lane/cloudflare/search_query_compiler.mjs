@@ -29,7 +29,7 @@ export function extractSearchState(text="") {
   return {
     raw,
     subject,
-    locations:uniq(locationMatches),
+    locations:uniq(locationMatches).filter(x=>!MONTHS.has(String(x).toLowerCase())),
     times:months,
     constraints:uniq(numbers),
     content
@@ -41,6 +41,15 @@ export function compileSearchQueries(text="", maxVariants=4) {
   if(!state.raw) return {ok:false,function:"SEARCH_QUERY_COMPILER",error:"EMPTY_QUERY",state,queries:[]};
   const core=state.content.slice(0,14);
   const compact=core.join(" ");
+  const essentials=uniq([
+    ...state.locations,
+    state.content.includes("australia") ? "australia" : null,
+    state.subject,
+    state.content.includes("fishing") ? "fishing" : null,
+    ...state.times,
+    state.content.includes("best") ? "best" : null,
+    state.content.includes("bait") ? "bait" : null
+  ].filter(Boolean)).join(" ");
   const focus=[];
   if(state.subject) focus.push(`"${state.subject}"`);
   focus.push(...state.locations,...state.times,...state.constraints);
@@ -58,6 +67,7 @@ export function compileSearchQueries(text="", maxVariants=4) {
   const phrasePlus=uniq([...exactPhrases,...state.times,...tail.slice(0,6)]).join(" ").trim();
 
   const candidates=[
+    {kind:"ESSENTIALS",query:essentials},
     {kind:"COMPACT_KEYWORDS",query:compact},
     {kind:"FOCUSED_PHRASE",query:focused},
     {kind:"BOOLEAN_AND",query:boolean},
