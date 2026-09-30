@@ -5,6 +5,7 @@ import { compileSearchQueries } from "./search_query_compiler.mjs";
 import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 import { rankCandidatesByRelevance, semanticSufficiency } from "./search_relevance.mjs";
+import { buildSearchRecasts } from "./search_recast.mjs";
 
 export function verifyEvidenceParcel(candidate = {}, read = {}) {
   let publicHttp=false;
@@ -64,21 +65,52 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
     casts:webReturns.map(x=>({query:x.cast,ok:!!x.ok,count:x.results?.length??0,route:x.route??null,error:x.error??null}))
   };
 
-  const candidates=deduplicateResults([
+  let candidates=deduplicateResults([
     ...normalizeResults(web.results,"OPEN_WEB"),
     ...normalizeResults(wiki.results,"WIKIPEDIA_MEDIAWIKI_API"),
     ...normalizeResults(loc.results,"LIBRARY_OF_CONGRESS_JSON_API")
   ]);
-  const rankedCandidates=rankCandidatesByRelevance(candidates,compiled.state);
-  const shortlist=rankedCandidates.slice(0,reads);
-  const readReturns=await Promise.all(shortlist.map(async candidate=>{
-    try { return verifyEvidenceParcel(candidate,await readTextLinks(candidate.url,{maxChars:chars,maxLinks:20})); }
-    catch(e) { return verifyEvidenceParcel(candidate,{ok:false,error:String(e)}); }
-  }));
-  const evidence=readReturns.filter(x=>x.integrity_verified);
-  const transportSufficiency=sufficiencyCheck(evidence);
-  const semantic=semanticSufficiency(evidence,compiled.state);
+  const initialCandidateCount=candidates.length;
+
+  async function judgeCandidateSet(rows) {
+    const rankedCandidates=rankCandidatesByRelevance(rows,compiled.state);
+    const shortlist=rankedCandidates.slice(0,reads);
+    const readReturns=await Promise.all(shortlist.map(async candidate=>{
+      try { return verifyEvidenceParcel(candidate,await readTextLinks(candidate.url,{maxChars:chars,maxLinks:20})); }
+      catch(e) { return verifyEvidenceParcel(candidate,{ok:false,error:String(e)}); }
+    }));
+    const evidence=readReturns.filter(x=>x.integrity_verified);
+    const transportSufficiency=sufficiencyCheck(evidence);
+    const semantic=semanticSufficiency(evidence,compiled.state);
+    return {rankedCandidates,shortlist,readReturns,evidence,transportSufficiency,semantic};
+  }
+
+  let phase=await judgeCandidateSet(candidates);
+  let allWebReturns=[...webReturns];
+  let recast={attempted:false,casts:[],new_candidate_count:0};
+
+  if(!phase.semantic.summary.sufficient) {
+    const recasts=buildSearchRecasts(compiled.state,casts,4);
+    if(recasts.length) {
+      const recastReturns=await Promise.all(recasts.map(async item=>{
+        try { return {cast:item.query,kind:item.kind,...await searchWebPublic(item.query,n)}; }
+        catch(e) { return {cast:item.query,kind:item.kind,ok:false,function:"SEARCH_WEB_PUBLIC",error:String(e),results:[]}; }
+      }));
+      allWebReturns=[...allWebReturns,...recastReturns];
+      const recastResults=deduplicateResults(recastReturns.flatMap(x=>normalizeResults(x.results,"OPEN_WEB")));
+      candidates=deduplicateResults([...candidates,...recastResults]);
+      phase=await judgeCandidateSet(candidates);
+      recast={
+        attempted:true,
+        casts:recastReturns.map(x=>({kind:x.kind,query:x.cast,ok:!!x.ok,count:x.results?.length??0,error:x.error??null,route:x.route??null})),
+        new_candidate_count:Math.max(0,candidates.length-initialCandidateCount)
+      };
+    }
+  }
+
+  const {shortlist,readReturns,evidence,transportSufficiency,semantic}=phase;
   const sufficiency=semantic.summary;
+  const allWebResults=deduplicateResults(allWebReturns.flatMap(x=>normalizeResults(x.results,"OPEN_WEB")));
 
   return {
     ok:sufficiency.sufficient,
@@ -100,11 +132,13 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
       sufficient:sufficiency.sufficient
     },
     doors:[
-      {door:"OPEN_WEB",ok:!!web.ok,count:web.results?.length??0,error:web.error??null,route:web.route??null,casts:web.casts},
+      {door:"OPEN_WEB",ok:allWebResults.length>0,count:allWebResults.length,error:null,route:recast.attempted?"QUERY_COMPILER_PLUS_RECAST":"QUERY_COMPILER_MULTI_CAST",casts:allWebReturns.map(x=>({kind:x.kind??null,query:x.cast,ok:!!x.ok,count:x.results?.length??0,route:x.route??null,error:x.error??null}))},
       {door:"WIKIPEDIA_MEDIAWIKI_API",ok:!!wiki.ok,count:wiki.results?.length??0,error:wiki.error??null,query:primary},
       {door:"LIBRARY_OF_CONGRESS",ok:!!loc.ok,blocked:!!loc.blocked,count:loc.results?.length??0,error:loc.error??null,route:loc.route??null,query:primary}
     ],
+    initial_candidate_count:initialCandidateCount,
     candidate_count:candidates.length,
+    recast,
     shortlist_count:shortlist.length,
     shortlist:shortlist.map(x=>({title:x.title,url:x.url,source_door:x.source_door,relevance:x.relevance})),
     evidence:semantic.judged,
