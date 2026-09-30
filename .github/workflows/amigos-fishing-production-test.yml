@@ -16,7 +16,13 @@ jobs:
       - name: Ask exact fishing question through interpreter Blackboard compiler
         run: |
           QUESTION="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
-          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_END_TO_END_V1'             --data-urlencode "query=$QUESTION"             --data-urlencode 'limit=8'             --data-urlencode 'read_limit=5'             --data-urlencode 'max_chars=5000'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          BODY="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=SEARCH_END_TO_END_V1' \
+            --data-urlencode "query=$QUESTION" \
+            --data-urlencode 'limit=8' \
+            --data-urlencode 'read_limit=5' \
+            --data-urlencode 'max_chars=5000' \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
           echo "AMIGOS_FISHING_RESULT=$BODY"
           printf '%s' "$BODY" > fishing-result.json
           node - <<'NODE'
@@ -24,7 +30,13 @@ jobs:
           const b=JSON.parse(fs.readFileSync("fishing-result.json","utf8"));
           console.log("FUNCTION", b.function);
           console.log("OK", b.ok);
-          console.log("QUERY", b.query);\n          console.log("INTERPRETER", JSON.stringify(b.interpreter));\n          console.log("BLACKBOARD", JSON.stringify(b.blackboard));\n          console.log("QUERY_COMPILER", JSON.stringify(b.query_compiler));\n          console.log("RECAST", JSON.stringify(b.recast));\n          console.log("SHORTLIST", JSON.stringify(b.shortlist));\n          console.log("DOORS", JSON.stringify(b.doors));
+          console.log("QUERY", b.query);
+          console.log("INTERPRETER", JSON.stringify(b.interpreter));
+          console.log("BLACKBOARD", JSON.stringify(b.blackboard));
+          console.log("QUERY_COMPILER", JSON.stringify(b.query_compiler));
+          console.log("RECAST", JSON.stringify(b.recast));
+          console.log("SHORTLIST", JSON.stringify(b.shortlist));
+          console.log("DOORS", JSON.stringify(b.doors));
           console.log("CANDIDATE_COUNT", b.candidate_count);
           console.log("SHORTLIST_COUNT", b.shortlist_count);
           console.log("SUFFICIENCY", JSON.stringify(b.sufficiency));
@@ -34,11 +46,10 @@ jobs:
               url:e.url,
               source_door:e.source_door,
               chars:e.chars,
+              semantic_relevance:e.semantic_relevance,
               discovery_provenance:e.discovery_provenance,
               reader_provenance:e.reader_provenance,
               text:(e.text||"").slice(0,1000)
             }));
           }
           NODE
-
-# live-pool-proof-2
