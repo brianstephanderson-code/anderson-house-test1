@@ -2,37 +2,51 @@ function norm(v=""){ return String(v??"").toLowerCase().replace(/[^a-z0-9]+/g," 
 function has(hay,needle){ const n=norm(needle); return !!n && norm(hay).includes(n); }
 function uniq(xs=[]){ const out=[]; const seen=new Set(); for(const x of xs){ const k=norm(x); if(!k||seen.has(k)) continue; seen.add(k); out.push(x); } return out; }
 
+function functionalFocus(state={}){
+  return uniq([
+    state.action,
+    state.unknown,
+    ...(Array.isArray(state.environment)?state.environment:[])
+  ].filter(Boolean));
+}
+
 export function relevanceSignals(candidate={}, state={}) {
   const title=String(candidate.title??"");
   const snippet=String(candidate.snippet??"");
   const url=String(candidate.url??"");
   const hay=`${title} ${snippet} ${url}`;
-  const subject=String(state.subject??"").trim();
-  const locations=Array.isArray(state.locations)?state.locations:[];
-  const times=Array.isArray(state.times)?state.times:[];
-  const content=Array.isArray(state.content)?state.content:[];
-  const focus=uniq(content.filter(x=>["bait","best","fishing","catch","salmon"].includes(norm(x))));
-  const subject_hit=subject ? has(hay,subject) : true;
-  const location_hits=locations.filter(x=>has(hay,x));
+
+  const target=String(state.target??"").trim();
+  const origin=String(state.origin??"").trim();
+  const times=Array.isArray(state.time)?state.time:[];
+  const environment=Array.isArray(state.environment)?state.environment:[];
+  const focus=functionalFocus(state);
+
+  const target_hit=target ? has(hay,target) : true;
+  const origin_hit=origin ? has(hay,origin) : true;
   const time_hits=times.filter(x=>has(hay,x));
+  const environment_hits=environment.filter(x=>has(hay,x));
   const focus_hits=focus.filter(x=>has(hay,x));
+
   let score=0;
-  if(subject && subject_hit) score+=8;
-  score+=location_hits.length*4;
+  if(target && target_hit) score+=10;
+  if(origin && origin_hit) score+=6;
+  score+=environment_hits.length*3;
   score+=time_hits.length*1;
   score+=focus_hits.length*2;
   if(/\.gov\.|\.edu\.|gov\.au|org\.au/.test(url.toLowerCase())) score+=1;
-  return {score,subject_hit,location_hits,time_hits,focus_hits};
+
+  return {score,target_hit,origin_hit,time_hits,environment_hits,focus_hits};
 }
 
 export function rankCandidatesByRelevance(candidates=[], state={}) {
   return (Array.isArray(candidates)?candidates:[])
     .map((candidate,index)=>({candidate,index,signals:relevanceSignals(candidate,state)}))
     .sort((a,b)=>{
-      const as=a.signals.subject_hit?1:0, bs=b.signals.subject_hit?1:0;
-      if(bs!==as) return bs-as;
-      const al=a.signals.location_hits.length?1:0, bl=b.signals.location_hits.length?1:0;
-      if(bl!==al) return bl-al;
+      const at=a.signals.target_hit?1:0, bt=b.signals.target_hit?1:0;
+      if(bt!==at) return bt-at;
+      const ao=a.signals.origin_hit?1:0, bo=b.signals.origin_hit?1:0;
+      if(bo!==ao) return bo-ao;
       return b.signals.score-a.signals.score || a.index-b.index;
     })
     .map(x=>({...x.candidate,relevance:x.signals}));
@@ -40,15 +54,24 @@ export function rankCandidatesByRelevance(candidates=[], state={}) {
 
 export function evidenceRelevance(evidence={}, state={}) {
   const hay=`${evidence.title??""} ${evidence.url??""} ${evidence.text??""}`;
-  const subject=String(state.subject??"").trim();
-  const locations=Array.isArray(state.locations)?state.locations:[];
-  const content=Array.isArray(state.content)?state.content:[];
-  const subject_hit=subject ? has(hay,subject) : true;
-  const location_hits=locations.filter(x=>has(hay,x));
-  const focusTerms=uniq(content.filter(x=>["bait","best","fishing","catch"].includes(norm(x))));
-  const focus_hits=focusTerms.filter(x=>has(hay,x));
-  const relevant=Boolean(subject_hit && (locations.length===0 || location_hits.length>0) && focus_hits.length>0);
-  return {relevant,subject_hit,location_hits,focus_hits};
+  const target=String(state.target??"").trim();
+  const origin=String(state.origin??"").trim();
+  const environment=Array.isArray(state.environment)?state.environment:[];
+  const unknown=String(state.unknown??"").trim();
+  const action=String(state.action??"").trim();
+
+  const target_hit=target ? has(hay,target) : true;
+  const origin_hit=origin ? has(hay,origin) : true;
+  const environment_hits=environment.filter(x=>has(hay,x));
+  const purpose_terms=uniq([unknown,action].filter(Boolean));
+  const purpose_hits=purpose_terms.filter(x=>has(hay,x));
+
+  const place_ok=!origin || origin_hit;
+  const purpose_ok=purpose_terms.length===0 || purpose_hits.length>0;
+  const environment_ok=environment.length===0 || environment_hits.length>0;
+  const relevant=Boolean(target_hit && place_ok && purpose_ok && environment_ok);
+
+  return {relevant,target_hit,origin_hit,environment_hits,purpose_hits};
 }
 
 export function semanticSufficiency(evidence=[], state={}) {
@@ -61,8 +84,8 @@ export function semanticSufficiency(evidence=[], state={}) {
       sufficient_for:"SEMANTIC_PURPOSE_PROOF",
       verified_relevant_evidence_count:relevant.length,
       reason:relevant.length>0
-        ? "At least one readable verified source also matches the subject, location and search purpose."
-        : "Readable evidence exists, but none yet matches the required subject, location and search purpose."
+        ? "At least one readable verified source matches the Blackboard target, place, environment and purpose."
+        : "Readable evidence exists, but none yet matches the Blackboard target, place, environment and purpose."
     }
   };
 }
