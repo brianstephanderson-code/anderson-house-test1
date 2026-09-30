@@ -3,7 +3,7 @@ import argparse, hashlib, json, re
 from pathlib import Path
 
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
-from reportlab.lib.pagesizes import inch
+from reportlab.lib.units import inch
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.colors import black
 from reportlab.pdfbase import pdfmetrics
