@@ -10,9 +10,11 @@ on:
       - 'function-lane/core/candidate_cleaner.mjs'
       - 'function-lane/core/meaning_fit.mjs'
       - 'function-lane/core/function_batcher.mjs'
+      - 'function-lane/core/evidence_router.mjs'
       - 'function-lane/test/candidate_cleaner.test.mjs'
       - 'function-lane/test/meaning_fit.test.mjs'
       - 'function-lane/test/function_batcher.test.mjs'
+      - 'function-lane/test/evidence_router.test.mjs'
 
 permissions:
   contents: read
@@ -23,11 +25,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Linda tests reusable conveyor functions
-        run: node --test function-lane/test/candidate_cleaner.test.mjs function-lane/test/meaning_fit.test.mjs function-lane/test/function_batcher.test.mjs
-      - name: Acquire canonical Gutenberg source
+        run: node --test function-lane/test/candidate_cleaner.test.mjs function-lane/test/meaning_fit.test.mjs function-lane/test/function_batcher.test.mjs function-lane/test/evidence_router.test.mjs
+      - name: Acquire canonical Gutenberg source with retry
         run: |
           mkdir -p .build/sleepy-hollow
-          curl --fail --silent --show-error --location https://www.gutenberg.org/cache/epub/41/pg41.txt --output .build/sleepy-hollow/master.txt
+          curl --fail --silent --show-error --location --retry 4 --retry-all-errors --retry-delay 2 https://www.gutenberg.org/cache/epub/41/pg41.txt --output .build/sleepy-hollow/master.txt
           sha256sum .build/sleepy-hollow/master.txt | tee .build/sleepy-hollow/master.sha256
       - name: Verify identity and boundaries
         run: |
@@ -49,7 +51,7 @@ jobs:
           PY
           test -s .build/sleepy-hollow/working.txt
           cmp -s .build/sleepy-hollow/master.txt .build/sleepy-hollow/working.txt && exit 1 || true
-      - name: Detect clean Meaning Fit and batch by function
+      - name: Detect clean Meaning Fit batch and route evidence
         run: |
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
@@ -57,6 +59,7 @@ jobs:
           import { cleanCandidateTokens } from './function-lane/core/candidate_cleaner.mjs';
           import { meaningFit } from './function-lane/core/meaning_fit.mjs';
           import { batchByFunction } from './function-lane/core/function_batcher.mjs';
+          import { routeEvidence } from './function-lane/core/evidence_router.mjs';
           const text=fs.readFileSync('.build/sleepy-hollow/working.txt','utf8');
           const first=text.split(/\n\s*\n/).slice(0,8).join('\n\n');
           const detected=candidateTokenResultFor(first);
@@ -64,11 +67,15 @@ jobs:
           const glossaryParcels=(cleaned.candidateCleaner.wordCandidates ?? []).map(({value}) => meaningFit({term:value,context:first,candidateMeanings:[]}).meaningFit);
           const namedParcels=(cleaned.candidateCleaner.namedReferences ?? []).filter((x)=>x.bucket!=='reject').map(({value}) => meaningFit({term:value,context:first,candidateMeanings:[]}).meaningFit);
           const batched=batchByFunction({glossaryParcels,namedParcels});
+          const evidenceRoutes=[...glossaryParcels,...namedParcels].map((parcel)=>routeEvidence(parcel).evidenceRoute);
+          const doorCounts={};
+          for (const route of evidenceRoutes) for (const door of route.doors) doorCounts[door]=(doorCounts[door]??0)+1;
           fs.writeFileSync('.build/sleepy-hollow/first-candidates.json',JSON.stringify(detected,null,2));
           fs.writeFileSync('.build/sleepy-hollow/first-cleaned.json',JSON.stringify(cleaned,null,2));
           fs.writeFileSync('.build/sleepy-hollow/first-meaning-fit-parcels.json',JSON.stringify({glossaryParcels,namedParcels},null,2));
           fs.writeFileSync('.build/sleepy-hollow/first-function-batches.json',JSON.stringify(batched,null,2));
-          console.log(JSON.stringify({cleaned:cleaned.candidateCleaner.counts,meaningFitParcels:glossaryParcels.length+namedParcels.length,batches:batched.functionBatches.map(b=>({functionClass:b.functionClass,count:b.count}))},null,2));
+          fs.writeFileSync('.build/sleepy-hollow/first-evidence-routes.json',JSON.stringify({evidenceRoutes,doorCounts},null,2));
+          console.log(JSON.stringify({cleaned:cleaned.candidateCleaner.counts,meaningFitParcels:glossaryParcels.length+namedParcels.length,batches:batched.functionBatches.map(b=>({functionClass:b.functionClass,count:b.count})),doorCounts},null,2));
           NODE
       - name: Preserve Source Gate evidence
         uses: actions/upload-artifact@v4
@@ -82,4 +89,5 @@ jobs:
             .build/sleepy-hollow/first-cleaned.json
             .build/sleepy-hollow/first-meaning-fit-parcels.json
             .build/sleepy-hollow/first-function-batches.json
+            .build/sleepy-hollow/first-evidence-routes.json
           retention-days: 90
