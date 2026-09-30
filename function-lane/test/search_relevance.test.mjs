@@ -8,7 +8,7 @@ const state={
   time:["may"],
   environment:["beach"],
   action:"fishing",
-  unknown:"best bait"
+  what:"best bait"
 };
 
 test("relevant Perth salmon result outranks readable but unrelated fish pages",()=>{
