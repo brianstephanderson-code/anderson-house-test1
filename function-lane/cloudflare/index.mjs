@@ -7,6 +7,7 @@ import { searchEndToEndV1 } from "./search_end_to_end.mjs";
 import { searchWebPublic } from "./search_web_public.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 import { aiSourceGate } from "./search_ai_source_gate.mjs";
+import { cloudflareAiCasts } from "./cloudflare_ai_casts.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
   const qs = Array.isArray(queries) ? queries.map(x => String(x).trim()).filter(Boolean).slice(0, 30) : [];
@@ -78,6 +79,7 @@ export default {
     const type = String(body.type ?? "").toUpperCase();
     const browserFallbackRequested = body.browser_fallback === true || ["1","true","yes","on"].includes(String(body.browser_fallback ?? "").toLowerCase());
     if (type === "AI_SOURCE_GATE") return Response.json(await aiSourceGate({answer:body.answer,sources:body.sources},{evidenceTerms:body.evidence_terms??[]}));
+    if (type === "CLOUDFLARE_AI_CASTS") return Response.json(await cloudflareAiCasts(body.query ?? body.text, env?.AI));
     if (type === "SEARCH_DISCOVER_STREAM") return searchDiscoverStream(body.queries, body.limit ?? 5, body.parent_ticket ?? "SEARCH");
     if (type === "SEARCH_MULTI_DOOR") {
       const query=body.query ?? body.text;
