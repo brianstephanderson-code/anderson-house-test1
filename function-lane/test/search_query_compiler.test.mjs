@@ -1,23 +1,31 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { extractSearchState, compileSearchQueries } from "../cloudflare/search_query_compiler.mjs";
+import { compileSearchQueries, compileSearchQueriesFromState } from "../cloudflare/search_query_compiler.mjs";
+import { interpretSearchInput } from "../cloudflare/search_function_interpreter.mjs";
+import { createSearchBlackboard } from "../cloudflare/search_blackboard.mjs";
 
-test("extracts useful search state from conversational fishing request",()=>{
-  const q="I want to go fishing in May. I want to go fishing for salmon. I'm in Perth, Australia. I don't want to go 200 kilometers out of Perth to catch the salmon. I'd like to catch them within that distance. What bait is the best?";
-  const s=extractSearchState(q);
-  assert.equal(s.subject,"salmon");
-  assert.ok(s.times.includes("may"));
-  assert.ok(s.constraints.some(x=>x.startsWith("200 ")));
-  assert.ok(s.content.includes("salmon"));
-  assert.ok(s.content.includes("bait"));
+const q="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?";
+
+test("compiler consumes functional Blackboard state",()=>{
+  const interpreted=interpretSearchInput(q);
+  const blackboard=createSearchBlackboard(interpreted);
+  const out=compileSearchQueriesFromState(blackboard.state,6);
+  assert.equal(out.ok,true);
+  assert.equal(out.state.target,"salmon");
+  assert.equal(out.state.origin,"Perth");
+  assert.deepEqual(out.state.time,["may"]);
+  assert.ok(out.state.environment.includes("beach"));
+  assert.equal(out.state.unknown,"best bait");
+  assert.ok(out.queries.some(x=>x.kind==="FUNCTIONAL_BOOLEAN"&&x.query.includes("AND")));
+  assert.ok(out.queries.some(x=>x.query.toLowerCase().includes("salmon")));
+  assert.ok(out.queries.some(x=>x.query.toLowerCase().includes("beach")));
+  assert.ok(out.queries.some(x=>x.query.toLowerCase().includes("bait")));
 });
 
-test("compiler emits compact and operator-aware variants",()=>{
-  const q="I want to go fishing in May. I want to go fishing for salmon. I'm in Perth, Australia. I don't want to go 200 kilometers out of Perth to catch the salmon. I'd like to catch them within that distance. What bait is the best?";
+test("text wrapper still routes through interpreter and Blackboard",()=>{
   const out=compileSearchQueries(q,5);
   assert.equal(out.ok,true);
+  assert.equal(out.state.target,"salmon");
+  assert.equal(out.state.origin,"Perth");
   assert.ok(out.queries.length>=3);
-  assert.ok(out.queries.some(x=>x.kind==="BOOLEAN_AND"&&x.query.includes("AND")));
-  assert.ok(out.queries.some(x=>x.query.toLowerCase().includes("salmon")));
-  assert.ok(out.queries.some(x=>x.query.toLowerCase().includes("bait")));
 });
