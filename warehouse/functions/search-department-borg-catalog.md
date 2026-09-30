@@ -216,3 +216,17 @@ DO NOT SEARCH THE HUMAN SENTENCE.
 Interpret what each meaningful part DOES, store that as Blackboard STATE, then compile search representations from the functions.
 
 For search, WHAT is the answer sought; the other roles constrain that WHAT.
+
+
+## BOOKED / LIVE PROVEN — AI SOURCE-FIRST GATE — 2026-09-30
+
+- Rule: AI words are leads; source links are evidence doors.
+- New function: AI_SOURCE_GATE.
+- The gate discards the AI answer text, opens the returned source URL itself, extracts a small evidence window, and preserves provenance.
+- Live proof used a deliberately incorrect sample AI answer plus a real Perth Fishing TV salmon source URL.
+- PASS: the incorrect sample wording did not survive; source-derived salmon/bait evidence did.
+- Result: SOURCE_FIRST_GATE_GREEN.
+- Policy label: AI_WORDS_ARE_LEADS_SOURCE_IS_EVIDENCE.
+- Gemini/Google Search grounding and AWS Bedrock Web Search reasoning sockets are not yet wired into this repository, so the full AI-to-source loop is not yet marked proven.
+
+DIRECT HUMAN QUESTION -> AI SEARCH -> SOURCE LINKS -> DISCARD AI WORDS FOR PROOF -> READ SOURCE -> VERIFY -> SUFFICIENT? -> RECAST or DONE.
