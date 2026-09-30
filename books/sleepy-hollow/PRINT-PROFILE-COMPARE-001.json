@@ -1,0 +1,57 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "comparison_id": "SH-PRINT-PROFILE-COMPARE-001",
+  "state": "VERIFIED_DONE",
+  "purpose": "Use measured pagination plus current KDP cost evidence to determine what still matters before choosing a trim.",
+  "input": {
+    "working_words": 12214,
+    "candidates": [
+      {
+        "trim_inches": [
+          5,
+          8
+        ],
+        "measured_pages": 62,
+        "words_per_page": 197
+      },
+      {
+        "trim_inches": [
+          5.5,
+          8.5
+        ],
+        "measured_pages": 58,
+        "words_per_page": 210.6
+      },
+      {
+        "trim_inches": [
+          6,
+          9
+        ],
+        "measured_pages": 53,
+        "words_per_page": 230.5
+      }
+    ]
+  },
+  "official_kdp_evidence_2026_09_30": {
+    "amazon_com_black_ink_regular_trim_24_to_110_pages_printing_cost_usd": 2.3,
+    "large_trim_definition": "more than 6.12 inches wide or more than 9 inches high",
+    "consequence_for_current_candidates": "All three measured Sleepy Hollow candidates are regular trim and under 110 pages, so current Amazon.com printing cost is the same $2.30 fixed cost for each."
+  },
+  "end_user_operator_evidence": {
+    "result": "mixed",
+    "useful_pattern": "Recent self-publishing discussions repeatedly describe 5.5x8.5 as a comfortable fiction/trade-paperback size, while some prefer 5x8 and others 6x9. Physical feel and genre expectations are treated as real decision inputs rather than a universal winner.",
+    "implication": "Do not convert community preference into a hard master rule."
+  },
+  "transform_result": {
+    "cost_is_currently_a_differentiator": false,
+    "final_trim_selected": false,
+    "why_not": [
+      "The three current prototypes have identical Amazon.com black-ink printing cost.",
+      "Reader aids have not yet been inserted, so final pagination/density is not known.",
+      "Operator evidence on physical preference is mixed.",
+      "No physical proof copy has yet been evaluated."
+    ]
+  },
+  "done": "COST_JOINT_CLOSED_READER_EXPERIENCE_JOINT_OPEN",
+  "next_state": "RUN_READER_AID_STRESS_PAGINATION_THEN_PHYSICAL_PROOF"
+}
