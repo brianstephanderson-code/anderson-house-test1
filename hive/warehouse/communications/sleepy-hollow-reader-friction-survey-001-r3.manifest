@@ -1,0 +1,9 @@
+MESSAGE_ID=sleepy-hollow-reader-friction-survey-001-r3
+KIND=ORDER
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/sleepy-hollow-reader-friction-survey-001-r3.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/sleepy-hollow-reader-friction-survey-001-r3/sleepy-hollow-reader-friction-survey-001.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/sleepy-hollow-reader-friction-survey-001-r3/sleepy-hollow-reader-friction-survey-001-r3.aws.uplink,hive/warehouse/communications/evidence/sleepy-hollow-reader-friction-survey-001-r3/sleepy-hollow-reader-friction-survey-001-r3.google.uplink,hive/warehouse/communications/evidence/sleepy-hollow-reader-friction-survey-001-r3/sleepy-hollow-reader-friction-survey-001-r3.cloudflare.uplink
+CORRELATION_ID=sleepy-hollow-reader-friction-survey-001-r3
+CLOSED_UTC=2026-09-30T03:31:01Z
