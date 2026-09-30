@@ -1,0 +1,27 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "function_id": "SH-MANUAL-READER-AID-ADMISSION-001",
+  "state": "VERIFIED_DONE",
+  "purpose": "Prepare the join between independent research returns and the Reader Edition without duplicating the 30-job research batch.",
+  "ownership": {
+    "lane": "manual_chat",
+    "research_jobs_claimed": [],
+    "conflicts_with_research_batch": false
+  },
+  "input_states": [
+    "VERIFIED_READER_AID",
+    "NO_MATERIAL_AID",
+    "RECAST"
+  ],
+  "transform": [
+    "Match each return to its original job_id and stable paragraph_id.",
+    "Admit only VERIFIED_READER_AID with a verified verification passport and non-empty reader-facing text.",
+    "Close NO_MATERIAL_AID without insertion.",
+    "Route RECAST back to research with the missing evidence.",
+    "Hold uncertain or malformed returns.",
+    "Reject duplicate returns and cross-marriage to the wrong paragraph/job."
+  ],
+  "done": "ASSEMBLY_PLAN_READY",
+  "invariant": "Reader support may attach to the working edition, but source text mutation remains forbidden.",
+  "next_state": "AS_RESEARCH_RETURNS_ARRIVE_BUILD_REAL_AID_ASSEMBLY_AND_RERUN_PAGINATION"
+}
