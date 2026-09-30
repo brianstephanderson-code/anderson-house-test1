@@ -13,20 +13,11 @@ jobs:
   loc-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Ask LOC specialist door
+      - name: Recast through LOC specialist door
         run: |
-          QUESTION="The Legend of Sleepy Hollow Washington Irving publication year publisher"
-          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_DISCOVER_LOC'             --data-urlencode "query=$QUESTION"             --data-urlencode 'limit=10'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
-          echo "LOC_SLEEPY_HOLLOW_RESULT=$BODY"
-          printf '%s' "$BODY" > loc-result.json
-          node - <<'NODE'
-          const fs=require("fs");
-          const b=JSON.parse(fs.readFileSync("loc-result.json","utf8"));
-          console.log("OK", b.ok);
-          console.log("FUNCTION", b.function);
-          console.log("ROUTE", b.route||"DIRECT");
-          console.log("RESULT_COUNT", (b.results||[]).length);
-          for (const [i,r] of (b.results||[]).entries()) {
-            console.log("RESULT_"+(i+1), JSON.stringify(r));
-          }
-          NODE
+          for QUESTION in             "Legend Sleepy Hollow Irving"             "Sketch Book Geoffrey Crayon Irving"             "Sketch Book Irving 1820"             "Irving Van Winkle Sketch Book"
+          do
+            BODY="$(curl --fail --silent --show-error --get               --data-urlencode 'type=SEARCH_DISCOVER_LOC'               --data-urlencode "query=$QUESTION"               --data-urlencode 'limit=10'               'https://ah-word-count.brian-steph-anderson.workers.dev')"
+            echo "QUERY=$QUESTION"
+            echo "BODY=$BODY"
+          done
