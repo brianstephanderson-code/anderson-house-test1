@@ -41,7 +41,7 @@ export function sufficiencyCheck(evidence = []) {
   };
 }
 
-export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}={}) {
+export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000,browserBinding=null}={}) {
   const q=String(query??"").trim();
   if(!q) return {ok:false,function:"SEARCH_END_TO_END_V1",error:"EMPTY_QUERY"};
   const n=Math.max(1,Math.min(Number(limit)||5,10));
@@ -133,6 +133,32 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
     }
   }
 
+  let browserFallback={attempted:false,ok:false,query:null,count:0,error:null};
+  if(!phase.semantic.summary.sufficient && browserBinding){
+    const fallbackQuery=(recast.casts||[]).find(x=>x.kind==="RECAST_SPECIES_HYPOTHESIS")?.query
+      || (recast.casts||[]).find(x=>x.query)?.query
+      || primary;
+    try {
+      const { searchDuckDuckGoBrowser }=await import("./search_web_browser.mjs");
+      const br=await searchDuckDuckGoBrowser(fallbackQuery,n,browserBinding);
+      browserFallback={
+        attempted:true,
+        ok:!!br.ok,
+        query:fallbackQuery,
+        count:br.results?.length??0,
+        error:br.error??null,
+        provider:br.provider??"DUCKDUCKGO_BROWSER"
+      };
+      if(br.results?.length){
+        const browserResults=normalizeResults(br.results,"DUCKDUCKGO_BROWSER");
+        candidates=deduplicateResults([...candidates,...browserResults]);
+        phase=await judgeCandidateSet(candidates);
+      }
+    } catch(e) {
+      browserFallback={attempted:true,ok:false,query:fallbackQuery,count:0,error:String(e?.message??e),provider:"DUCKDUCKGO_BROWSER"};
+    }
+  }
+
   const {shortlist,readReturns,evidence,transportSufficiency,semantic}=phase;
   const boundaryEvidence=applyBoundaryEvidence(semantic.judged,compiled.state);
   const boundaryRequired=!!compiled.state.boundary;
@@ -187,12 +213,14 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
     },
     doors:[
       {door:"OPEN_WEB",ok:allWebResults.length>0,count:allWebResults.length,error:null,route:recast.attempted?"QUERY_COMPILER_PLUS_RECAST":"QUERY_COMPILER_MULTI_CAST",casts:allWebReturns.map(x=>({kind:x.kind??null,query:x.cast,ok:!!x.ok,count:x.results?.length??0,route:x.route??null,error:x.error??null}))},
+      {door:"BROWSER_RUN_SEARCH",ok:!!browserFallback.ok,count:browserFallback.count??0,error:browserFallback.error??null,query:browserFallback.query??null,attempted:!!browserFallback.attempted},
       {door:"WIKIPEDIA_MEDIAWIKI_API",ok:!!wiki.ok,count:wiki.results?.length??0,error:wiki.error??null,query:primary},
       {door:"LIBRARY_OF_CONGRESS",ok:!!loc.ok,blocked:!!loc.blocked,count:loc.results?.length??0,error:loc.error??null,route:loc.route??null,query:primary}
     ],
     initial_candidate_count:initialCandidateCount,
     candidate_count:candidates.length,
     recast,
+    browser_fallback:browserFallback,
     shortlist_count:shortlist.length,
     shortlist:shortlist.map(x=>({title:x.title,url:x.url,source_door:x.source_door,relevance:x.relevance})),
     evidence:boundaryEvidence,
