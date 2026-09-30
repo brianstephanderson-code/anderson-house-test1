@@ -8,6 +8,7 @@ import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 import { rankCandidatesByRelevance, semanticSufficiency } from "./search_relevance.mjs";
 import { buildSearchRecasts } from "./search_recast.mjs";
+import { resolvePlace } from "./search_place_resolver.mjs";
 
 export function verifyEvidenceParcel(candidate = {}, read = {}) {
   let publicHttp=false;
@@ -48,6 +49,25 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
 
   const interpreted=interpretSearchInput(q);
   const blackboard=createSearchBlackboard(interpreted);
+
+  let boundaryResolution={required:false,origin_resolved:false,candidates:[],selected:null};
+  if(blackboard.state.boundary && blackboard.state.origin){
+    boundaryResolution.required=true;
+    const resolved=await resolvePlace(blackboard.state.origin,{count:3}).catch(e=>({ok:false,error:String(e),results:[]}));
+    boundaryResolution={
+      required:true,
+      origin_resolved:!!resolved.ok,
+      provider:resolved.provider??null,
+      error:resolved.error??null,
+      candidates:Array.isArray(resolved.results)?resolved.results:[],
+      selected:resolved.ok && resolved.results?.length ? resolved.results[0] : null,
+      attribution:resolved.attribution??null
+    };
+    if(boundaryResolution.selected){
+      blackboard.state.origin_location=boundaryResolution.selected;
+    }
+  }
+
   const compiled=compileSearchQueriesFromState(blackboard.state,4);
   const casts=(compiled.queries||[]).map(x=>x.query).filter(Boolean);
   const primary=casts[0]||q;
@@ -129,6 +149,7 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
       state:blackboard.state,
       history:blackboard.history
     },
+    boundary_resolution:boundaryResolution,
     query_compiler:{
       function:compiled.function,
       state:compiled.state,
