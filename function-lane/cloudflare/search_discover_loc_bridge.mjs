@@ -23,13 +23,27 @@ export async function searchDiscoverLocViaReader(query, limit=5) {
   target.searchParams.set("q",q);
 
   const carrier="https://r.jina.ai/"+target.toString();
-  const r=await fetch(carrier,{
-    redirect:"follow",
-    headers:{
-      "accept":"text/plain",
-      "user-agent":"AndersonHouse-LOC-Bridge/1.0"
-    }
-  });
+  let r;
+  try {
+    r=await fetch(carrier,{
+      redirect:"follow",
+      headers:{
+        "accept":"text/plain",
+        "user-agent":"AndersonHouse-LOC-Bridge/1.0"
+      }
+    });
+  } catch (e) {
+    return {
+      ok:false,
+      function:"SEARCH_DISCOVER_LOC_BRIDGE",
+      error:"CARRIER_FETCH_FAILED",
+      detail:String(e?.message??e),
+      source_door:"LIBRARY_OF_CONGRESS_VIA_READER",
+      provenance:carrier,
+      authority_url:target.toString(),
+      results:[]
+    };
+  }
 
   if(!r.ok) return {
     ok:false,
