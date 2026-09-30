@@ -12,28 +12,35 @@ permissions:
   id-token: write
 
 jobs:
-  live-ai-search:
+  google-live:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
       - name: Authenticate Google
-        id: google_auth
         uses: google-github-actions/auth@v3
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          token_format: access_token
-          create_credentials_file: false
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Enable Agent Platform API if needed
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          gcloud services enable aiplatform.googleapis.com --project "$PROJECT_ID"
 
       - name: Google Amigo - direct question with Google Search grounding
         env:
           PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
         run: |
           set -euo pipefail
           QUESTION="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+          ACCESS_TOKEN="$(gcloud auth print-access-token)"
           ENDPOINT="https://aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/global/publishers/google/models/gemini-2.5-flash:generateContent"
 
           jq -nc --arg q "$QUESTION" '{
@@ -74,6 +81,11 @@ jobs:
           for(const r of ok) console.log("SOURCE",r.evidence?.[0]?.url,"EVIDENCE",(r.evidence?.[0]?.evidence||"").slice(0,300));
           NODE
 
+  aws-live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -99,7 +111,17 @@ jobs:
             }]
           }' > /tmp/aws-request.json
 
-          CODE="$(curl --silent --show-error             --output /tmp/aws-response.json             --write-out '%{http_code}'             -X POST "$ENDPOINT"             --aws-sigv4 "aws:amz:${REGION}:bedrock-mantle"             --user "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}"             -H "x-amz-security-token: ${AWS_SESSION_TOKEN}"             -H "Content-Type: application/json"             --data-binary @/tmp/aws-request.json)"
+          invoke() {
+            SIGNING_SERVICE="$1"
+            curl --silent --show-error               --output /tmp/aws-response.json               --write-out '%{http_code}'               -X POST "$ENDPOINT"               --aws-sigv4 "aws:amz:${REGION}:${SIGNING_SERVICE}"               --user "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}"               -H "x-amz-security-token: ${AWS_SESSION_TOKEN}"               -H "Content-Type: application/json"               --data-binary @/tmp/aws-request.json
+          }
+
+          CODE="$(invoke bedrock-mantle)"
+          if [ "$CODE" != "200" ]; then
+            echo "AWS_FIRST_SIGNING_ATTEMPT_HTTP=$CODE"
+            cat /tmp/aws-response.json || true
+            CODE="$(invoke bedrock)"
+          fi
 
           echo "AWS_HTTP=$CODE"
           jq '{error,status,usage,output:[.output[]? | select(.type=="message") | {type,content:[.content[]? | {type,annotations}]}]}' /tmp/aws-response.json || true
