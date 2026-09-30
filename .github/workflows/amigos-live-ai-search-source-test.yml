@@ -1,0 +1,132 @@
+name: Amigos Live AI Search Source Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/amigos-live-ai-search-source-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  live-ai-search:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Authenticate Google
+        id: google_auth
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+          create_credentials_file: false
+
+      - name: Google Amigo - direct question with Google Search grounding
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          ACCESS_TOKEN: ${{ steps.google_auth.outputs.access_token }}
+        run: |
+          set -euo pipefail
+          QUESTION="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+          ENDPOINT="https://aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/global/publishers/google/models/gemini-2.5-flash:generateContent"
+
+          jq -nc --arg q "$QUESTION" '{
+            contents:[{role:"user",parts:[{text:$q}]}],
+            tools:[{googleSearch:{}}],
+            generationConfig:{temperature:0}
+          }' > /tmp/google-request.json
+
+          CODE="$(curl --silent --show-error             --output /tmp/google-response.json             --write-out '%{http_code}'             -X POST "$ENDPOINT"             -H "Authorization: Bearer $ACCESS_TOKEN"             -H "Content-Type: application/json"             --data-binary @/tmp/google-request.json)"
+
+          echo "GOOGLE_HTTP=$CODE"
+          jq '{error,usageMetadata,candidates:[.candidates[]? | {finishReason,groundingMetadata:{webSearchQueries:.groundingMetadata.webSearchQueries,groundingChunks:[.groundingMetadata.groundingChunks[]? | {web:.web}]}}]}' /tmp/google-response.json || true
+          test "$CODE" = "200"
+
+          node --input-type=module <<'NODE' > /tmp/google-parcel.json
+          import fs from "node:fs";
+          import {aiSourceParcel} from "./function-lane/core/ai_source_metadata.mjs";
+          const question="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?";
+          const response=JSON.parse(fs.readFileSync("/tmp/google-response.json","utf8"));
+          console.log(JSON.stringify(aiSourceParcel("google",question,response)));
+          NODE
+
+          jq -e '.ok and .provider=="google" and .source_count>0' /tmp/google-parcel.json >/dev/null
+          echo "GOOGLE_SOURCE_PARCEL=$(cat /tmp/google-parcel.json)"
+
+          : > /tmp/google-gates.ndjson
+          jq -r '.sources[].url' /tmp/google-parcel.json | head -n 3 | while read -r URL; do
+            BODY="$(curl --fail --silent --show-error --get               --data-urlencode 'type=AI_SOURCE_GATE'               --data-urlencode "source=$URL"               --data-urlencode 'evidence_term=salmon'               --data-urlencode 'evidence_term=bait'               --data-urlencode 'evidence_term=Perth'               'https://ah-word-count.brian-steph-anderson.workers.dev')"
+            printf '%s\n' "$BODY" >> /tmp/google-gates.ndjson
+          done
+
+          node - <<'NODE'
+          const fs=require("fs");
+          const rows=fs.readFileSync("/tmp/google-gates.ndjson","utf8").trim().split(/\n+/).filter(Boolean).map(JSON.parse);
+          const ok=rows.filter(x=>x.ok);
+          if(!ok.length) process.exit(1);
+          console.log("GOOGLE_LIVE_SOURCE_FIRST_GREEN",ok.length);
+          for(const r of ok) console.log("SOURCE",r.evidence?.[0]?.url,"EVIDENCE",(r.evidence?.[0]?.evidence||"").slice(0,300));
+          NODE
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: AWS Amigo - direct question with Bedrock Web Search
+        env:
+          REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+        run: |
+          set -euo pipefail
+          QUESTION="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+          ENDPOINT="https://bedrock-mantle.${REGION}.api.aws/openai/v1/responses"
+
+          jq -nc --arg q "$QUESTION" '{
+            model:"openai.gpt-5.6-luna",
+            input:$q,
+            store:false,
+            tools:[{
+              type:"web_search",
+              search_context_size:"low",
+              external_web_access:false
+            }]
+          }' > /tmp/aws-request.json
+
+          CODE="$(curl --silent --show-error             --output /tmp/aws-response.json             --write-out '%{http_code}'             -X POST "$ENDPOINT"             --aws-sigv4 "aws:amz:${REGION}:bedrock-mantle"             --user "${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}"             -H "x-amz-security-token: ${AWS_SESSION_TOKEN}"             -H "Content-Type: application/json"             --data-binary @/tmp/aws-request.json)"
+
+          echo "AWS_HTTP=$CODE"
+          jq '{error,status,usage,output:[.output[]? | select(.type=="message") | {type,content:[.content[]? | {type,annotations}]}]}' /tmp/aws-response.json || true
+          test "$CODE" = "200"
+
+          node --input-type=module <<'NODE' > /tmp/aws-parcel.json
+          import fs from "node:fs";
+          import {aiSourceParcel} from "./function-lane/core/ai_source_metadata.mjs";
+          const question="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?";
+          const response=JSON.parse(fs.readFileSync("/tmp/aws-response.json","utf8"));
+          console.log(JSON.stringify(aiSourceParcel("aws",question,response)));
+          NODE
+
+          jq -e '.ok and .provider=="aws" and .source_count>0' /tmp/aws-parcel.json >/dev/null
+          echo "AWS_SOURCE_PARCEL=$(cat /tmp/aws-parcel.json)"
+
+          : > /tmp/aws-gates.ndjson
+          jq -r '.sources[].url' /tmp/aws-parcel.json | head -n 3 | while read -r URL; do
+            BODY="$(curl --fail --silent --show-error --get               --data-urlencode 'type=AI_SOURCE_GATE'               --data-urlencode "source=$URL"               --data-urlencode 'evidence_term=salmon'               --data-urlencode 'evidence_term=bait'               --data-urlencode 'evidence_term=Perth'               'https://ah-word-count.brian-steph-anderson.workers.dev')"
+            printf '%s\n' "$BODY" >> /tmp/aws-gates.ndjson
+          done
+
+          node - <<'NODE'
+          const fs=require("fs");
+          const rows=fs.readFileSync("/tmp/aws-gates.ndjson","utf8").trim().split(/\n+/).filter(Boolean).map(JSON.parse);
+          const ok=rows.filter(x=>x.ok);
+          if(!ok.length) process.exit(1);
+          console.log("AWS_LIVE_SOURCE_FIRST_GREEN",ok.length);
+          for(const r of ok) console.log("SOURCE",r.evidence?.[0]?.url,"EVIDENCE",(r.evidence?.[0]?.evidence||"").slice(0,300));
+          NODE
