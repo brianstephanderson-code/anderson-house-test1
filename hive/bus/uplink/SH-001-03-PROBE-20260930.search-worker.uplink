@@ -1,0 +1,20 @@
+MESSAGE_ID=SH-001-03-PROBE-20260930
+CHANNEL=UPLINK
+FROM=SEARCH-WORKER
+TO=MANAGEMENT
+TYPE=SEARCH_RESEARCH_RESULT
+STATUS=DONE
+CORRELATION_ID=sleepy-hollow-research-001:SH-001-03
+JOB_ID=SH-001-03
+FUNCTION_CLASS=named_reference
+TERM=High German
+SEARCH_PATTERN=PERIOD_TERM_SENSE_TRIANGULATION
+QUESTION=Determine the period meaning/reference of “High German” here and whether a reader note is useful.
+RESULT=Primary-text verification confirms Irving's phrase “a high German doctor.” Reference sources show “High German” historically distinguishes central/southern German varieties from Low German, with “high” ultimately geographic rather than a rank/value judgment. The evidence found does not justify identifying Irving's unnamed doctor as a specific historical person; later Hulda identifications are reported as belief/speculation and should not be promoted to fact.
+SOURCE_DOOR_1=Primary institutional text | Library of Congress | https://www.loc.gov/resource/gdcmassbookdig.legendofsleepyho05irvi/?st=gallery
+SOURCE_DOOR_2=Historical language reference | 1911 Encyclopaedia Britannica, German Language | https://en.wikisource.org/wiki/1911_Encyclop%C3%A6dia_Britannica/German_Language
+SOURCE_DOOR_3=Modern linguistic reference | Oxford Research Encyclopedia of Linguistics, (High) German | https://academic.oup.com/edited-volume/61882/chapter-abstract/547719248
+SOURCE_DOOR_4=Contradiction/speculation check | CT Insider, Hulda the witch | https://www.ctinsider.com/hudsonvalley/history/article/the-other-legend-of-sleepy-hollow-16519882.php
+EVIDENCE_NOTE=Triangulation separates stable historical/linguistic sense from later attempts to identify the fictional unnamed referent. Reader support, if used, should explain the period term briefly without claiming an unverified identity.
+REUSABLE_SEARCH_FUNCTION_CANDIDATE=PERIOD_TERM_SENSE_TRIANGULATION: verify term in primary text; search historical-period reference; compare modern specialist definition; explicitly cast for later reinterpretations or identity claims; separate stable sense from retrospective speculation.
+UTC=2026-09-30
