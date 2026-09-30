@@ -30,14 +30,10 @@ export async function cloudflareAiCasts(question, ai){
     "Question: "+q
   ].join("\n");
 
-  const raw=await ai.run("@cf/zai-org/glm-4.7-flash",{
-    messages:[
-      {role:"system",content:"Plan searches only. Never present your own answer as evidence."},
-      {role:"user",content:prompt}
-    ],
-    max_completion_tokens:500,
-    temperature:0,
-    response_format:{type:"json_object"}
+  const raw=await ai.run("@cf/meta/llama-3.2-3b-instruct",{
+    prompt,
+    max_tokens:500,
+    temperature:0
   });
 
   const parsed=parseJsonLoose(textOf(raw));
@@ -48,7 +44,7 @@ export async function cloudflareAiCasts(question, ai){
     ok:casts.length>0,
     function:"CLOUDFLARE_AI_CASTS",
     policy:"AI_PLANS_SEARCH_DETERMINISTIC_PLUMBING_PROVES_SOURCES",
-    model:"@cf/zai-org/glm-4.7-flash",
+    model:"@cf/meta/llama-3.2-3b-instruct",
     question:q,
     interpreted_need:String(parsed?.interpreted_need??"").trim(),
     casts,
