@@ -9,7 +9,6 @@ function uniq(xs=[]){
 function words(text=""){
   return String(text??"").toLowerCase().replace(/[’']/g,"'").match(/[a-z0-9]+(?:-[a-z0-9]+)?/g)||[];
 }
-
 function firstMatch(raw, patterns=[]){
   for(const re of patterns){
     const m=raw.match(re);
@@ -34,13 +33,13 @@ export function interpretSearchInput(text=""){
   } : null;
 
   const origin=firstMatch(raw,[
-    /\b(?:within|under|less than|no more than|up to)\s+\d+(?:\.\d+)?\s*(?:km|kilometers?|kilometres?|miles?)\s+(?:of|from)\s+([A-Z][A-Za-z.-]+(?:\s+[A-Z][A-Za-z.-]+){0,2})/i,
-    /\b(?:in|near|around|from)\s+([A-Z][A-Za-z.-]+(?:\s+[A-Z][A-Za-z.-]+){0,2})/i
+    /\b(?:within|under|less than|no more than|up to)\s+\d+(?:\.\d+)?\s*(?:km|kilometers?|kilometres?|miles?)\s+(?:of|from)\s+([A-Za-z.-]+(?:\s+[A-Za-z.-]+){0,2}?)(?=\s+(?:on|at|near|around|with|using|what|which|where|when|how)\b|[,.!?]|$)/i,
+    /\b(?:in|near|around|from)\s+([A-Za-z.-]+(?:\s+[A-Za-z.-]+){0,2}?)(?=\s+(?:on|at|within|under|with|using|what|which|where|when|how|for)\b|[,.!?]|$)/i
   ]);
 
   const target=firstMatch(raw,[
-    /\b(?:fish(?:ing)?|catch(?:ing)?|search(?:ing)?|look(?:ing)?)\s+(?:for\s+)?([A-Za-z][A-Za-z0-9 -]{1,40}?)(?=\s+(?:within|near|around|in|from|on|at|during|using|with|what|which|where|when|how)\b|[,.!?]|$)/i,
-    /\bfor\s+([A-Za-z][A-Za-z0-9 -]{1,40}?)(?=\s+(?:within|near|around|in|from|on|at|during|using|with|what|which|where|when|how)\b|[,.!?]|$)/i
+    /\bfor\s+([A-Za-z][A-Za-z0-9 -]{1,40}?)(?=\s+(?:within|near|around|in|from|on|at|during|using|with|what|which|where|when|how)\b|[,.!?]|$)/i,
+    /\b(?:fish(?:ing)?|catch(?:ing)?)\s+([A-Za-z][A-Za-z0-9 -]{1,40}?)(?=\s+(?:within|near|around|in|from|on|at|during|using|with|what|which|where|when|how)\b|[,.!?]|$)/i
   ]);
 
   const environmentTerms=[
@@ -54,16 +53,17 @@ export function interpretSearchInput(text=""){
   ];
   const environment=environmentTerms.filter(([,re])=>re.test(raw)).map(([name])=>name);
 
-  const action= /\bfish(?:ing)?\b/i.test(raw) ? "fishing"
+  const action=/\bfish(?:ing)?\b/i.test(raw) ? "fishing"
     : /\bcatch(?:ing)?\b/i.test(raw) ? "catching"
     : /\bsearch(?:ing)?\b/i.test(raw) ? "searching"
     : "find information";
 
   let unknown=null;
   if(/\bbest\s+bait\b/i.test(raw)) unknown="best bait";
-  else if(/\bwhat\s+(?:is|are)\s+(?:the\s+)?(.+?)[?!.]*$/i.test(raw)) unknown=clean(raw.match(/\bwhat\s+(?:is|are)\s+(?:the\s+)?(.+?)[?!.]*$/i)?.[1]);
-
-  const desired_done=unknown ? `verified answer for ${unknown}` : "verified answer";
+  else {
+    const m=raw.match(/\bwhat\s+(?:is|are)\s+(?:the\s+)?(.+?)[?!.]*$/i);
+    if(m?.[1]) unknown=clean(m[1]);
+  }
 
   return {
     ok:true,
@@ -77,7 +77,7 @@ export function interpretSearchInput(text=""){
       boundary,
       environment,
       unknown,
-      desired_done
+      desired_done:unknown ? `verified answer for ${unknown}` : "verified answer"
     }
   };
 }
