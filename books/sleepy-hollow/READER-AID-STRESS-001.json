@@ -1,0 +1,70 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "probe_id": "SH-READER-AID-STRESS-001",
+  "state": "READER_AID_STRESS_MEASURED",
+  "source_integrity": {
+    "working_body_sha256": "14dfbab6784099770a04cfc20b67213929595d47078f14143980e0f87b4e1338",
+    "source_text_changed": false
+  },
+  "ownership": {
+    "research_jobs_claimed": [],
+    "research_job_states_changed": false
+  },
+  "stress_model": {
+    "synthetic_only": true,
+    "purpose": "layout capacity test, not reader-facing content",
+    "word_targets_by_function_class": {
+      "lexical": 28,
+      "named_reference": 55,
+      "historical_lexical": 45,
+      "cultural_lexical": 65
+    },
+    "total_aids": 30,
+    "total_synthetic_words": 1164
+  },
+  "profiles": [
+    {
+      "profile_id": "KDP_5X8_STRESS",
+      "trim_inches": [
+        5.0,
+        8.0
+      ],
+      "baseline_pages": 62,
+      "stress_pages": 67,
+      "added_pages": 5,
+      "page_growth_percent": 8.1,
+      "synthetic_aid_count": 30,
+      "synthetic_aid_words": 1164,
+      "pdf": "kdp_5x8_stress.pdf"
+    },
+    {
+      "profile_id": "KDP_5_5X8_5_STRESS",
+      "trim_inches": [
+        5.5,
+        8.5
+      ],
+      "baseline_pages": 58,
+      "stress_pages": 62,
+      "added_pages": 4,
+      "page_growth_percent": 6.9,
+      "synthetic_aid_count": 30,
+      "synthetic_aid_words": 1164,
+      "pdf": "kdp_5_5x8_5_stress.pdf"
+    },
+    {
+      "profile_id": "KDP_6X9_STRESS",
+      "trim_inches": [
+        6.0,
+        9.0
+      ],
+      "baseline_pages": 53,
+      "stress_pages": 56,
+      "added_pages": 3,
+      "page_growth_percent": 5.7,
+      "synthetic_aid_count": 30,
+      "synthetic_aid_words": 1164,
+      "pdf": "kdp_6x9_stress.pdf"
+    }
+  ],
+  "next_state": "COMPARE_TRIM_RESILIENCE_THEN_REPEAT_WITH_REAL_VERIFIED_AIDS"
+}
