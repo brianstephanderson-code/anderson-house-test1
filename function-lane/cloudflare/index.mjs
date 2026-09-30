@@ -1,6 +1,7 @@
 import { providerHiveProfile } from "./core/provider_hive.mjs";
 import { searchDiscover } from "./search_discover.mjs";
 import { searchDiscoverLoc } from "./search_discover_loc.mjs";
+import { fetchText } from "./fetch_text.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
   const qs = Array.isArray(queries) ? queries.map(x => String(x).trim()).filter(Boolean).slice(0, 30) : [];
@@ -57,6 +58,7 @@ export default {
     }
     const type = String(body.type ?? "").toUpperCase();
     if (type === "SEARCH_DISCOVER_STREAM") return searchDiscoverStream(body.queries, body.limit ?? 5, body.parent_ticket ?? "SEARCH");
+    if (type === "FETCH_TEXT") return Response.json(await fetchText(body.url, body.max_chars));
     if (type === "SEARCH_DISCOVER_LOC") return Response.json(await searchDiscoverLoc(body.query ?? body.text, body.limit ?? 5));
     if (type === "SEARCH_DISCOVER") return Response.json(await searchDiscover(body.query ?? body.text, body.limit ?? 5));
     return Response.json(await providerHiveProfile(body.text ?? "", "cloudflare"));
