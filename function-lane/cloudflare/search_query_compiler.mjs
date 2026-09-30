@@ -23,11 +23,11 @@ export function compileSearchQueriesFromState(state={}, maxVariants=4){
   const origin=String(state.origin??"").trim();
   const times=Array.isArray(state.time)?state.time:[];
   const environment=Array.isArray(state.environment)?state.environment:[];
-  const unknown=String(state.unknown??"").trim();
+  const what=String(state.what??"").trim();
   const action=String(state.action??"").trim();
   const distance=boundaryText(state.boundary);
 
-  if(!raw && !target && !origin && !unknown) {
+  if(!raw && !target && !origin && !what) {
     return {ok:false,function:"SEARCH_QUERY_COMPILER",error:"EMPTY_STATE",state,queries:[]};
   }
 
@@ -36,7 +36,7 @@ export function compileSearchQueriesFromState(state={}, maxVariants=4){
     origin,
     ...environment,
     ...times,
-    unknown
+    what
   ]).join(" ");
 
   const focused=uniq([
@@ -44,7 +44,7 @@ export function compileSearchQueriesFromState(state={}, maxVariants=4){
     origin,
     ...environment,
     ...times,
-    unknown
+    what
   ]).join(" ");
 
   const actionCast=uniq([
@@ -52,7 +52,7 @@ export function compileSearchQueriesFromState(state={}, maxVariants=4){
     action,
     origin,
     ...environment,
-    unknown
+    what
   ]).join(" ");
 
   const booleanTerms=uniq([
@@ -60,7 +60,7 @@ export function compileSearchQueriesFromState(state={}, maxVariants=4){
     origin,
     ...environment,
     ...times,
-    unknown
+    what
   ]);
   const boolean=booleanTerms.join(" AND ");
 
@@ -68,7 +68,7 @@ export function compileSearchQueriesFromState(state={}, maxVariants=4){
     target,
     origin,
     ...environment,
-    unknown,
+    what,
     distance
   ]).join(" ");
 
