@@ -54,6 +54,7 @@ jobs:
           cp function-lane/core/terminal_punctuation.mjs function-lane/cloudflare/core/terminal_punctuation.mjs
           cp function-lane/core/particle_route.mjs function-lane/cloudflare/core/particle_route.mjs
           cp function-lane/core/terminal_punctuation_verifier.mjs function-lane/cloudflare/core/terminal_punctuation_verifier.mjs
+          cp function-lane/core/candidate_tokens.mjs function-lane/cloudflare/core/candidate_tokens.mjs
           cp function-lane/core/provider_hive.mjs function-lane/cloudflare/core/provider_hive.mjs
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
@@ -85,6 +86,7 @@ jobs:
           cp function-lane/core/terminal_punctuation.mjs .build/aws/core/terminal_punctuation.mjs
           cp function-lane/core/particle_route.mjs .build/aws/core/particle_route.mjs
           cp function-lane/core/terminal_punctuation_verifier.mjs .build/aws/core/terminal_punctuation_verifier.mjs
+          cp function-lane/core/candidate_tokens.mjs .build/aws/core/candidate_tokens.mjs
           cp function-lane/core/provider_hive.mjs .build/aws/core/provider_hive.mjs
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -124,6 +126,7 @@ jobs:
           cp function-lane/core/terminal_punctuation.mjs .build/google/core/terminal_punctuation.mjs
           cp function-lane/core/particle_route.mjs .build/google/core/particle_route.mjs
           cp function-lane/core/terminal_punctuation_verifier.mjs .build/google/core/terminal_punctuation_verifier.mjs
+          cp function-lane/core/candidate_tokens.mjs .build/google/core/candidate_tokens.mjs
           cp function-lane/core/provider_hive.mjs .build/google/core/provider_hive.mjs
       - name: Authenticate to Google Cloud with WIF
         uses: google-github-actions/auth@v3
