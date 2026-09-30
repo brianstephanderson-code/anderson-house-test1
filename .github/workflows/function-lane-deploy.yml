@@ -38,6 +38,9 @@ jobs:
         run: |
           mkdir -p function-lane/cloudflare/core
           cp function-lane/core/*.mjs function-lane/cloudflare/core/
+      - name: Install Cloudflare browser dependency
+        working-directory: function-lane/cloudflare
+        run: npm install --no-audit --no-fund
       - name: Deploy Cloudflare Worker
         uses: cloudflare/wrangler-action@v4
         with:
