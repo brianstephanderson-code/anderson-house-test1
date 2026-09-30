@@ -1,10 +1,6 @@
 name: Amigos Live AI Search Source Test
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/amigos-live-ai-search-source-test.yml"
   workflow_dispatch:
 
 permissions:
@@ -27,12 +23,6 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Enable Agent Platform API if needed
-        env:
-          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-        run: |
-          set -euo pipefail
-          gcloud services enable aiplatform.googleapis.com --project "$PROJECT_ID"
 
       - name: Google Amigo - direct question with Google Search grounding
         env:
@@ -82,6 +72,7 @@ jobs:
           NODE
 
   aws-live:
+    if: ${{ vars.AWS_AI_PAID_OK == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
