@@ -1,0 +1,32 @@
+name: Amigos LOC Sleepy Hollow Test
+
+on:
+  push:
+    paths:
+      - ".github/workflows/amigos-loc-sleepy-hollow-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  loc-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask LOC specialist door
+        run: |
+          QUESTION="The Legend of Sleepy Hollow Washington Irving publication year publisher"
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_DISCOVER_LOC'             --data-urlencode "query=$QUESTION"             --data-urlencode 'limit=10'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "LOC_SLEEPY_HOLLOW_RESULT=$BODY"
+          printf '%s' "$BODY" > loc-result.json
+          node - <<'NODE'
+          const fs=require("fs");
+          const b=JSON.parse(fs.readFileSync("loc-result.json","utf8"));
+          console.log("OK", b.ok);
+          console.log("FUNCTION", b.function);
+          console.log("ROUTE", b.route||"DIRECT");
+          console.log("RESULT_COUNT", (b.results||[]).length);
+          for (const [i,r] of (b.results||[]).entries()) {
+            console.log("RESULT_"+(i+1), JSON.stringify(r));
+          }
+          NODE
