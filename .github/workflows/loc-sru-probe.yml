@@ -1,0 +1,37 @@
+name: LOC SRU Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/loc-sru-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe documented LOC SRU sample
+        run: |
+          set -euo pipefail
+          URL='http://lx2.loc.gov:210/LCDB?version=1.1&operation=searchRetrieve&query=%22Marv%20Throneberry%22&startRecord=1&maximumRecords=5&recordSchema=mods'
+          CODE="$(curl --max-time 20 --silent --show-error --output /tmp/loc-sru-sample.xml --write-out '%{http_code}' "$URL" || true)"
+          echo "SAMPLE_HTTP=$CODE"
+          head -c 2500 /tmp/loc-sru-sample.xml 2>/dev/null || true
+          echo
+          test "$CODE" = "200"
+          grep -q 'searchRetrieveResponse' /tmp/loc-sru-sample.xml
+
+      - name: Probe Anderson House LOC query
+        run: |
+          set -euo pipefail
+          URL='http://lx2.loc.gov:210/LCDB?version=1.1&operation=searchRetrieve&query=%22Washington%20Irving%20Sleepy%20Hollow%22&startRecord=1&maximumRecords=5&recordSchema=mods'
+          CODE="$(curl --max-time 20 --silent --show-error --output /tmp/loc-sru-query.xml --write-out '%{http_code}' "$URL" || true)"
+          echo "QUERY_HTTP=$CODE"
+          head -c 2500 /tmp/loc-sru-query.xml 2>/dev/null || true
+          echo
+          test "$CODE" = "200"
+          grep -q 'searchRetrieveResponse' /tmp/loc-sru-query.xml
