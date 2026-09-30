@@ -87,6 +87,17 @@ jobs:
           echo "READ_TEXT_LINKS_BODY=$BODY"
           node -e 'const fs=require("fs"); const b=JSON.parse(fs.readFileSync("/tmp/read-text-links.json","utf8")); if(!b.ok||b.function!=="READ_TEXT_LINKS"||!b.provenance||typeof b.text!=="string"||b.text.length<100||b.text.length>6000||!Array.isArray(b.links)||b.links.length<1||b.links.length>25||b.link_count!==b.links.length||b.links.some(x=>!/^https?:\/\//.test(x.url))||/<script|<style|<img|<form/i.test(b.text)) process.exit(1); console.log("READ_TEXT_LINKS_OK chars="+b.chars+" links="+b.link_count+" url="+b.url); console.log("TEXT_SAMPLE "+b.text.slice(0,300)); console.log("LINK_SAMPLE "+b.links.slice(0,5).map(x=>x.url).join(" | "));'
 
+      - name: Live SEARCH_WEB_PUBLIC proof
+        if: ${{ always() }}
+        run: |
+          BODY="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=SEARCH_WEB_PUBLIC' \
+            --data-urlencode 'query=Perth Australia salmon fishing May best bait' \
+            --data-urlencode 'limit=8' \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "SEARCH_WEB_PUBLIC_BODY=$BODY"
+          node -e 'const b=JSON.parse(process.argv[1]); if(!b.ok||b.function!=="SEARCH_WEB_PUBLIC"||!Array.isArray(b.results)||b.results.length<1||!b.results.every(x=>x.url&&x.title&&x.source_door&&x.provenance)) process.exit(1); console.log("SEARCH_WEB_PUBLIC_OK route="+b.route+" count="+b.results.length+" first="+b.results[0].url);' "$BODY"
+
       - name: Live SEARCH_END_TO_END_V1 proof
         if: ${{ always() }}
         run: |

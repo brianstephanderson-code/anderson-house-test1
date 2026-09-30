@@ -1,5 +1,6 @@
 import { searchDiscover } from "./search_discover.mjs";
 import { searchDiscoverLocRoute } from "./search_discover_loc_route.mjs";
+import { searchWebPublic } from "./search_web_public.mjs";
 import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 
@@ -40,12 +41,14 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
   const reads=Math.max(1,Math.min(Number(readLimit)||3,5));
   const chars=Math.max(1000,Math.min(Number(maxChars)||4000,12000));
 
-  const [wiki,loc]=await Promise.all([
+  const [wiki,loc,web]=await Promise.all([
     searchDiscover(q,n).catch(e=>({ok:false,function:"SEARCH_DISCOVER",error:String(e),results:[]})),
-    searchDiscoverLocRoute(q,n).catch(e=>({ok:false,function:"SEARCH_DISCOVER_LOC",error:String(e),results:[]}))
+    searchDiscoverLocRoute(q,n).catch(e=>({ok:false,function:"SEARCH_DISCOVER_LOC",error:String(e),results:[]})),
+    searchWebPublic(q,n).catch(e=>({ok:false,function:"SEARCH_WEB_PUBLIC",error:String(e),results:[]}))
   ]);
 
   const candidates=deduplicateResults([
+    ...normalizeResults(web.results,"OPEN_WEB"),
     ...normalizeResults(wiki.results,"WIKIPEDIA_MEDIAWIKI_API"),
     ...normalizeResults(loc.results,"LIBRARY_OF_CONGRESS_JSON_API")
   ]);
@@ -70,6 +73,7 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
       sufficient:sufficiency.sufficient
     },
     doors:[
+      {door:"OPEN_WEB",ok:!!web.ok,count:web.results?.length??0,error:web.error??null,route:web.route??null},
       {door:"WIKIPEDIA_MEDIAWIKI_API",ok:!!wiki.ok,count:wiki.results?.length??0,error:wiki.error??null},
       {door:"LIBRARY_OF_CONGRESS",ok:!!loc.ok,blocked:!!loc.blocked,count:loc.results?.length??0,error:loc.error??null,route:loc.route??null}
     ],

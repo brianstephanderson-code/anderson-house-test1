@@ -4,6 +4,7 @@ import { searchDiscoverLocRoute } from "./search_discover_loc_route.mjs";
 import { fetchText } from "./fetch_text.mjs";
 import { readTextLinks } from "./read_text_links.mjs";
 import { searchEndToEndV1 } from "./search_end_to_end.mjs";
+import { searchWebPublic } from "./search_web_public.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
@@ -84,6 +85,7 @@ export default {
         {door:"LIBRARY_OF_CONGRESS_JSON_API",ok:!!loc.ok,count:loc.results?.length??0}
       ],results});
     }
+    if (type === "SEARCH_WEB_PUBLIC") return Response.json(await searchWebPublic(body.query ?? body.text, body.limit ?? 10));
     if (type === "SEARCH_END_TO_END_V1") return Response.json(await searchEndToEndV1(body.query ?? body.text,{limit:body.limit,readLimit:body.read_limit,maxChars:body.max_chars}));
     if (type === "READ_TEXT_LINKS") return Response.json(await readTextLinks(body.url,{maxChars:body.max_chars,maxLinks:body.max_links}));
     if (type === "FETCH_TEXT") return Response.json(await fetchText(body.url, body.max_chars));
