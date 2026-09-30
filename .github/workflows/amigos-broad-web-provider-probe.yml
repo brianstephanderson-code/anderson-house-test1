@@ -13,20 +13,27 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe no-key broad-web providers
+      - name: Probe multiple no-key broad-web doors
         run: |
           set +e
-          Q='Perth Western Australia salmon fishing May best bait'
-          test_url() {
-            NAME="$1"; URL="$2"
-            CODE=$(curl -L --max-time 20 -A 'Mozilla/5.0 AndersonHouse/1.0' -sS -o /tmp/body -w '%{http_code}' "$URL")
-            echo "=== $NAME HTTP=$CODE ==="
-            head -c 1200 /tmp/body | tr '\n' ' '
-            echo
-          }
+          Q='Perth Australia salmon fishing May best bait'
 
-          test_url "SEARX_ANONI_JSON" "https://search.anoni.net/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=json"
-          test_url "SEARX_FLOATING_JSON" "https://searx.thefloatinglab.world/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=json"
-          test_url "SEARX_MBUF_JSON" "https://searx.mbuf.net/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=json"
-          test_url "DUCKDUCKGO_HTML" "https://html.duckduckgo.com/html/?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')"
-          test_url "BING_RSS" "https://www.bing.com/search?q=$(python3 -c 'import urllib.parse; print(urllib.parse.quote("'"$Q"'"))')&format=rss"
+          echo '=== MWMBL API ==='
+          C=$(curl -L --max-time 20 -sS -o /tmp/mwmbl --get --data-urlencode "s=$Q" -w '%{http_code}' 'https://api.mwmbl.org/api/v1/search/')
+          echo "STATUS=$C BYTES=$(wc -c </tmp/mwmbl)"
+          head -c 700 /tmp/mwmbl | tr '\n' ' '; echo
+
+          echo '=== MOJEEK HTML ==='
+          C=$(curl -L --max-time 20 -sS -A 'Mozilla/5.0' -o /tmp/mojeek --get --data-urlencode "q=$Q" -w '%{http_code}' 'https://www.mojeek.com/search')
+          echo "STATUS=$C BYTES=$(wc -c </tmp/mojeek)"
+          grep -o -m 5 -E 'href="https?://[^"]+"' /tmp/mojeek | head -5
+
+          echo '=== DUCKDUCKGO HTML ==='
+          C=$(curl -L --max-time 20 -sS -A 'Mozilla/5.0' -o /tmp/ddg --get --data-urlencode "q=$Q" -w '%{http_code}' 'https://html.duckduckgo.com/html/')
+          echo "STATUS=$C BYTES=$(wc -c </tmp/ddg)"
+          grep -o -m 5 -E 'uddg=[^"&]+' /tmp/ddg | head -5
+
+          echo '=== BING HTML ==='
+          C=$(curl -L --max-time 20 -sS -A 'Mozilla/5.0' -o /tmp/bing --get --data-urlencode "q=$Q" -w '%{http_code}' 'https://www.bing.com/search')
+          echo "STATUS=$C BYTES=$(wc -c </tmp/bing)"
+          grep -o -m 5 -E '<li class="b_algo".{0,2000}' /tmp/bing | head -5
