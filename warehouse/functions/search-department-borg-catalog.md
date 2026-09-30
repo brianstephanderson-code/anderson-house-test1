@@ -258,3 +258,21 @@ DIRECT HUMAN QUESTION -> AI SEARCH -> SOURCE LINKS -> DISCARD AI WORDS FOR PROOF
 - Cost gate remains in force: do not automatically cross into paid model/search calls.
 
 DIRECT QUESTION -> AI PROVIDER -> NATIVE CITATION METADATA -> SOURCE-ONLY PARCEL -> AI_SOURCE_GATE -> READ SOURCE -> LINDA -> SUFFICIENT? -> RECAST or DONE.
+
+
+## BOOKED / LIVE PROVEN — GOOGLE AMIGO DIRECT AI SEARCH -> SOURCE GATE — 2026-09-30
+
+- Exact human question:
+  - "I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+- Live Google Vertex AI / Gemini request returned HTTP 200.
+- Gemini used Google Search grounding and generated multiple web-search casts.
+- Native grounding metadata returned 9 source URLs.
+- The Anderson House AI_NATIVE_SOURCE_PARCEL admitted only source metadata into the evidence pipe.
+- The live AI_SOURCE_GATE successfully opened 3 returned source URLs and extracted readable evidence.
+- Live result: GOOGLE_LIVE_SOURCE_FIRST_GREEN 3.
+- This closes the Google path:
+  HUMAN QUESTION -> GEMINI REASON/SEARCH -> NATIVE GROUNDING URLS -> SOURCE-ONLY PARCEL -> AI_SOURCE_GATE -> SOURCE READ -> EVIDENCE.
+- The AI answer text was not used as evidence.
+- AWS attempted the same workflow but was denied before inference because the GitHub role lacks bedrock-mantle:CreateInference.
+- AWS is now hard-gated behind repository variable AWS_AI_PAID_OK=true and the live AI workflow is manual-only, preventing accidental paid calls.
+- Google is therefore LIVE PROVEN; AWS remains NOT YET LIVE PROVEN.
