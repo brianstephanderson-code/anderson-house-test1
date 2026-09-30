@@ -1,7 +1,9 @@
 import { searchDiscover } from "./search_discover.mjs";
 import { searchDiscoverLocRoute } from "./search_discover_loc_route.mjs";
 import { searchWebPublic } from "./search_web_public.mjs";
-import { compileSearchQueries } from "./search_query_compiler.mjs";
+import { compileSearchQueriesFromState } from "./search_query_compiler.mjs";
+import { interpretSearchInput } from "./search_function_interpreter.mjs";
+import { createSearchBlackboard } from "./search_blackboard.mjs";
 import { readTextLinks } from "./read_text_links.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 import { rankCandidatesByRelevance, semanticSufficiency } from "./search_relevance.mjs";
@@ -44,7 +46,9 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
   const reads=Math.max(1,Math.min(Number(readLimit)||3,5));
   const chars=Math.max(1000,Math.min(Number(maxChars)||4000,12000));
 
-  const compiled=compileSearchQueries(q,4);
+  const interpreted=interpretSearchInput(q);
+  const blackboard=createSearchBlackboard(interpreted);
+  const compiled=compileSearchQueriesFromState(blackboard.state,4);
   const casts=(compiled.queries||[]).map(x=>x.query).filter(Boolean);
   const primary=casts[0]||q;
 
@@ -116,6 +120,15 @@ export async function searchEndToEndV1(query,{limit=5,readLimit=3,maxChars=4000}
     ok:sufficiency.sufficient,
     function:"SEARCH_END_TO_END_V1",
     query:q,
+    interpreter:{
+      function:interpreted.function,
+      roles:interpreted.roles
+    },
+    blackboard:{
+      function:blackboard.function,
+      state:blackboard.state,
+      history:blackboard.history
+    },
     query_compiler:{
       function:compiled.function,
       state:compiled.state,
