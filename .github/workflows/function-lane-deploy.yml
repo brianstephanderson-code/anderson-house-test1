@@ -79,7 +79,7 @@ jobs:
         run: |
           BODY="$(curl --fail --silent --show-error --get \
             --data-urlencode 'type=READ_TEXT_LINKS' \
-            --data-urlencode 'url=https://www.loc.gov/item/ihas.200197495/' \
+            --data-urlencode 'url=https://example.com/' \
             --data-urlencode 'max_chars=6000' \
             --data-urlencode 'max_links=25' \
             'https://ah-word-count.brian-steph-anderson.workers.dev')"
