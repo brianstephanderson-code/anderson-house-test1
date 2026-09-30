@@ -24,10 +24,11 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           import { providerHiveProfile } from './function-lane/core/provider_hive.mjs';
-          const text = 'Many hands work. Bees return!';
+          const text = 'Many hands working. Bees return!';
           const result = await providerHiveProfile(text, 'gitty');
           if (result.words !== 5 || result.sentences !== 2 || result.paragraphs !== 1 || result.terminalPunctuation !== true || result.characters !== text.length || result.lines !== 1 || result.blankLines !== 0) process.exit(1);
-          if (result.providerHive.provider !== 'gitty' || result.providerHive.mode !== 'fanout-join' || result.providerHive.workerCount !== 7) process.exit(1);
+          if (!result.candidateTokens?.wordCandidates?.includes('working')) process.exit(1);
+          if (result.providerHive.provider !== 'gitty' || result.providerHive.mode !== 'fanout-join' || result.providerHive.workerCount !== 8) process.exit(1);
           console.log(JSON.stringify(result));
           NODE
       - name: Gitty heartbeat
