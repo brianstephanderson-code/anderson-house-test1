@@ -30,3 +30,17 @@ jobs:
           if (result.providerHive.provider !== 'gitty' || result.providerHive.mode !== 'fanout-join' || result.providerHive.workerCount !== 7) process.exit(1);
           console.log(JSON.stringify(result));
           NODE
+      - name: Gitty heartbeat
+        if: success()
+        run: |
+          echo "GITTY=GREEN"
+          echo "RUN=${GITHUB_RUN_NUMBER}"
+          echo "SHA=${GITHUB_SHA}"
+          echo "TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          {
+            echo "## Gitty heartbeat"
+            echo "- Status: GREEN"
+            echo "- Run: ${GITHUB_RUN_NUMBER}"
+            echo "- Commit: ${GITHUB_SHA}"
+            echo "- Verified: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_STEP_SUMMARY"
