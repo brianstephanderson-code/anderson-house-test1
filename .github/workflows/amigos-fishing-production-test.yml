@@ -13,7 +13,7 @@ jobs:
   fishing-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Ask exact fishing question through SEARCH_END_TO_END_V1 after broad-web Borg
+      - name: Ask exact fishing question through SEARCH_END_TO_END_V1 after fail-soft multi-door Borg
         run: |
           QUESTION="I want to go fishing in May. I want to go fishing for salmon. I'm in Perth, Australia. I don't want to go 200 kilometers out of Perth to catch the salmon. I'd like to catch them within that distance. What bait is the best?"
           BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_END_TO_END_V1'             --data-urlencode "query=$QUESTION"             --data-urlencode 'limit=8'             --data-urlencode 'read_limit=5'             --data-urlencode 'max_chars=5000'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
