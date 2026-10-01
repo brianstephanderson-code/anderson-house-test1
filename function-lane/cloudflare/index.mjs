@@ -8,6 +8,7 @@ import { searchWebPublic } from "./search_web_public.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 import { aiSourceGate } from "./search_ai_source_gate.mjs";
 import { cloudflareAiCasts } from "./cloudflare_ai_casts.mjs";
+import { cloudflareAiAnswer } from "./cloudflare_ai_answer.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
   const qs = Array.isArray(queries) ? queries.map(x => String(x).trim()).filter(Boolean).slice(0, 30) : [];
@@ -72,6 +73,7 @@ export default {
         parent_ticket: u.searchParams.get("parent_ticket") ?? undefined,
         browser_fallback: u.searchParams.get("browser_fallback") ?? undefined,
         answer: u.searchParams.get("answer") ?? undefined,
+        evidence: [],
         sources: u.searchParams.getAll("source"),
         evidence_terms: u.searchParams.getAll("evidence_term")
       };
@@ -80,6 +82,7 @@ export default {
     const browserFallbackRequested = body.browser_fallback === true || ["1","true","yes","on"].includes(String(body.browser_fallback ?? "").toLowerCase());
     if (type === "AI_SOURCE_GATE") return Response.json(await aiSourceGate({answer:body.answer,sources:body.sources},{evidenceTerms:body.evidence_terms??[]}));
     if (type === "CLOUDFLARE_AI_CASTS") return Response.json(await cloudflareAiCasts(body.query ?? body.text, env?.AI));
+    if (type === "CLOUDFLARE_AI_ANSWER") return Response.json(await cloudflareAiAnswer(body.query ?? body.text, body.evidence ?? [], env?.AI));
     if (type === "SEARCH_DISCOVER_STREAM") return searchDiscoverStream(body.queries, body.limit ?? 5, body.parent_ticket ?? "SEARCH");
     if (type === "SEARCH_MULTI_DOOR") {
       const query=body.query ?? body.text;
