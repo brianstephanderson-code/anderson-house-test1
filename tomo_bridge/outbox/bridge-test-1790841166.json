@@ -1,0 +1,226 @@
+{
+  "status": "ANSWER_READY",
+  "job_id": "bridge-test-1790841166",
+  "question": "What are effective baits for Australian salmon in Western Australia?",
+  "geography": "WA",
+  "usable_hits": 71,
+  "accepted_claims": 10,
+  "held_claims": 37,
+  "rejected_claims": 3,
+  "independent_source_families": 6,
+  "source_families": [
+    "bitecompass.com",
+    "compleatanglernedlands.com.au",
+    "flylife.com.au",
+    "recfishwest.org.au",
+    "wa.gov",
+    "wa.gov.au"
+  ],
+  "claims": [
+    {
+      "canonical_claim": "Whether you’re an experienced salmon angler or new to the game, your hands will shake with pure excitement as you cast into a school of salmon cruising through the surf in WA’s pristine south. Hook up, and it’s game-on for one of the most spectacular land-based fishing encounters you’ll ...",
+      "member_claims": [
+        "Whether you’re an experienced salmon angler or new to the game, your hands will shake with pure excitement as you cast into a school of salmon cruising through the surf in WA’s pristine south. Hook up, and it’s game-on for one of the most spectacular land-based fishing encounters you’ll ..."
+      ],
+      "urls": [
+        "https://recfishwest.org.au/news/the-best-rods-reels-and-lures-for-catching-salmon/",
+        "https://recfishwest.org.au/news/the-best-rods-reels-and-lures-for-catching-salmon"
+      ],
+      "source_families": [
+        "recfishwest.org.au"
+      ],
+      "found_by": [
+        "unknown",
+        "you"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 2,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "The 2026 WA salmon run is on now. Peak Perth spots, timing, gear, and conditions for the March-May migration, updated with this season's notes.",
+      "member_claims": [
+        "The 2026 WA salmon run is on now. Peak Perth spots, timing, gear, and conditions for the March-May migration, updated with this season's notes."
+      ],
+      "urls": [
+        "https://bitecompass.com/articles/wa-salmon-season-guide-march-may"
+      ],
+      "source_families": [
+        "bitecompass.com"
+      ],
+      "found_by": [
+        "you"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "The run usually reaches the south coast in March, the Capes in April and May, and the Perth metro beaches from late March to May in a good year. Timing and numbers vary from year to year. ### What is the best lure for salmon? Metal slugs like the Doctor Hook School Bully and Halco Twisty for distance, stickbaits like the Duo Press Bait and Oceans Legacy Keeling, and poppers like the Halco Roosta when fish are busting on top. ### What is the best salmon rig setup? [...] Duo Press Bait 125 HD: the premium salmon stickbait. Heavy enough to cast into the wind, with a deadly action. If you only buy one salmon lure, make it this one. Oceans Legacy Keeling 105 Heavy Long Cast: Australian-designed, with exceptional casting distance and a darting action salmon can't resist. Also in 88 and 160. Halco Slidog 105H: an Australian classic, walked across the surface or wound just under it. Nomad Riptide 125 Sinking and Floating: a WA staple off the beaches and rocks. [...] Browse all metal lures. ### Stickbaits Stickbaits are the most versatile salmon lures. They cast a long way, swim with a darting action just under the surface, and salmon demolish them. Work them with a steady retrieve or a twitch-twitch-pause.",
+      "member_claims": [
+        "The run usually reaches the south coast in March, the Capes in April and May, and the Perth metro beaches from late March to May in a good year. Timing and numbers vary from year to year. ### What is the best lure for salmon? Metal slugs like the Doctor Hook School Bully and Halco Twisty for distance, stickbaits like the Duo Press Bait and Oceans Legacy Keeling, and poppers like the Halco Roosta when fish are busting on top. ### What is the best salmon rig setup? [...] Duo Press Bait 125 HD: the premium salmon stickbait. Heavy enough to cast into the wind, with a deadly action. If you only buy one salmon lure, make it this one. Oceans Legacy Keeling 105 Heavy Long Cast: Australian-designed, with exceptional casting distance and a darting action salmon can't resist. Also in 88 and 160. Halco Slidog 105H: an Australian classic, walked across the surface or wound just under it. Nomad Riptide 125 Sinking and Floating: a WA staple off the beaches and rocks. [...] Browse all metal lures. ### Stickbaits Stickbaits are the most versatile salmon lures. They cast a long way, swim with a darting action just under the surface, and salmon demolish them. Work them with a steady retrieve or a twitch-twitch-pause."
+      ],
+      "urls": [
+        "https://compleatanglernedlands.com.au/blogs/news/australian-salmon-fishing-guide"
+      ],
+      "source_families": [
+        "compleatanglernedlands.com.au"
+      ],
+      "found_by": [
+        "tavily"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide.",
+      "member_claims": [
+        "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide."
+      ],
+      "urls": [
+        "https://recfishwest.org.au/news/the-best-rods-reels-and-lures-for-catching-salmon"
+      ],
+      "source_families": [
+        "recfishwest.org.au"
+      ],
+      "found_by": [
+        "tavily"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "loop, a corky on the line above the hook, and yarn on the hook (Photo 1). For weight, push the snap swivel through a 3/4' long piece of rubber tubing and then push a “pencil” lead into the tubing, or simply push the snap through the parachute cord of a “slinky” weight (Photos 2 and 3). Bait and/or scent can be added to this rig. Salmon roe and sand shrimp are the most popular baits to add to this setup, but many others can also be used. Instead of a corky and yarn setup, you can also substitute [...] choice for bait, although sand shrimp are very popular for chinook salmon. Some anglers like to fish both at the same time. Marabou jigs (Photo 10) can be used instead of bait and can be especially effective on pink salmon, or other salmon when the water is very low and clear. [...] When fishing in current, you will need to “mend” the line occasionally. Mending generally means lifting and/or flipping the line so that any belly is removed and the line is then in a straight line between the rod and bobber. The line needs to be mended to ensure a good hookset if the bobber goes down. Spectra based lines float and are therefore easier to mend, and their lack of stretch ensures that all of the hookset is transmitted to the bait or lure. Salmon eggs are the top choice for bait,",
+      "member_claims": [
+        "loop, a corky on the line above the hook, and yarn on the hook (Photo 1). For weight, push the snap swivel through a 3/4' long piece of rubber tubing and then push a “pencil” lead into the tubing, or simply push the snap through the parachute cord of a “slinky” weight (Photos 2 and 3). Bait and/or scent can be added to this rig. Salmon roe and sand shrimp are the most popular baits to add to this setup, but many others can also be used. Instead of a corky and yarn setup, you can also substitute [...] choice for bait, although sand shrimp are very popular for chinook salmon. Some anglers like to fish both at the same time. Marabou jigs (Photo 10) can be used instead of bait and can be especially effective on pink salmon, or other salmon when the water is very low and clear. [...] When fishing in current, you will need to “mend” the line occasionally. Mending generally means lifting and/or flipping the line so that any belly is removed and the line is then in a straight line between the rod and bobber. The line needs to be mended to ensure a good hookset if the bobber goes down. Spectra based lines float and are therefore easier to mend, and their lack of stretch ensures that all of the hookset is transmitted to the bait or lure. Salmon eggs are the top choice for bait,"
+      ],
+      "urls": [
+        "https://wdfw.wa.gov/fishing/basics/salmon/freshwater"
+      ],
+      "source_families": [
+        "wa.gov"
+      ],
+      "found_by": [
+        "tavily"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "you can only use a maximum of 1 bait or lure on each line in the West Coast bioregion when fishing for demersal scalefish, 3 baits or lures on each line in all other areas and for other categories of fish.",
+      "member_claims": [
+        "you can only use a maximum of 1 bait or lure on each line in the West Coast bioregion when fishing for demersal scalefish, 3 baits or lures on each line in all other areas and for other categories of fish."
+      ],
+      "urls": [
+        "https://dpird.wa.gov.au/siteassets/documents/fisheries/recreational/guides-and-infographics/recreational-fishing-guide.pdf"
+      ],
+      "source_families": [
+        "wa.gov.au"
+      ],
+      "found_by": [
+        "unknown"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "It is illegal to use abalone as bait due to the risk of spreading disease.",
+      "member_claims": [
+        "It is illegal to use abalone as bait due to the risk of spreading disease."
+      ],
+      "urls": [
+        "https://dpird.wa.gov.au/siteassets/documents/fisheries/recreational/guides-and-infographics/recreational-fishing-guide.pdf"
+      ],
+      "source_families": [
+        "wa.gov.au"
+      ],
+      "found_by": [
+        "unknown"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "In particular, the use of traps and bait jigs with more than 3 hooks is illegal in WA waters.",
+      "member_claims": [
+        "In particular, the use of traps and bait jigs with more than 3 hooks is illegal in WA waters."
+      ],
+      "urls": [
+        "https://dpird.wa.gov.au/siteassets/documents/fisheries/recreational/guides-and-infographics/recreational-fishing-guide.pdf"
+      ],
+      "source_families": [
+        "wa.gov.au"
+      ],
+      "found_by": [
+        "unknown"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "it is prohibited to have demersal scalefish on a boat for use as rock lobster bait during the closure for West Coast bioregion demersal scalefish.",
+      "member_claims": [
+        "it is prohibited to have demersal scalefish on a boat for use as rock lobster bait during the closure for West Coast bioregion demersal scalefish."
+      ],
+      "urls": [
+        "https://dpird.wa.gov.au/siteassets/documents/fisheries/recreational/guides-and-infographics/recreational-fishing-guide.pdf"
+      ],
+      "source_families": [
+        "wa.gov.au"
+      ],
+      "found_by": [
+        "unknown"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "It’s been over forty years since I wet a line in WA and yes, it was a floating line cast with an eight foot rod to mostly catch the ubiquitous herring on home-made Sabiki rigs.",
+      "member_claims": [
+        "It’s been over forty years since I wet a line in WA and yes, it was a floating line cast with an eight foot rod to mostly catch the ubiquitous herring on home-made Sabiki rigs."
+      ],
+      "urls": [
+        "https://flylife.com.au/forum/topic/the-australian-salmon-kahawai-thread/page/2?srsltid=AU7gw4WhGyKRjgXtykYgwDfmyYpgO03JhOeC1iIN9JUJTk9heKUJbGTJ"
+      ],
+      "source_families": [
+        "flylife.com.au"
+      ],
+      "found_by": [
+        "unknown"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    }
+  ],
+  "seconds": 47.8,
+  "bridge": "TOMO_GIT_BRIDGE",
+  "original_question": "What are effective baits for Australian salmon in Western Australia?"
+}
