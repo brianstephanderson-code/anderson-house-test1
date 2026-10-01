@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "search-independent-lane-20261001T1814",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "PASS balanced_fetch_order [('official_candidate', 'agency.gov.au'), ('end_user', 'reddit.com'), ('independent', 'independent.org'), ('other', 'misc.example'), ('official_candidate', 'agency.gov.au')]\n"
+}
