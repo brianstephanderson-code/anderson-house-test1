@@ -38,6 +38,9 @@ def unique_by_url(rows):
 
 def rank_candidates(rows, question):
     q=str(question or "").lower()
+    stop={"what","which","where","when","why","how","best","from","that","this","with","into","about","would","could","should","there","their","have","does","most","more","than","near"}
+    qterms={w.strip(".,?!:;()[]{}\"'") for w in q.split()}
+    qterms={w for w in qterms if len(w)>=4 and w not in stop}
     route_terms=("walk","walking","route","path","trail","towpath","canal","hike","hiking")
     endpoints=[]
     if " from " in q and " to " in q:
@@ -52,13 +55,13 @@ def rank_candidates(rows, question):
         title=str(r.get("title") or "").lower()
         snippet=str(r.get("snippet") or "").lower()
         blob=title+" "+snippet
-        s=0
-        if any(t in blob for t in route_terms): s+=6
+        s=sum(3 for w in qterms if w in blob)
+        s+=sum(2 for w in qterms if w in title)
+        if endpoints and any(t in blob for t in route_terms): s+=6
         for ep in endpoints:
             toks=[w for w in ep.replace(","," ").split() if len(w)>=4]
             if toks and any(w in blob for w in toks): s+=5
-        if "edinburgh" in blob and "glasgow" in blob: s+=10
-        if "walk" in title or "walking" in title or "canal" in title or "towpath" in title: s+=4
+        if endpoints and ("walk" in title or "walking" in title or "canal" in title or "towpath" in title): s+=4
         return s
     return sorted(rows,key=score,reverse=True)
 
