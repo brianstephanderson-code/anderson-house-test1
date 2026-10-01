@@ -1,0 +1,7 @@
+{
+  "id": "discovery-quality-002",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/discovery_quality.py",
+  "args": [],
+  "timeout": 60
+}
