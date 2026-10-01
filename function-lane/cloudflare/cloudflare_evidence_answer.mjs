@@ -70,6 +70,18 @@ function deterministicPrefilter(question,ev){
   }).sort((a,b)=>b.score-a.score);
 }
 
+function strongRouteTitleMatch(question,e){
+  const eps=routeEndpoints(question);
+  if(!eps) return false;
+  const title=String(e?.title??"").toLowerCase();
+  const a=words(eps[0]);
+  const b=words(eps[1]);
+  const hitA=a.some(w=>title.includes(w));
+  const hitB=b.some(w=>title.includes(w));
+  const hitRoute=["walk","walking","route","path","trail","towpath","canal","hike","hiking"].some(w=>title.includes(w));
+  return hitA && hitB && hitRoute;
+}
+
 function parseYesNo(raw){
   const t=String(raw??"").trim().toUpperCase();
   if(/^YES\b/.test(t)) return true;
@@ -129,6 +141,14 @@ export async function cloudflareEvidenceAnswer(question,evidence,ai){
   const rejected=[];
 
   for(const e of shortlist){
+    // A title such as "Edinburgh to Glasgow Canals Walk" is itself direct
+    // evidence that a route resource exists. Keep it for a narrow existence
+    // claim, while later passes still prevent unsupported summer/detail claims.
+    if(strongRouteTitleMatch(q,e)){
+      kept.push(e);
+      continue;
+    }
+
     const prompt=[
       "Question: "+q,
       "",
