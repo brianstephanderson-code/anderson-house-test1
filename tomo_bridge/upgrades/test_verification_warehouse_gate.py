@@ -28,6 +28,13 @@ def main():
     dup=[{"id":"x","url":"https://a.gov/x"},{"id":"x","url":"https://b.gov/x"}]
     gate,_=run(sources=dup,claims=[{"text":"claim","source_ids":["x"]}])
     assert not gate["promote"] and "duplicate_source_id" in gate["reasons"], gate
+
+    spoof={"id":"s1","url":"https://evil.gov.example.com/fake"}
+    gate,_=run(sources=[spoof],claims=[{"text":"claim","source_ids":["s1"]}],required=["official"])
+    assert not gate["promote"], gate
+    assert gate["source_classes"]==["other"], gate
+    assert "required_source_class_missing" in gate["reasons"], gate
+
     print("PASS: verification warehouse gate regression suite")
 
 if __name__=="__main__": main()
