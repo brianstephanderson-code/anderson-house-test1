@@ -76,17 +76,31 @@ function enforceRouteDiversity(question, casts){
 
   const from=m[1].trim();
   const to=m[2].trim();
-  const season=/\bsummer\b/i.test(q) ? " summer" : "";
 
-  // For route questions, deterministic diversity wins over repetitive model wording.
-  // Every cast keeps both endpoints + walking mode, while the unknown wording changes.
+  // Two-stage discovery strategy:
+  // 1) find the physical walking connection with endpoints + mode locked
+  // 2) include one seasonal cast to test the user's time boundary
+  // Avoid quotes because some free search doors over-constrain quoted phrases.
   return [
-    `walking route "${from}" "${to}"${season}`,
-    `walking path "${from}" "${to}"${season}`,
-    `walking trail "${from}" "${to}"${season}`,
-    `towpath canal walk "${from}" "${to}"${season}`,
-    `community hiking walking "${from}" "${to}"${season}`
+    `walking route ${from} ${to}`,
+    `canal walk ${from} ${to}`,
+    `towpath walk ${from} ${to}`,
+    `long distance walking trail ${from} ${to}`,
+    `walking route ${from} ${to} summer`
   ];
+}
+
+function routeHardConstraints(question, existing){
+  const q=String(question??"").trim();
+  const m=q.match(/\bfrom\s+(.+?)\s+to\s+(.+?)(?=\s+(?:in|during|for|on|at)\b|[?.!,;:]|$)/i);
+  if(!m) return existing;
+  const out=[
+    "travel mode: walking",
+    "start location: "+m[1].trim(),
+    "end location: "+m[2].trim()
+  ];
+  if(/\bsummer\b/i.test(q)) out.push("season: summer");
+  return out;
 }
 
 export async function cloudflareAiCastsV20(question, ai){
@@ -154,7 +168,7 @@ export async function cloudflareAiCastsV20(question, ai){
     model:"@cf/meta/llama-3.2-3b-instruct",
     question:q,
     interpreted_need:p.interpreted_need,
-    hard_constraints:p.hard_constraints,
+    hard_constraints:routeHardConstraints(q,p.hard_constraints),
     unknown:p.unknown,
     casts:p.casts,
     missing:p.missing,
