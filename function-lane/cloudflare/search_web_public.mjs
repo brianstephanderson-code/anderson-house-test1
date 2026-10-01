@@ -59,6 +59,30 @@ async function searchMarginalia(query, limit) {
   return {ok:results.length>0,provider:"MARGINALIA_PUBLIC_API",results,error:results.length?"":"NO_RESULTS"};
 }
 
+async function searchWikipedia(query, limit) {
+  const u=new URL("https://en.wikipedia.org/w/api.php");
+  u.searchParams.set("action","query");
+  u.searchParams.set("list","search");
+  u.searchParams.set("srsearch",query);
+  u.searchParams.set("srlimit",String(Math.min(limit,10)));
+  u.searchParams.set("format","json");
+  u.searchParams.set("origin","*");
+  const r=await fetch(u,{headers:{
+    "accept":"application/json",
+    "user-agent":"AndersonHouse-Search/1.0"
+  }});
+  if(!r.ok) return {ok:false,provider:"WIKIPEDIA_MEDIAWIKI",error:"HTTP_"+r.status,results:[]};
+  const j=await r.json();
+  const results=(j?.query?.search??[]).map(x=>({
+    title:String(x?.title??"").trim(),
+    url:`https://en.wikipedia.org/wiki/${encodeURIComponent(String(x?.title??"").replaceAll(" ","_"))}`,
+    snippet:htmlText(x?.snippet??""),
+    source_door:"WIKIPEDIA_MEDIAWIKI",
+    provenance:"https://en.wikipedia.org/w/api.php"
+  })).filter(x=>x.title);
+  return {ok:results.length>0,provider:"WIKIPEDIA_MEDIAWIKI",results,error:results.length?"":"NO_RESULTS"};
+}
+
 async function searchDuckDuckGo(query, limit) {
   const u=new URL("https://html.duckduckgo.com/html/"); u.searchParams.set("q",query);
   const r=await fetch(u,{headers:{"user-agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36","accept":"text/html"}});
@@ -109,7 +133,8 @@ export async function searchWebPublic(query, limit=10) {
   const calls=[
     ["DUCKDUCKGO_HTML",()=>searchDuckDuckGo(q,n)],
     ["MWMBL_OPEN_WEB",()=>searchMwmbl(q,n)],
-    ["MARGINALIA_PUBLIC_API",()=>searchMarginalia(q,n)]
+    ["MARGINALIA_PUBLIC_API",()=>searchMarginalia(q,n)],
+    ["WIKIPEDIA_MEDIAWIKI",()=>searchWikipedia(q,n)]
   ];
   const returns=await Promise.all(calls.map(async ([provider,fn])=>{
     const t=Date.now();
