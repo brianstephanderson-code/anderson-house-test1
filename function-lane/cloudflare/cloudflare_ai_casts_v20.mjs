@@ -33,7 +33,8 @@ export async function cloudflareAiCastsV20(question,ai){
   ].join("\n");
   const raw=await ai.run("@cf/meta/llama-3.2-3b-instruct",{prompt,max_tokens:700,temperature:0});
   const rawText=textOf(raw);
-  const p=parseJsonLoose(rawText);
+  let p=parseJsonLoose(rawText);
+  if(!Array.isArray(p?.casts) || p.casts.length===0) p=parseLabeledText(rawText);
   const casts=(Array.isArray(p?.casts)?p.casts:[]).map(x=>String(x??"").trim()).filter(Boolean).slice(0,6);
   return {
     ok:casts.length>0,
