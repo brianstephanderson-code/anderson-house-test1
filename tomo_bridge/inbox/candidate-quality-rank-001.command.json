@@ -1,0 +1,7 @@
+{
+  "id": "candidate-quality-rank-001",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/candidate_quality_rank.py",
+  "args": [],
+  "timeout": 120
+}
