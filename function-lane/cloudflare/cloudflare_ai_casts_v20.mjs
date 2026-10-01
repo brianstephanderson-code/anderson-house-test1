@@ -69,6 +69,32 @@ function parsePlannerText(raw){
   return out;
 }
 
+function enforceRouteDiversity(question, casts){
+  const q=String(question??"").trim();
+  const m=q.match(/\bfrom\s+(.+?)\s+to\s+(.+?)(?=\s+(?:in|during|for|on|at)\b|[?.!,;:]|$)/i);
+  if(!m) return [...new Set(casts)].slice(0,5);
+
+  const from=m[1].trim();
+  const to=m[2].trim();
+  const summer=/\bsummer\b/i.test(q) ? " in summer" : "";
+  const required=[
+    `walking route from ${from} to ${to}${summer}`,
+    `walking path from ${from} to ${to}${summer}`,
+    `walking trail from ${from} to ${to}${summer}`,
+    `towpath canal walk from ${from} to ${to}${summer}`,
+    `community walking route ${from} to ${to}${summer}`
+  ];
+
+  const out=[];
+  for(const x of [...casts,...required]){
+    const v=String(x??"").trim();
+    if(!v) continue;
+    if(!out.some(y=>y.toLowerCase()===v.toLowerCase())) out.push(v);
+    if(out.length>=5) break;
+  }
+  return out;
+}
+
 export async function cloudflareAiCastsV20(question, ai){
   const q=String(question ?? "").trim();
 
@@ -126,6 +152,7 @@ export async function cloudflareAiCastsV20(question, ai){
   }
 
   const p=parsePlannerText(rawText);
+  p.casts=enforceRouteDiversity(q,p.casts);
 
   return {
     ok:p.casts.length>0,
