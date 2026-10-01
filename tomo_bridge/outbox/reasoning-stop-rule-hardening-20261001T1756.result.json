@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "reasoning-stop-rule-hardening-20261001T1756",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "recast_stop_rule: PASS\n"
+}
