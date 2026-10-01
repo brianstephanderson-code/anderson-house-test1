@@ -7,7 +7,11 @@ judge evidence, or reformulate queries.
 
 
 def decide_recast_stop(attempts, sufficient=False, max_attempts=6, max_no_progress=2):
-    """Choose RECAST, strategy change/stop, or a terminal stop reason."""
+    """Choose RECAST, strategy change/stop, or a terminal stop reason.
+
+    Only an explicit progressed=False counts as a failed recast. Missing/unknown
+    progress is not evidence of failure and therefore breaks the failure streak.
+    """
     attempts = attempts or []
     max_attempts = max(1, int(max_attempts))
     max_no_progress = max(1, int(max_no_progress))
@@ -20,7 +24,8 @@ def decide_recast_stop(attempts, sufficient=False, max_attempts=6, max_no_progre
 
     no_progress_streak = 0
     for attempt in reversed(attempts):
-        if (attempt or {}).get("progressed") is True:
+        progressed = (attempt or {}).get("progressed")
+        if progressed is not False:
             break
         no_progress_streak += 1
 
@@ -42,5 +47,7 @@ if __name__ == "__main__":
     assert stalled["action"] == "CHANGE_STRATEGY_OR_STOP" and stalled["no_progress_streak"] == 2
     recovered = decide_recast_stop([{"progressed": False}, {"progressed": True}, {"progressed": False}])
     assert recovered["action"] == "RECAST" and recovered["no_progress_streak"] == 1
+    unknown = decide_recast_stop([{"progressed": False}, {}, {"progressed": False}])
+    assert unknown["action"] == "RECAST" and unknown["no_progress_streak"] == 1
     assert decide_recast_stop([{"progressed": True}] * 6)["action"] == "STOP_BUDGET"
     print("recast_stop_rule: PASS")
