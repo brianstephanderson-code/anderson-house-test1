@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "candidate-quality-rank-001",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "PASS candidate_quality_rank [('https://example.org/salmon/bait', 9), ('https://example.net/x', 6), ('http://noise.example/', 2)]\n"
+}
