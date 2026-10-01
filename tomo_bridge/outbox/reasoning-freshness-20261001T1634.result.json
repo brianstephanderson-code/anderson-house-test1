@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "reasoning-freshness-20261001T1634",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "evidence_freshness_gap: PASS\n"
+}
