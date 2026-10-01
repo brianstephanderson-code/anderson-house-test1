@@ -28,7 +28,8 @@ async function runJson(ai,prompt,max_tokens=900){
   const raw=await ai.run("@cf/meta/llama-3.2-3b-instruct",{
     prompt,
     max_tokens,
-    temperature:0
+    temperature:0,
+    response_format:{type:"json_object"}
   });
   const rawText=textOf(raw);
   return {rawText, parsed:parseJsonLoose(rawText)};
@@ -68,7 +69,8 @@ export async function cloudflareEvidenceAnswer(question,evidence,ai){
       ok:false,
       function:"CLOUDFLARE_EVIDENCE_ANSWER",
       error:"NO_QUESTION_FIT_EVIDENCE",
-      relevance:{keep:[],reject:rel.parsed?.reject??[],missing:rel.parsed?.missing??[]}
+      relevance:{keep:[],reject:rel.parsed?.reject??[],missing:rel.parsed?.missing??[]},
+      debug_relevance_raw:rel.rawText.slice(0,2000)
     };
   }
 
@@ -131,7 +133,9 @@ export async function cloudflareEvidenceAnswer(question,evidence,ai){
       function:"CLOUDFLARE_EVIDENCE_ANSWER",
       error:"NO_VERIFIED_CLAIMS",
       relevance:{keep,missing:rel.parsed?.missing??[]},
-      rejected_claims:ver.parsed?.rejected??[]
+      rejected_claims:ver.parsed?.rejected??[],
+      debug_draft_raw:draft.rawText.slice(0,2000),
+      debug_verify_raw:ver.rawText.slice(0,2000)
     };
   }
 
