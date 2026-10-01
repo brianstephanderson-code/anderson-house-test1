@@ -1,0 +1,7 @@
+{
+  "action": "repo_status",
+  "id": "tomo-live-test-001",
+  "ok": true,
+  "stderr": "",
+  "stdout": " M tomo_bridge/install_termux_autostart.sh\n?? .s20_mailbox.lock\n?? work/\n?? workers/__pycache__/\n"
+}
