@@ -7,55 +7,7 @@ function textOf(x){
   return "";
 }
 
-function parseJsonLoose(s){
-  const t = String(s ?? "").trim()
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "");
-  try { return JSON.parse(t); } catch {}
-  const a=t.indexOf("{"), b=t.lastIndexOf("}");
-  if(a>=0 && b>a){
-    try { return JSON.parse(t.slice(a,b+1)); } catch {}
-  }
-  return {};
-}
-
-function parsePartialJsonPlanner(s){
-  const t=String(s ?? "");
-  const out={interpreted_need:"",hard_constraints:[],unknown:"",casts:[],missing:[]};
-
-  const grabString=(key)=>{
-    const m=t.match(new RegExp('"'+key+'"\\s*:\\s*"([^"]*)"',"i"));
-    return m ? m[1].trim() : "";
-  };
-
-  const grabArray=(key)=>{
-    const start=t.search(new RegExp('"'+key+'"\\s*:\\s*\\[',"i"));
-    if(start<0) return [];
-    const tail=t.slice(start);
-    const colon=tail.indexOf("[");
-    if(colon<0) return [];
-    const body=tail.slice(colon+1);
-    const end=body.indexOf("]");
-    const chunk=end>=0 ? body.slice(0,end) : body;
-    const vals=[];
-    const re=/"((?:\\.|[^"\\])*)"/g;
-    let m;
-    while((m=re.exec(chunk))){
-      try{ vals.push(JSON.parse('"'+m[1]+'"')); }
-      catch{ vals.push(m[1]); }
-    }
-    return vals.map(x=>String(x).trim()).filter(Boolean);
-  };
-
-  out.interpreted_need=grabString("interpreted_need");
-  out.unknown=grabString("unknown");
-  out.hard_constraints=grabArray("hard_constraints");
-  out.casts=grabArray("casts");
-  out.missing=grabArray("missing");
-  return out;
-}
-
-function parseLabeledText(s){
+function parsePlannerText(raw){
   const out={
     interpreted_need:"",
     hard_constraints:[],
@@ -63,45 +15,57 @@ function parseLabeledText(s){
     casts:[],
     missing:[]
   };
-  const lines=String(s ?? "").split(/\r?\n/);
-  let mode="";
 
-  for(const raw of lines){
-    const line=raw.trim();
+  const lines=String(raw ?? "").split(/\r?\n/);
+
+  for(const rawLine of lines){
+    const line=rawLine.trim();
     if(!line) continue;
 
-    const m=line.match(/^([a-z_ ]+)\s*:\s*(.*)$/i);
-    if(m){
-      const key=m[1].trim().toLowerCase().replace(/\s+/g,"_");
-      const val=m[2].trim();
+    let m=line.match(/^NEED\s*:\s*(.+)$/i);
+    if(m){ out.interpreted_need=m[1].trim(); continue; }
 
-      if(key==="interpreted_need"){
-        out.interpreted_need=val;
-        mode="interpreted_need";
-        continue;
-      }
-      if(key==="hard_constraints"){ mode="hard_constraints"; continue; }
-      if(key==="unknown"){
-        out.unknown=val;
-        mode="unknown";
-        continue;
-      }
-      if(key==="casts"){ mode="casts"; continue; }
-      if(key==="missing"){ mode="missing"; continue; }
+    m=line.match(/^UNKNOWN\s*:\s*(.+)$/i);
+    if(m){ out.unknown=m[1].trim(); continue; }
+
+    m=line.match(/^HARD\s*:\s*(.+)$/i);
+    if(m){
+      const v=m[1].trim();
+      if(v) out.hard_constraints.push(v);
+      continue;
     }
 
-    const b=line.match(/^[-*•]\s*(.+)$/);
-    if(!b) continue;
+    m=line.match(/^CAST\s*:\s*(.+)$/i);
+    if(m){
+      const v=m[1].trim().replace(/^["']|["']$/g,"");
+      if(v) out.casts.push(v);
+      continue;
+    }
 
-    const v=b[1].replace(/^["']|["']$/g,"").trim();
-    if(!v) continue;
-
-    if(mode==="hard_constraints") out.hard_constraints.push(v);
-    else if(mode==="casts") out.casts.push(v);
-    else if(mode==="missing") out.missing.push(v);
-    else if(mode==="unknown") out.unknown += (out.unknown ? " | " : "") + v;
+    m=line.match(/^MISSING\s*:\s*(.+)$/i);
+    if(m){
+      const v=m[1].trim();
+      if(v) out.missing.push(v);
+      continue;
+    }
   }
 
+  // Last-resort fallback: if the model ignores labels but returns quoted queries,
+  // recover plausible search casts without requiring valid JSON.
+  if(out.casts.length===0){
+    const q=[];
+    const re=/"([^"\n]{12,220})"/g;
+    let m;
+    while((m=re.exec(String(raw ?? "")))){
+      const v=m[1].trim();
+      if(/edinburgh|glasgow|walk|route|path|trail|towpath|canal/i.test(v)) q.push(v);
+    }
+    out.casts=[...new Set(q)].slice(0,5);
+  }
+
+  out.casts=[...new Set(out.casts)].slice(0,5);
+  out.hard_constraints=[...new Set(out.hard_constraints)].slice(0,8);
+  out.missing=[...new Set(out.missing)].slice(0,8);
   return out;
 }
 
@@ -118,52 +82,61 @@ export async function cloudflareAiCastsV20(question, ai){
   const prompt=[
     "You are the search-planning brain for The 3 Amigos.",
     "Do NOT answer the question.",
-    "Return ONLY JSON with keys: interpreted_need, hard_constraints, unknown, casts, missing.",
-    "unknown means the thing the user is trying to discover, not secondary details such as distance or duration.",
-    "casts must contain EXACTLY 5 materially different web-search queries.",
-    "Keep every field short. Do not repeat equivalent casts. Do not add commentary.",
-    "Preserve every hard boundary in the user's question.",
-    "Expand ONLY the unknown/soft wording.",
-    "Do not invent side tasks such as weather unless the user asked for weather.",
-    "For route questions, every cast must preserve BOTH endpoints and the requested travel mode.",
-    "Prefer direct route terms such as route, walking route, path, trail, towpath, canal path when appropriate.",
-    "Include one practitioner/end-user/community cast when useful.",
-    "Do not invent URLs or sources.",
+    "Return ONLY the following plain-text line format:",
+    "NEED: <short description of what is being sought>",
+    "UNKNOWN: <the thing to discover>",
+    "HARD: <one hard constraint>",
+    "HARD: <another hard constraint>",
+    "CAST: <search query 1>",
+    "CAST: <search query 2>",
+    "CAST: <search query 3>",
+    "CAST: <search query 4>",
+    "CAST: <search query 5>",
+    "MISSING: <optional genuinely missing information>",
+    "",
+    "Rules:",
+    "- Exactly 5 CAST lines.",
+    "- Preserve every hard boundary in every cast.",
+    "- Expand only the unknown/soft wording.",
+    "- Do not invent side tasks such as weather unless the user asked for weather.",
+    "- For route questions, every CAST must preserve BOTH endpoints and the travel mode.",
+    "- Prefer materially different route words such as route, walking route, path, trail, towpath, canal path when appropriate.",
+    "- Include one practitioner/end-user/community style cast when useful.",
+    "- Do not output JSON.",
+    "- Do not output commentary.",
+    "",
     "Question: "+q
   ].join("\n");
 
-  const raw=await ai.run("@cf/meta/llama-3.2-3b-instruct",{
-    prompt,
-    max_tokens:500,
-    temperature:0,
-    response_format:{type:"json_object"}
-  });
-
-  const rawText=textOf(raw);
-
-  let p=parseJsonLoose(rawText);
-  if(!Array.isArray(p?.casts) || p.casts.length===0){
-    p=parsePartialJsonPlanner(rawText);
+  let rawText="";
+  try{
+    const raw=await ai.run("@cf/meta/llama-3.2-3b-instruct",{
+      prompt,
+      max_tokens:500,
+      temperature:0
+    });
+    rawText=textOf(raw);
+  }catch(err){
+    return {
+      ok:false,
+      function:"CLOUDFLARE_AI_CASTS_V20",
+      error:"AI_RUN_FAILED",
+      detail:String(err)
+    };
   }
-  if(!Array.isArray(p?.casts) || p.casts.length===0){
-    p=parseLabeledText(rawText);
-  }
 
-  const casts=(Array.isArray(p?.casts) ? p.casts : [])
-    .map(x=>String(x ?? "").trim())
-    .filter(Boolean)
-    .slice(0,6);
+  const p=parsePlannerText(rawText);
 
   return {
-    ok:casts.length>0,
+    ok:p.casts.length>0,
     function:"CLOUDFLARE_AI_CASTS_V20",
     model:"@cf/meta/llama-3.2-3b-instruct",
     question:q,
-    interpreted_need:String(p?.interpreted_need ?? "").trim(),
-    hard_constraints:Array.isArray(p?.hard_constraints) ? p.hard_constraints : [],
-    unknown:String(p?.unknown ?? "").trim(),
-    casts,
-    missing:Array.isArray(p?.missing) ? p.missing : [],
-    ...(casts.length ? {} : {debug_text_preview:rawText.slice(0,1200)})
+    interpreted_need:p.interpreted_need,
+    hard_constraints:p.hard_constraints,
+    unknown:p.unknown,
+    casts:p.casts,
+    missing:p.missing,
+    ...(p.casts.length ? {} : {debug_text_preview:rawText.slice(0,1600)})
   };
 }
