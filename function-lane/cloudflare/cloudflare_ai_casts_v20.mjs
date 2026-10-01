@@ -19,6 +19,42 @@ function parseJsonLoose(s){
   return {};
 }
 
+function parsePartialJsonPlanner(s){
+  const t=String(s ?? "");
+  const out={interpreted_need:"",hard_constraints:[],unknown:"",casts:[],missing:[]};
+
+  const grabString=(key)=>{
+    const m=t.match(new RegExp('"'+key+'"\\s*:\\s*"([^"]*)"',"i"));
+    return m ? m[1].trim() : "";
+  };
+
+  const grabArray=(key)=>{
+    const start=t.search(new RegExp('"'+key+'"\\s*:\\s*\\[',"i"));
+    if(start<0) return [];
+    const tail=t.slice(start);
+    const colon=tail.indexOf("[");
+    if(colon<0) return [];
+    const body=tail.slice(colon+1);
+    const end=body.indexOf("]");
+    const chunk=end>=0 ? body.slice(0,end) : body;
+    const vals=[];
+    const re=/"((?:\\.|[^"\\])*)"/g;
+    let m;
+    while((m=re.exec(chunk))){
+      try{ vals.push(JSON.parse('"'+m[1]+'"')); }
+      catch{ vals.push(m[1]); }
+    }
+    return vals.map(x=>String(x).trim()).filter(Boolean);
+  };
+
+  out.interpreted_need=grabString("interpreted_need");
+  out.unknown=grabString("unknown");
+  out.hard_constraints=grabArray("hard_constraints");
+  out.casts=grabArray("casts");
+  out.missing=grabArray("missing");
+  return out;
+}
+
 function parseLabeledText(s){
   const out={
     interpreted_need:"",
@@ -84,7 +120,8 @@ export async function cloudflareAiCastsV20(question, ai){
     "Do NOT answer the question.",
     "Return ONLY JSON with keys: interpreted_need, hard_constraints, unknown, casts, missing.",
     "unknown means the thing the user is trying to discover, not secondary details such as distance or duration.",
-    "casts must be 4 to 6 materially different web-search queries.",
+    "casts must contain EXACTLY 5 materially different web-search queries.",
+    "Keep every field short. Do not repeat equivalent casts. Do not add commentary.",
     "Preserve every hard boundary in the user's question.",
     "Expand ONLY the unknown/soft wording.",
     "Do not invent side tasks such as weather unless the user asked for weather.",
@@ -97,7 +134,7 @@ export async function cloudflareAiCastsV20(question, ai){
 
   const raw=await ai.run("@cf/meta/llama-3.2-3b-instruct",{
     prompt,
-    max_tokens:700,
+    max_tokens:500,
     temperature:0,
     response_format:{type:"json_object"}
   });
@@ -105,6 +142,9 @@ export async function cloudflareAiCastsV20(question, ai){
   const rawText=textOf(raw);
 
   let p=parseJsonLoose(rawText);
+  if(!Array.isArray(p?.casts) || p.casts.length===0){
+    p=parsePartialJsonPlanner(rawText);
+  }
   if(!Array.isArray(p?.casts) || p.casts.length===0){
     p=parseLabeledText(rawText);
   }
