@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "warehouse-promotion-gate-20261001T1646",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "PASS warehouse_promotion_gate\n"
+}

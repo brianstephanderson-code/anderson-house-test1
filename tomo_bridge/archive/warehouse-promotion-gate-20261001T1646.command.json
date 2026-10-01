@@ -1,0 +1,7 @@
+{
+  "id": "warehouse-promotion-gate-20261001T1646",
+  "action": "run_repo_python",
+  "path": "research/warehouse_promotion_gate.py",
+  "args": [],
+  "timeout": 120
+}
