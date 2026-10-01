@@ -1,0 +1,7 @@
+{
+  "id": "recast-v20-test-001",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/v20_evidence_fenced_search.py",
+  "args": ["What are the best baits for catching Australian salmon in Western Australia in May?"],
+  "timeout": 300
+}
