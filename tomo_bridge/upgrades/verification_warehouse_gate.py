@@ -7,16 +7,12 @@ such as ["official", "end_user"] without welding policy into the verifier.
 """
 import sys,json,hashlib
 from urllib.parse import urlparse
+from source_provenance_classifier import classify_source
 
-OFFICIAL_HINTS=(".gov", ".gov.au", ".edu", "legislation.", "fisheries.", "health.", "docs.")
-ENDUSER_HINTS=("reddit.com","forum","community","stackexchange.com","stackoverflow.com")
 VALID_CLASSES={"official","end_user","other"}
 
 def source_class(url):
-    host=(urlparse(str(url)).hostname or "").lower()
-    if any(x in host for x in OFFICIAL_HINTS): return "official"
-    if any(x in host for x in ENDUSER_HINTS): return "end_user"
-    return "other"
+    return classify_source(url)
 
 def valid_source(s):
     url=str(s.get("url") or "")
