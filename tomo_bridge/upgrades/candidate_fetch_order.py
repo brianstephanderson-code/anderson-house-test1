@@ -2,7 +2,9 @@
 """Choose a lane-balanced fetch order without changing candidate scoring."""
 from urllib.parse import urlsplit
 
-LANE_ORDER = ("official_candidate", "end_user", "other")
+# Keep independent corroboration separate from generic fallback material.
+# Ranking remains upstream; this function only diversifies what gets read.
+LANE_ORDER = ("official_candidate", "end_user", "independent", "other")
 
 def _host(row):
     return urlsplit(str(row.get("url") or "")).netloc.lower().split(":")[0]
@@ -38,11 +40,14 @@ if __name__=="__main__":
       {"url":"https://agency.gov.au/c","source_lane":"official_candidate","score":8},
       {"url":"https://reddit.com/r/x/1","source_lane":"end_user","score":7},
       {"url":"https://forum.example.org/t/2","source_lane":"end_user","score":6},
-      {"url":"https://independent.org/a","source_lane":"other","score":5},
+      {"url":"https://independent.org/a","source_lane":"independent","score":5},
+      {"url":"https://misc.example/a","source_lane":"other","score":4},
     ]
-    top=balanced_fetch_order(rows,fetch_budget=4,max_per_host=2)
-    assert [x["source_lane"] for x in top[:3]]==["official_candidate","end_user","other"], top
+    top=balanced_fetch_order(rows,fetch_budget=5,max_per_host=2)
+    assert [x["source_lane"] for x in top[:4]]==[
+        "official_candidate","end_user","independent","other"
+    ], top
     assert sum(_host(x)=="agency.gov.au" for x in top)<=2, top
     assert top[0]["score"]==10
-    assert top[3]["score"]==9
+    assert top[4]["score"]==9
     print("PASS balanced_fetch_order",[(x["source_lane"],_host(x)) for x in top])
