@@ -83,6 +83,7 @@ export async function cloudflareAiCastsV20(question, ai){
     "You are the search-planning brain for The 3 Amigos.",
     "Do NOT answer the question.",
     "Return ONLY JSON with keys: interpreted_need, hard_constraints, unknown, casts, missing.",
+    "unknown means the thing the user is trying to discover, not secondary details such as distance or duration.",
     "casts must be 4 to 6 materially different web-search queries.",
     "Preserve every hard boundary in the user's question.",
     "Expand ONLY the unknown/soft wording.",
@@ -97,7 +98,8 @@ export async function cloudflareAiCastsV20(question, ai){
   const raw=await ai.run("@cf/meta/llama-3.2-3b-instruct",{
     prompt,
     max_tokens:700,
-    temperature:0
+    temperature:0,
+    response_format:{type:"json_object"}
   });
 
   const rawText=textOf(raw);
