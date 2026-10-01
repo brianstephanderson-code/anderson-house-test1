@@ -1,0 +1,85 @@
+{
+  "status": "ANSWER_READY",
+  "job_id": "salmon-perth-bait-001",
+  "question": "What is the best bait to use for Australian salmon during the salmon run in Western Australia, especially around Perth? Compare practical bait options, include end-user fishing experience as well as official or authoritative WA sources where available, and keep the answer focused on salmon fishing around Perth and nearby southwest WA.",
+  "geography": "WA",
+  "usable_hits": 56,
+  "accepted_claims": 3,
+  "held_claims": 36,
+  "rejected_claims": 3,
+  "independent_source_families": 3,
+  "source_families": [
+    "bitecompass.com",
+    "recfishwest.org.au",
+    "youtube.com"
+  ],
+  "claims": [
+    {
+      "canonical_claim": "Whether you’re an experienced salmon angler or new to the game, your hands will shake with pure excitement as you cast into a school of salmon cruising through the surf in WA’s pristine south. Hook up, and it’s game-on for one of the most spectacular land-based fishing encounters you’ll ...",
+      "member_claims": [
+        "Whether you’re an experienced salmon angler or new to the game, your hands will shake with pure excitement as you cast into a school of salmon cruising through the surf in WA’s pristine south. Hook up, and it’s game-on for one of the most spectacular land-based fishing encounters you’ll ..."
+      ],
+      "urls": [
+        "https://recfishwest.org.au/news/the-best-rods-reels-and-lures-for-catching-salmon/",
+        "https://recfishwest.org.au/news/the-best-rods-reels-and-lures-for-catching-salmon"
+      ],
+      "source_families": [
+        "recfishwest.org.au"
+      ],
+      "found_by": [
+        "unknown",
+        "you"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 2,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "The 2026 WA salmon run is on now. Peak Perth spots, timing, gear, and conditions for the March-May migration, updated with this season's notes.",
+      "member_claims": [
+        "The 2026 WA salmon run is on now. Peak Perth spots, timing, gear, and conditions for the March-May migration, updated with this season's notes."
+      ],
+      "urls": [
+        "https://bitecompass.com/articles/wa-salmon-season-guide-march-may"
+      ],
+      "source_families": [
+        "bitecompass.com"
+      ],
+      "found_by": [
+        "you"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1
+    },
+    {
+      "canonical_claim": "Join us on the south coast of Western Australia for the salmon run! In this video, we'll show you how to target these sport fish using a ...",
+      "member_claims": [
+        "Join us on the south coast of Western Australia for the salmon run! In this video, we'll show you how to target these sport fish using a ..."
+      ],
+      "urls": [
+        "https://www.youtube.com/watch?v=CYL1vu9mak8&xstg=CAMSBhUD-7L2Hw%3D%3D",
+        "https://youtube.com/watch"
+      ],
+      "source_families": [
+        "youtube.com"
+      ],
+      "found_by": [
+        "serper",
+        "unknown"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 2,
+      "independent_evidence_count": 1
+    }
+  ],
+  "seconds": 41.3,
+  "bridge": "TOMO_GIT_BRIDGE",
+  "original_question": "What is the best bait to use for Australian salmon during the salmon run in Western Australia, especially around Perth? Compare practical bait options, include end-user fishing experience as well as official or authoritative WA sources where available, and keep the answer focused on salmon fishing around Perth and nearby southwest WA."
+}
