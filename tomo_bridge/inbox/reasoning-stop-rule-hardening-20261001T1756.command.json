@@ -1,0 +1,6 @@
+{
+  "id": "reasoning-stop-rule-hardening-20261001T1756",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/recast_stop_rule.py",
+  "timeout": 60
+}
