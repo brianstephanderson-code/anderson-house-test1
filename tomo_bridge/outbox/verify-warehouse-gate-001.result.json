@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "verify-warehouse-gate-001",
+  "ok": false,
+  "returncode": 2,
+  "stderr": "",
+  "stdout": "{\n  \"question\": null,\n  \"verified_claims\": [],\n  \"sources\": [],\n  \"verification\": {\n    \"promote\": false,\n    \"reasons\": [\n      \"search_not_answer_ready\",\n      \"no_verified_claims\",\n      \"no_source_provenance\"\n    ],\n    \"source_classes\": [],\n    \"claim_count\": 0,\n    \"source_count\": 0\n  },\n  \"provenance_sha256\": \"cf3245823607b2a9465feb4d8b73a59f1eec6fc3e5941be3696933497ceebb7b\",\n  \"warehouse_status\": \"QUARANTINE\"\n}\n"
+}
