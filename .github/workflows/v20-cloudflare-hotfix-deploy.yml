@@ -1,0 +1,36 @@
+name: V20 Cloudflare Hotfix Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/v20-cloudflare-hotfix-deploy.yml"
+      - "function-lane/cloudflare/index.mjs"
+      - "function-lane/cloudflare/cloudflare_ai_casts_v20.mjs"
+      - "function-lane/cloudflare/cloudflare_evidence_answer.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Stage shared core
+        run: |
+          mkdir -p function-lane/cloudflare/core
+          cp function-lane/core/*.mjs function-lane/cloudflare/core/
+
+      - name: Install Cloudflare dependencies
+        working-directory: function-lane/cloudflare
+        run: npm install --no-audit --no-fund
+
+      - name: Deploy Cloudflare Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: function-lane/cloudflare
