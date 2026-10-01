@@ -1,0 +1,7 @@
+{
+  "id": "reasoning-claim-comparability-20261001T1459",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/claim_comparability.py",
+  "args": [],
+  "timeout": 60
+}
