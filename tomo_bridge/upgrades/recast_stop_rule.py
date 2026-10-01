@@ -11,10 +11,17 @@ def decide_recast_stop(attempts, sufficient=False, max_attempts=6, max_no_progre
 
     Only an explicit progressed=False counts as a failed recast. Missing/unknown
     progress is not evidence of failure and therefore breaks the failure streak.
+    Malformed history fails closed instead of crashing or silently recasting.
     """
-    attempts = attempts or []
-    max_attempts = max(1, int(max_attempts))
-    max_no_progress = max(1, int(max_no_progress))
+    if attempts is None:
+        attempts = []
+    if not isinstance(attempts, list):
+        return {"action": "STOP_INVALID_HISTORY", "attempts": 0, "no_progress_streak": 0}
+    try:
+        max_attempts = max(1, int(max_attempts))
+        max_no_progress = max(1, int(max_no_progress))
+    except (TypeError, ValueError):
+        return {"action": "STOP_INVALID_HISTORY", "attempts": len(attempts), "no_progress_streak": 0}
 
     if sufficient:
         return {"action": "STOP_SUFFICIENT", "attempts": len(attempts), "no_progress_streak": 0}
@@ -24,7 +31,11 @@ def decide_recast_stop(attempts, sufficient=False, max_attempts=6, max_no_progre
 
     no_progress_streak = 0
     for attempt in reversed(attempts):
-        progressed = (attempt or {}).get("progressed")
+        if not isinstance(attempt, dict):
+            return {"action": "STOP_INVALID_HISTORY", "attempts": len(attempts), "no_progress_streak": no_progress_streak}
+        progressed = attempt.get("progressed")
+        if progressed not in (True, False, None):
+            return {"action": "STOP_INVALID_HISTORY", "attempts": len(attempts), "no_progress_streak": no_progress_streak}
         if progressed is not False:
             break
         no_progress_streak += 1
@@ -50,4 +61,8 @@ if __name__ == "__main__":
     unknown = decide_recast_stop([{"progressed": False}, {}, {"progressed": False}])
     assert unknown["action"] == "RECAST" and unknown["no_progress_streak"] == 1
     assert decide_recast_stop([{"progressed": True}] * 6)["action"] == "STOP_BUDGET"
+    assert decide_recast_stop("bad-history")["action"] == "STOP_INVALID_HISTORY"
+    assert decide_recast_stop(["bad-attempt"])["action"] == "STOP_INVALID_HISTORY"
+    assert decide_recast_stop([{"progressed": "maybe"}])["action"] == "STOP_INVALID_HISTORY"
+    assert decide_recast_stop([], max_attempts="bad")["action"] == "STOP_INVALID_HISTORY"
     print("recast_stop_rule: PASS")
