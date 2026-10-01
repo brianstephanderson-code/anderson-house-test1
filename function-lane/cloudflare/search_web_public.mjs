@@ -67,12 +67,36 @@ async function searchDuckDuckGo(query, limit) {
   return {ok:results.length>0,provider:"DUCKDUCKGO_HTML",results,error:results.length?"":"NO_RESULTS"};
 }
 
-function dedupe(rows,limit) {
+function canonicalUrl(raw) {
+  let k=String(raw??"");
+  try {
+    const u=new URL(k);
+    u.hash="";
+    for(const p of ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","fbclid","gclid"]) {
+      u.searchParams.delete(p);
+    }
+    k=u.toString();
+  } catch {}
+  return k;
+}
+
+function roundRobinDedupe(groups,limit) {
   const out=[]; const seen=new Set();
-  for(const x of rows) {
-    let k=x.url; try { const u=new URL(x.url); u.hash=""; k=u.toString(); } catch {}
-    if(seen.has(k)) continue; seen.add(k); out.push(x);
-    if(out.length>=limit) break;
+  let i=0;
+  while(out.length<limit) {
+    let added=false;
+    for(const g of groups) {
+      const x=g?.[i];
+      if(!x) continue;
+      added=true;
+      const k=canonicalUrl(x.url);
+      if(!k || seen.has(k)) continue;
+      seen.add(k);
+      out.push(x);
+      if(out.length>=limit) break;
+    }
+    if(!added) break;
+    i++;
   }
   return out;
 }
@@ -92,7 +116,9 @@ export async function searchWebPublic(query, limit=10) {
     try { const x=await fn(); return {...x,elapsed_ms:Date.now()-t}; }
     catch(e) { return {ok:false,provider,error:String(e),results:[],elapsed_ms:Date.now()-t}; }
   }));
-  const results=dedupe(returns.flatMap(x=>x.results||[]),n);
+  // Keep provider diversity: do not let the first provider fill the whole result set.
+  // Interleave DDG, Mwmbl, and Marginalia results before deduplication.
+  const results=roundRobinDedupe(returns.map(x=>x.results||[]),n);
   return {
     ok:results.length>0,function:"SEARCH_WEB_PUBLIC",cost_gate:"$0",query:q,
     route:"MULTI_DOOR_FAIL_SOFT",results,
