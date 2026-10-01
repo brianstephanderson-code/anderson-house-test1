@@ -31,18 +31,13 @@ def gap_to_recasts(question, gap):
         hint = _clean((gap or {}).get("recast_hint"))
         target = hint or _clean(f"{key} {field}")
         if target:
-            out.append({
-                "lane": "official",
-                "gap": key,
-                "query": _clean(f"{question} {target} official current primary source"),
-            })
+            out.append({"lane": "official", "gap": key, "query": _clean(f"{question} {target} official current primary source")})
     elif reason in ("missing_freshness", "stale_evidence"):
         hint = _clean((gap or {}).get("recast_hint")) or _clean(f"{key} current effective date")
-        out.append({
-            "lane": "official",
-            "gap": key,
-            "query": _clean(f"{question} {hint} official current primary source"),
-        })
+        out.append({"lane": "official", "gap": key, "query": _clean(f"{question} {hint} official current primary source")})
+    elif reason in ("missing_independence", "insufficient_independent_sources"):
+        hint = _clean((gap or {}).get("recast_hint")) or _clean(f"{key} independent corroboration")
+        out.append({"lane": "independent", "gap": key, "query": _clean(f"{question} {hint} different source independent evidence comparison")})
     elif reason == "unresolved_contradiction":
         out.extend([
             {"lane": "official", "gap": key, "query": f"{base} official current effective date policy"},
@@ -79,4 +74,6 @@ if __name__ == "__main__":
     assert len(empty_scope) == 1 and "bag limit" in empty_scope[0]["query"]
     stale = gap_to_recasts("salmon bag limit WA", {"key":"bag limit", "reason":"stale_evidence", "recast_hint":"bag limit current 2026 effective date"})
     assert len(stale) == 1 and stale[0]["lane"] == "official" and "2026" in stale[0]["query"]
+    independent = gap_to_recasts("salmon bag limit WA", {"key":"bag limit", "reason":"insufficient_independent_sources", "recast_hint":"find a different source family"})
+    assert len(independent) == 1 and independent[0]["lane"] == "independent" and "different source" in independent[0]["query"]
     print("gap_to_recast: PASS")
