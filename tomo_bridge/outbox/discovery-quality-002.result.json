@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "discovery-quality-002",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "PASS discovery_quality [('official', 'official_candidate'), ('user', 'end_user'), ('official2', 'official_candidate'), ('other', 'other'), ('official3', 'official_candidate')]\n"
+}

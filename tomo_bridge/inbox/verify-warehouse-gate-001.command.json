@@ -1,7 +1,0 @@
-{
-  "id": "verify-warehouse-gate-001",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/verification_warehouse_gate.py",
-  "args": ["tomo_bridge/outbox/recast-v20-test-001.result.json"],
-  "timeout": 60
-}
