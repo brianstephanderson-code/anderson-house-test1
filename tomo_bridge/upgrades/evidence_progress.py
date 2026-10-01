@@ -5,10 +5,28 @@ def _ids(items):
     return {str(x).strip() for x in (items or []) if str(x).strip()}
 
 
+def _progress_sources(snapshot):
+    """Prefer evidence-fenced source IDs when the caller supplies them.
+
+    Backwards compatible: older snapshots with only source_ids keep working.
+    An explicitly present qualified_source_ids list is authoritative, even empty.
+    """
+    snapshot = snapshot or {}
+    if "qualified_source_ids" in snapshot:
+        return _ids(snapshot.get("qualified_source_ids"))
+    return _ids(snapshot.get("source_ids"))
+
+
 def measure_progress(previous, current):
-    """Measure useful evidence change without deciding truth or doing search."""
+    """Measure useful evidence change without deciding truth or doing search.
+
+    New fetched URLs alone should not keep a recast loop alive when the evidence
+    fence has already marked them unqualified. Callers can provide
+    qualified_source_ids after verification; source_ids remains the legacy
+    fallback.
+    """
     previous, current = previous or {}, current or {}
-    old_sources, new_sources = _ids(previous.get("source_ids")), _ids(current.get("source_ids"))
+    old_sources, new_sources = _progress_sources(previous), _progress_sources(current)
     old_claims, new_claims = _ids(previous.get("verified_claim_ids")), _ids(current.get("verified_claim_ids"))
     old_gaps, new_gaps = _ids(previous.get("target_gaps")), _ids(current.get("target_gaps"))
 
@@ -35,4 +53,13 @@ if __name__ == "__main__":
     assert result["gained_source_ids"] == ["s2"]
     assert result["closed_gaps"] == ["date"]
     assert not measure_progress(before, before)["progressed"]
+
+    # Once the evidence fence supplies qualified IDs, noisy fetched URLs do not
+    # reset the no-progress streak.
+    fenced_before = {"source_ids":["s1"], "qualified_source_ids":["s1"], "target_gaps":["official"]}
+    noisy_after = {"source_ids":["s1","noise"], "qualified_source_ids":["s1"], "target_gaps":["official"]}
+    assert not measure_progress(fenced_before, noisy_after)["progressed"]
+
+    useful_after = {"source_ids":["s1","s2"], "qualified_source_ids":["s1","s2"], "target_gaps":["official"]}
+    assert measure_progress(fenced_before, useful_after)["gained_source_ids"] == ["s2"]
     print("evidence_progress: PASS")
