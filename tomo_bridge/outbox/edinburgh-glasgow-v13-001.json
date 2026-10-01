@@ -1,0 +1,97 @@
+{
+  "status": "HOLD_NEEDS_RECAST",
+  "job_id": "edinburgh-glasgow-v13-001",
+  "question": "Is there a way to walk from Edinburgh, Scotland to Glasgow, Scotland in the summer?",
+  "geography": "",
+  "geography_gate": {
+    "enabled": true,
+    "pack": {
+      "enabled": true,
+      "place": "Edinburgh",
+      "region": "scotland",
+      "country": "united kingdom",
+      "country_code": "uk",
+      "target_terms": [
+        "Edinburgh",
+        "scotland",
+        "united kingdom"
+      ],
+      "supplied_geo": null
+    },
+    "accepted": 0,
+    "held": 2,
+    "rejected": 0
+  },
+  "search_passes": 7,
+  "search_history": [
+    {
+      "query": "Is there a way to walk from Edinburgh, Scotland to Glasgow, Scotland in the summer?",
+      "seconds": 25.2,
+      "evidence": 1,
+      "returncode": 0
+    },
+    {
+      "query": "way Edinburgh scotland united kingdom Glasgow summer walk",
+      "seconds": 19.5,
+      "evidence": 1,
+      "returncode": 0
+    },
+    {
+      "query": "path Edinburgh scotland united kingdom Glasgow summer walk",
+      "seconds": 19.6,
+      "evidence": 2,
+      "returncode": 0
+    },
+    {
+      "query": "connection Edinburgh scotland united kingdom Glasgow summer walk",
+      "seconds": 24.1,
+      "evidence": 2,
+      "returncode": 0
+    },
+    {
+      "query": "way Edinburgh scotland united kingdom Glasgow summer walk real-world examples",
+      "seconds": 29.3,
+      "evidence": 2,
+      "returncode": 0
+    },
+    {
+      "query": "way Edinburgh scotland united kingdom Glasgow summer walk practitioner operator supplier experience",
+      "seconds": 22.4,
+      "evidence": 2,
+      "returncode": 0
+    },
+    {
+      "query": "way Edinburgh scotland united kingdom Glasgow summer walk end-user experience forum trip report",
+      "seconds": 20.5,
+      "evidence": 2,
+      "returncode": 0
+    }
+  ],
+  "usable_hits": 0,
+  "accepted_claims_total": 0,
+  "question_fit_claims": 0,
+  "held_claims": 0,
+  "rejected_claims": 0,
+  "independent_question_fit_source_families": 0,
+  "source_families": [],
+  "quality_checks": {
+    "has_accepted_claims": false,
+    "has_question_fit_claim": false,
+    "has_multiple_fit_claims": false,
+    "has_source_family": false,
+    "holds_excluded": true
+  },
+  "direct_answer": "The search found relevant material, but not enough evidence that directly answers the exact question.",
+  "answer_text": "The evidence passed the geography gate, but it did not pass the question-fit gate. The claim should stay on HOLD rather than being presented as a finished answer.",
+  "source_registry": [],
+  "claims": [],
+  "seconds": 165.8,
+  "rules": [
+    "A geographically valid claim must also answer the actual question.",
+    "Unknown geography remains HOLD.",
+    "Wrong geography remains REJECT.",
+    "Only question-fit accepted claims enter the finished answer."
+  ],
+  "bridge": "TOMO_GIT_BRIDGE",
+  "original_question": "Is there a way to walk from Edinburgh, Scotland to Glasgow, Scotland in the summer?"
+}
