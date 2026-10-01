@@ -19,8 +19,7 @@ function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
   const stream = new ReadableStream({
     start(controller) {
       if (!qs.length) {
-        controller.enqueue(enc.encode(JSON.stringify({ type: "PARENT_COMPLETE", parent_ticket: parentTicket, expected: 0, received: 0 }) + "
-"));
+        controller.enqueue(enc.encode(JSON.stringify({ type: "PARENT_COMPLETE", parent_ticket: parentTicket, expected: 0, received: 0 }) + "\n"));
         controller.close();
         return;
       }
@@ -34,24 +33,21 @@ function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
             controller.enqueue(enc.encode(JSON.stringify({
               type: "CHILD_RETURN", parent_ticket: parentTicket, child_ticket: childTicket,
               query, elapsed_ms: Date.now() - t0, ...out
-            }) + "
-"));
+            }) + "\n"));
           })
           .catch(err => {
             received++;
             controller.enqueue(enc.encode(JSON.stringify({
               type: "CHILD_RETURN", parent_ticket: parentTicket, child_ticket: childTicket,
               query, elapsed_ms: Date.now() - t0, ok: false, error: String(err)
-            }) + "
-"));
+            }) + "\n"));
           })
           .finally(() => {
             if (received === qs.length) {
               controller.enqueue(enc.encode(JSON.stringify({
                 type: "PARENT_COMPLETE", parent_ticket: parentTicket, expected: qs.length,
                 received, elapsed_ms: Date.now() - started
-              }) + "
-"));
+              }) + "\n"));
               controller.close();
             }
           });
