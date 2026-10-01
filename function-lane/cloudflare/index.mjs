@@ -8,7 +8,7 @@ import { searchWebPublic } from "./search_web_public.mjs";
 import { normalizeResults, deduplicateResults } from "./search_socket.mjs";
 import { aiSourceGate } from "./search_ai_source_gate.mjs";
 import { cloudflareAiCasts } from "./cloudflare_ai_casts.mjs";
-import { cloudflareAiAnswer } from "./cloudflare_ai_answer.mjs";\nimport { cloudflareEvidenceAnswer } from "./cloudflare_evidence_answer.mjs";
+import { cloudflareAiAnswer } from "./cloudflare_ai_answer.mjs";\nimport { cloudflareEvidenceAnswer } from "./cloudflare_evidence_answer.mjs";\nimport { cloudflareAiCastsV20 } from "./cloudflare_ai_casts_v20.mjs";
 
 function searchDiscoverStream(queries, limit = 5, parentTicket = "SEARCH") {
   const qs = Array.isArray(queries) ? queries.map(x => String(x).trim()).filter(Boolean).slice(0, 30) : [];
@@ -81,7 +81,7 @@ export default {
     const type = String(body.type ?? "").toUpperCase();
     const browserFallbackRequested = body.browser_fallback === true || ["1","true","yes","on"].includes(String(body.browser_fallback ?? "").toLowerCase());
     if (type === "AI_SOURCE_GATE") return Response.json(await aiSourceGate({answer:body.answer,sources:body.sources},{evidenceTerms:body.evidence_terms??[]}));
-    if (type === "CLOUDFLARE_AI_CASTS") return Response.json(await cloudflareAiCasts(body.query ?? body.text, env?.AI));
+    if (type === "CLOUDFLARE_AI_CASTS") return Response.json(await cloudflareAiCasts(body.query ?? body.text, env?.AI));\n    if (type === "CLOUDFLARE_AI_CASTS_V20") return Response.json(await cloudflareAiCastsV20(body.query ?? body.text, env?.AI));
     if (type === "CLOUDFLARE_AI_ANSWER") return Response.json(await cloudflareAiAnswer(body.query ?? body.text, body.evidence ?? [], env?.AI));\n    if (type === "CLOUDFLARE_EVIDENCE_ANSWER") return Response.json(await cloudflareEvidenceAnswer(body.query ?? body.text, body.evidence ?? [], env?.AI));
     if (type === "SEARCH_DISCOVER_STREAM") return searchDiscoverStream(body.queries, body.limit ?? 5, body.parent_ticket ?? "SEARCH");
     if (type === "SEARCH_MULTI_DOOR") {
