@@ -1,0 +1,7 @@
+{
+  "id": "reasoning-scope-recast-20261001T1600",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/gap_to_recast.py",
+  "args": [],
+  "timeout": 120
+}
