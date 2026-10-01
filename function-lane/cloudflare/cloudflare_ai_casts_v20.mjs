@@ -76,23 +76,17 @@ function enforceRouteDiversity(question, casts){
 
   const from=m[1].trim();
   const to=m[2].trim();
-  const summer=/\bsummer\b/i.test(q) ? " in summer" : "";
-  const required=[
-    `walking route from ${from} to ${to}${summer}`,
-    `walking path from ${from} to ${to}${summer}`,
-    `walking trail from ${from} to ${to}${summer}`,
-    `towpath canal walk from ${from} to ${to}${summer}`,
-    `community walking route ${from} to ${to}${summer}`
-  ];
+  const season=/\bsummer\b/i.test(q) ? " summer" : "";
 
-  const out=[];
-  for(const x of [...casts,...required]){
-    const v=String(x??"").trim();
-    if(!v) continue;
-    if(!out.some(y=>y.toLowerCase()===v.toLowerCase())) out.push(v);
-    if(out.length>=5) break;
-  }
-  return out;
+  // For route questions, deterministic diversity wins over repetitive model wording.
+  // Every cast keeps both endpoints + walking mode, while the unknown wording changes.
+  return [
+    `walking route "${from}" "${to}"${season}`,
+    `walking path "${from}" "${to}"${season}`,
+    `walking trail "${from}" "${to}"${season}`,
+    `towpath canal walk "${from}" "${to}"${season}`,
+    `community hiking walking "${from}" "${to}"${season}`
+  ];
 }
 
 export async function cloudflareAiCastsV20(question, ai){
