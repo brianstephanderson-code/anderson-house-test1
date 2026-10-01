@@ -27,9 +27,6 @@ def gap_to_recasts(question, gap):
             else:
                 out.append({"lane": lane, "gap": key, "query": f"{base} {lane} evidence"})
     elif reason == "missing_scope":
-        # Scope diagnosis is separate; this adapter only turns its explicit field
-        # into a targeted cast. Official/current evidence is the safest default
-        # for date, jurisdiction, location, or population boundaries.
         field = _clean((gap or {}).get("scope_field"))
         hint = _clean((gap or {}).get("recast_hint"))
         target = hint or _clean(f"{key} {field}")
@@ -39,6 +36,13 @@ def gap_to_recasts(question, gap):
                 "gap": key,
                 "query": _clean(f"{question} {target} official current primary source"),
             })
+    elif reason in ("missing_freshness", "stale_evidence"):
+        hint = _clean((gap or {}).get("recast_hint")) or _clean(f"{key} current effective date")
+        out.append({
+            "lane": "official",
+            "gap": key,
+            "query": _clean(f"{question} {hint} official current primary source"),
+        })
     elif reason == "unresolved_contradiction":
         out.extend([
             {"lane": "official", "gap": key, "query": f"{base} official current effective date policy"},
@@ -51,7 +55,6 @@ def gap_to_recasts(question, gap):
             suffix = "official primary source" if lane == "official" else f"{lane} evidence"
             out.append({"lane": lane, "gap": key, "query": f"{base} {suffix}"})
 
-    # deterministic anti-duplication
     seen, fresh = set(), []
     for item in out:
         q = _clean(item["query"])
@@ -74,4 +77,6 @@ if __name__ == "__main__":
     assert len(scope) == 1 and scope[0]["lane"] == "official" and "bag limit date" in scope[0]["query"]
     empty_scope = gap_to_recasts("salmon bag limit", {"key":"bag limit", "reason":"missing_scope"})
     assert len(empty_scope) == 1 and "bag limit" in empty_scope[0]["query"]
+    stale = gap_to_recasts("salmon bag limit WA", {"key":"bag limit", "reason":"stale_evidence", "recast_hint":"bag limit current 2026 effective date"})
+    assert len(stale) == 1 and stale[0]["lane"] == "official" and "2026" in stale[0]["query"]
     print("gap_to_recast: PASS")
