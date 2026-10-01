@@ -36,6 +36,32 @@ def unique_by_url(rows):
         seen.add(u); out.append(x)
     return out
 
+def rank_candidates(rows, question):
+    q=str(question or "").lower()
+    route_terms=("walk","walking","route","path","trail","towpath","canal","hike","hiking")
+    endpoints=[]
+    if " from " in q and " to " in q:
+        try:
+            after=q.split(" from ",1)[1]
+            a,b=after.split(" to ",1)
+            b=b.split(" in ",1)[0].split(" during ",1)[0].split(" for ",1)[0]
+            endpoints=[a.strip(),b.strip()]
+        except Exception:
+            endpoints=[]
+    def score(r):
+        title=str(r.get("title") or "").lower()
+        snippet=str(r.get("snippet") or "").lower()
+        blob=title+" "+snippet
+        s=0
+        if any(t in blob for t in route_terms): s+=6
+        for ep in endpoints:
+            toks=[w for w in ep.replace(","," ").split() if len(w)>=4]
+            if toks and any(w in blob for w in toks): s+=5
+        if "edinburgh" in blob and "glasgow" in blob: s+=10
+        if "walk" in title or "walking" in title or "canal" in title or "towpath" in title: s+=4
+        return s
+    return sorted(rows,key=score,reverse=True)
+
 def render_verified(ans):
     direct=str(ans.get("direct_answer") or "").strip()
     claims=ans.get("claims") or []
@@ -84,11 +110,11 @@ def main():
         except Exception as e:
             print(f"[AMIGOS] soft search fail: {c} :: {e}",file=sys.stderr)
 
-    candidates=unique_by_url(candidates)
+    candidates=rank_candidates(unique_by_url(candidates),q)
     print(f"[AMIGOS] 3/6 {len(candidates)} UNIQUE RESULTS",file=sys.stderr)
 
     evidence=[]
-    for r in candidates[:12]:
+    for r in candidates[:16]:
         try:
             f=curl_get({"type":"FETCH_TEXT","url":r["url"],"max_chars":"4000"},60)
             text=str(f.get("text") or "").strip()
