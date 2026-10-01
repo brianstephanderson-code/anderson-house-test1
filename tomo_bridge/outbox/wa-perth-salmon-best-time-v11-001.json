@@ -1,0 +1,105 @@
+{
+  "status": "PARTIAL_ANSWER",
+  "job_id": "wa-perth-salmon-best-time-v11-001",
+  "question": "When is the best time to fish for Australian salmon in Perth, Western Australia? Focus on the annual salmon run near Perth and nearby southwest Western Australia. Give the best months, how the run typically progresses north toward Perth, and practical conditions/signs that improve the odds. Use the V11 location-aware geography gate. Include official or authoritative Western Australian sources and end-user fishing experience where available.",
+  "geography": "WA",
+  "geography_gate": {
+    "enabled": true,
+    "pack": {
+      "enabled": true,
+      "place": "Perth",
+      "region": "western australia",
+      "country": "australia",
+      "country_code": "au",
+      "target_terms": [
+        "Perth",
+        "western australia",
+        "australia"
+      ],
+      "supplied_geo": "WA"
+    },
+    "accepted": 13,
+    "held": 4,
+    "rejected": 2
+  },
+  "search_passes": 3,
+  "search_history": [
+    {
+      "query": "When is the best time to fish for Australian salmon in Perth, Western Australia? Focus on the annual salmon run near Perth and nearby southwest Western Australia. Give the best months, how the run typically progresses north toward Perth, and practical conditions/signs that improve the odds. Use the V11 location-aware geography gate. Include official or authoritative Western Australian sources and end-user fishing experience where available.",
+      "seconds": 54.2,
+      "evidence": 19,
+      "returncode": 0
+    },
+    {
+      "query": "When is the best time to fish for Australian salmon in Perth, Western Australia? Focus on the annual salmon run near Perth and nearby southwest Western Australia. Give the best months, how the run typically progresses north toward Perth, and practical conditions/signs that improve the odds. Use the V11 location-aware geography gate. Include official or authoritative Western Australian sources and end-user fishing experience where available. \"Western Australia\" practical advice",
+      "seconds": 24.1,
+      "evidence": 1,
+      "returncode": 0
+    },
+    {
+      "query": "When is the best time to fish for Australian salmon in Perth, Western Australia? Focus on the annual salmon run near Perth and nearby southwest Western Australia. Give the best months, how the run typically progresses north toward Perth, and practical conditions/signs that improve the odds. Use the V11 location-aware geography gate. Include official or authoritative Western Australian sources and end-user fishing experience where available. WA official end user",
+      "seconds": 26.7,
+      "evidence": 1,
+      "returncode": 0
+    }
+  ],
+  "usable_hits": 13,
+  "accepted_claims_total": 1,
+  "question_fit_claims": 1,
+  "held_claims": 7,
+  "rejected_claims": 0,
+  "independent_question_fit_source_families": 1,
+  "source_families": [
+    "recfishwest.org.au"
+  ],
+  "quality_checks": {
+    "has_accepted_claims": true,
+    "has_question_fit_claim": true,
+    "has_multiple_fit_claims": false,
+    "has_source_family": true,
+    "holds_excluded": true
+  },
+  "direct_answer": "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide.",
+  "answer_text": "DIRECT ANSWER\n-------------\nFeast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide.\n\nWHAT THE EVIDENCE SAYS\n----------------------\n- Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide. [S1]\n\nOFFICIAL / AUTHORITATIVE\n------------------------\n- No official source directly answered this exact question in the accepted set.\n\nEND-USER / OPERATOR MATERIAL\n----------------------------\n- No end-user source directly answered this exact question in the accepted set.\n\nUNCERTAINTY\n-----------\n7 claims remain on HOLD and 0 were rejected.\nThose claims are not used as affirmative evidence.\n\nSOURCES\n-------\nS1 recfishwest.org.au [OTHER]",
+  "source_registry": [
+    {
+      "number": 1,
+      "family": "recfishwest.org.au",
+      "lane": "OTHER"
+    }
+  ],
+  "claims": [
+    {
+      "canonical_claim": "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide.",
+      "member_claims": [
+        "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide."
+      ],
+      "urls": [
+        "https://recfishwest.org.au/news/the-best-rods-reels-and-lures-for-catching-salmon"
+      ],
+      "source_families": [
+        "recfishwest.org.au"
+      ],
+      "found_by": [
+        "tavily"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1,
+      "question_fit_score": 21,
+      "question_term_overlap": 11,
+      "intent_hits": 2
+    }
+  ],
+  "seconds": 107.6,
+  "rules": [
+    "A geographically valid claim must also answer the actual question.",
+    "Unknown geography remains HOLD.",
+    "Wrong geography remains REJECT.",
+    "Only question-fit accepted claims enter the finished answer."
+  ],
+  "bridge": "TOMO_GIT_BRIDGE",
+  "original_question": "When is the best time to fish for Australian salmon in Perth, Western Australia? Focus on the annual salmon run near Perth and nearby southwest Western Australia. Give the best months, how the run typically progresses north toward Perth, and practical conditions/signs that improve the odds. Use the V11 location-aware geography gate. Include official or authoritative Western Australian sources and end-user fishing experience where available."
+}
