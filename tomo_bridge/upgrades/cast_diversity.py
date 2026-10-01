@@ -6,6 +6,9 @@ LANES = (
     ("broad", "{purpose}"),
     ("official", "{purpose} official guidance policy documentation"),
     ("end_user", "{purpose} forum reddit experience problems"),
+    # Independent evidence is neither the publisher/authority nor the operator.
+    # Keep it separate so corroboration can come from a third evidence door.
+    ("independent", "{purpose} independent analysis review comparison evidence"),
     ("failure", "{purpose} failed problem issue limitation"),
 )
 
@@ -35,8 +38,11 @@ def plan_casts(purpose, required_functions=(), max_casts=6):
 
 if __name__ == "__main__":
     rows=plan_casts("catch Australian salmon WA May", ["beach fishing", "bait selection"])
-    assert len(rows)==5, rows
+    assert len(rows)==6, rows
     assert len({x["query"].casefold() for x in rows})==len(rows)
-    assert {x["lane"] for x in rows} >= {"broad","official","end_user","failure","function_first"}
+    assert {x["lane"] for x in rows} >= {"broad","official","end_user","independent","failure","function_first"}
     assert plan_casts("", []) == []
+    # Small budgets remain deterministic and do not silently duplicate casts.
+    short=plan_casts("salmon bait", [], max_casts=3)
+    assert [x["lane"] for x in short] == ["broad","official","end_user"], short
     print("PASS cast_diversity", [(x["lane"],x["query"]) for x in rows])
