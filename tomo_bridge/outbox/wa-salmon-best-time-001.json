@@ -1,0 +1,134 @@
+{
+  "status": "ANSWER_READY",
+  "job_id": "wa-salmon-best-time-001",
+  "question": "When is the best time to do salmon fishing in Western Australia? Focus on the annual Australian salmon run, including the best months, how timing changes between the south coast and Perth/metro area, and practical conditions or signs that improve the chances. Include official or authoritative WA sources and end-user fishing experience where available.",
+  "geography": "WA",
+  "search_passes": 1,
+  "search_history": [
+    {
+      "query": "When is the best time to do salmon fishing in Western Australia? Focus on the annual Australian salmon run, including the best months, how timing changes between the south coast and Perth/metro area, and practical conditions or signs that improve the chances. Include official or authoritative WA sources and end-user fishing experience where available.",
+      "seconds": 46.8,
+      "evidence": 18,
+      "returncode": 0
+    }
+  ],
+  "usable_hits": 18,
+  "accepted_claims_total": 3,
+  "question_fit_claims": 3,
+  "held_claims": 9,
+  "rejected_claims": 0,
+  "independent_question_fit_source_families": 3,
+  "source_families": [
+    "recfishwest.org.au",
+    "wa.gov",
+    "youtube.com"
+  ],
+  "quality_checks": {
+    "has_accepted_claims": true,
+    "has_question_fit_claim": true,
+    "has_multiple_fit_claims": true,
+    "has_source_family": true,
+    "holds_excluded": true
+  },
+  "direct_answer": "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide.",
+  "answer_text": "DIRECT ANSWER\n-------------\nFeast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide.\n\nWHAT THE EVIDENCE SAYS\n----------------------\n- Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide. [S1]\n- Join us on the south coast of Western Australia for the salmon run! In this video, we'll show you how to target these sport fish using a [S2]\n- loop, a corky on the line above the hook, and yarn on the hook (Photo 1). For weight, push the snap swivel through a 3/4' long piece of rubber tubing and then push a “pencil” lead into the tubing, or simply push the snap through the parachute cord of a “slinky” weight (Photos 2 and 3). Bait and/or scent can be added to this rig. Salmon roe and sand shrimp are the most popular baits to add to this setup, but many others can also be used. Instead of a corky and yarn setup, you can also substitute [...] choice for bait, although sand shrimp are very popular for chinook salmon. Some anglers like to fish both at the same time. Marabou jigs (Photo 10) can be used instead of bait and can be especially effective on pink salmon, or other salmon when the water is very low and clear. [...] When fishing in current, you will need to “mend” the line occasionally. Mending generally means lifting and/or flipping the line so that any belly is removed and the line is then in a straight line between the rod and bobber. The line needs to be mended to ensure a good hookset if the bobber goes down. Spectra based lines float and are therefore easier to mend, and their lack of stretch ensures that all of the hookset is transmitted to the bait or lure. Salmon eggs are the top choice for bait, [S3]\n\nOFFICIAL / AUTHORITATIVE\n------------------------\n- S3 wa.gov\n\nEND-USER / OPERATOR MATERIAL\n----------------------------\n- S2 youtube.com\n\nUNCERTAINTY\n-----------\n9 claims remain on HOLD and 0 were rejected.\nThose claims are not used as affirmative evidence.\n\nSOURCES\n-------\nS1 recfishwest.org.au [OTHER]\nS2 youtube.com [END_USER]\nS3 wa.gov [OFFICIAL]",
+  "source_registry": [
+    {
+      "number": 1,
+      "family": "recfishwest.org.au",
+      "lane": "OTHER"
+    },
+    {
+      "number": 2,
+      "family": "youtube.com",
+      "lane": "END_USER"
+    },
+    {
+      "number": 3,
+      "family": "wa.gov",
+      "lane": "OFFICIAL"
+    }
+  ],
+  "claims": [
+    {
+      "canonical_claim": "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide.",
+      "member_claims": [
+        "Feast your eyes on some of the best Richter Lures specifically designed for long-range casting and landing salmon off WA’s pristine beaches! This includes the Plug surface lure (white lures) and the new range of ‘Sickbait’ lures (pictured right) that will be available around Easter! [...] Richter Lures also have a new lure range out called the ‘Sickbait’ that was specifically designed for chasing salmon in WA conditions. It is rear-weighted to cast into strong winds and improve the range you can achieve on casts and will be available in four sizes and six colours. This will be available just in time for Easter at local tackle stores! [...] Now that you’re up to date for the best gear up in here – make sure you join Recfishwest on the run this autumn and celebrate West Aussie salmon as the iconic southern sportfish they are during the Awesome Autumn of Salmon, from March 1 to May 1. Supported by Western Angler magazine and our partners Shimano, the annual celebration showcases the safe and accessible sportfishing WA salmon provide."
+      ],
+      "urls": [
+        "https://recfishwest.org.au/news/the-best-rods-reels-and-lures-for-catching-salmon"
+      ],
+      "source_families": [
+        "recfishwest.org.au"
+      ],
+      "found_by": [
+        "tavily"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1,
+      "question_fit_score": 21,
+      "question_term_overlap": 11,
+      "intent_hits": 2
+    },
+    {
+      "canonical_claim": "Join us on the south coast of Western Australia for the salmon run! In this video, we'll show you how to target these sport fish using a",
+      "member_claims": [
+        "Join us on the south coast of Western Australia for the salmon run! In this video, we'll show you how to target these sport fish using a"
+      ],
+      "urls": [
+        "https://www.youtube.com/watch?v=CYL1vu9mak8&xstg=CAMSBhUD_LL2Hw%3D%3D",
+        "https://youtube.com/watch"
+      ],
+      "source_families": [
+        "youtube.com"
+      ],
+      "found_by": [
+        "tavily",
+        "unknown"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 2,
+      "independent_evidence_count": 1,
+      "question_fit_score": 17,
+      "question_term_overlap": 6,
+      "intent_hits": 2
+    },
+    {
+      "canonical_claim": "loop, a corky on the line above the hook, and yarn on the hook (Photo 1). For weight, push the snap swivel through a 3/4' long piece of rubber tubing and then push a “pencil” lead into the tubing, or simply push the snap through the parachute cord of a “slinky” weight (Photos 2 and 3). Bait and/or scent can be added to this rig. Salmon roe and sand shrimp are the most popular baits to add to this setup, but many others can also be used. Instead of a corky and yarn setup, you can also substitute [...] choice for bait, although sand shrimp are very popular for chinook salmon. Some anglers like to fish both at the same time. Marabou jigs (Photo 10) can be used instead of bait and can be especially effective on pink salmon, or other salmon when the water is very low and clear. [...] When fishing in current, you will need to “mend” the line occasionally. Mending generally means lifting and/or flipping the line so that any belly is removed and the line is then in a straight line between the rod and bobber. The line needs to be mended to ensure a good hookset if the bobber goes down. Spectra based lines float and are therefore easier to mend, and their lack of stretch ensures that all of the hookset is transmitted to the bait or lure. Salmon eggs are the top choice for bait,",
+      "member_claims": [
+        "loop, a corky on the line above the hook, and yarn on the hook (Photo 1). For weight, push the snap swivel through a 3/4' long piece of rubber tubing and then push a “pencil” lead into the tubing, or simply push the snap through the parachute cord of a “slinky” weight (Photos 2 and 3). Bait and/or scent can be added to this rig. Salmon roe and sand shrimp are the most popular baits to add to this setup, but many others can also be used. Instead of a corky and yarn setup, you can also substitute [...] choice for bait, although sand shrimp are very popular for chinook salmon. Some anglers like to fish both at the same time. Marabou jigs (Photo 10) can be used instead of bait and can be especially effective on pink salmon, or other salmon when the water is very low and clear. [...] When fishing in current, you will need to “mend” the line occasionally. Mending generally means lifting and/or flipping the line so that any belly is removed and the line is then in a straight line between the rod and bobber. The line needs to be mended to ensure a good hookset if the bobber goes down. Spectra based lines float and are therefore easier to mend, and their lack of stretch ensures that all of the hookset is transmitted to the bait or lure. Salmon eggs are the top choice for bait,"
+      ],
+      "urls": [
+        "https://wdfw.wa.gov/fishing/basics/salmon/freshwater"
+      ],
+      "source_families": [
+        "wa.gov"
+      ],
+      "found_by": [
+        "tavily"
+      ],
+      "geographies": [
+        "WA"
+      ],
+      "discovery_count": 1,
+      "independent_evidence_count": 1,
+      "question_fit_score": 15,
+      "question_term_overlap": 5,
+      "intent_hits": 2
+    }
+  ],
+  "seconds": 47.9,
+  "rules": [
+    "A geographically valid claim must also answer the actual question.",
+    "Unknown geography remains HOLD.",
+    "Wrong geography remains REJECT.",
+    "Only question-fit accepted claims enter the finished answer."
+  ],
+  "bridge": "TOMO_GIT_BRIDGE",
+  "original_question": "When is the best time to do salmon fishing in Western Australia? Focus on the annual Australian salmon run, including the best months, how timing changes between the south coast and Perth/metro area, and practical conditions or signs that improve the chances. Include official or authoritative WA sources and end-user fishing experience where available."
+}
