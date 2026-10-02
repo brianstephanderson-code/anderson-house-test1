@@ -1,0 +1,6 @@
+{
+  "job_id": "move-sleepy-hollow-kdp-package-001",
+  "action": "run_vetted",
+  "script": "move_sleepy_hollow_kdp_package.sh",
+  "timeout": 120
+}

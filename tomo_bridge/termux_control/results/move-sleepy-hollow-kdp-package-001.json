@@ -1,0 +1,10 @@
+{
+  "job_id": "move-sleepy-hollow-kdp-package-001",
+  "action": "run_vetted",
+  "started_utc": "2026-10-02T17:44:08Z",
+  "ok": true,
+  "returncode": 0,
+  "stdout": "MOVED_OK: /data/data/com.termux/files/home/downloads/Sleepy_Hollow/Sleepy_Hollow_KDP_Production_Package.zip\n-rw-------. 1 u0_a321 u0_a321 191K Oct  2 13:11 /data/data/com.termux/files/home/downloads/Sleepy_Hollow/Sleepy_Hollow_KDP_Production_Package.zip\n",
+  "stderr": "",
+  "finished_utc": "2026-10-02T17:44:08Z"
+}
