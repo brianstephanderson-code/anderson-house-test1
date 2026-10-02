@@ -69,45 +69,72 @@ with sync_playwright() as p:
         report["effect_buttons"] = page.eval_on_selector_all("button", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,text:(e.innerText||'').trim(),visible:r.width>0&&r.height>0,x:r.x,y:r.y,w:r.width,h:r.height,aria:e.getAttribute('aria-label')||'',title:e.title||''}})""")
         (out/"effect_panel.json").write_text(json.dumps({"text":report["effect_panel_text"],"inputs":report["effect_inputs"],"buttons":report["effect_buttons"]},indent=2),encoding="utf-8")
 
-        seen = set()
-        for name in effect_names:
-            # Prefer exact visible button text, otherwise any visible button containing the effect name.
-            loc = page.get_by_role("button", name=name, exact=True)
-            if loc.count() == 0:
-                loc = page.locator("button").filter(has_text=name)
-            chosen = None
-            for ii in range(loc.count()):
-                try:
-                    if loc.nth(ii).is_visible():
-                        chosen = loc.nth(ii)
-                        break
-                except Exception:
-                    pass
-            if chosen is None:
-                continue
-            label = (chosen.inner_text() or name).strip()
-            key = label.lower()
-            if key in seen:
-                continue
-            seen.add(key)
+        # Open the effect combobox and enumerate its real options.
+        combo = None
+        for ii in range(page.locator('button[role="combobox"]').count()):
+            loc = page.locator('button[role="combobox"]').nth(ii)
             try:
-                chosen.click()
-                page.wait_for_timeout(2200)
+                box = loc.bounding_box()
+                txt = (loc.inner_text() or "").strip()
+                if box and box["x"] < 400 and 180 < box["y"] < 300 and txt.lower() != "english":
+                    combo = loc
+                    break
+            except Exception:
+                pass
+
+        if combo is None:
+            raise RuntimeError("effect combobox not found")
+
+        combo.click()
+        page.wait_for_timeout(500)
+        option_texts = [t.strip() for t in page.get_by_role("option").all_inner_texts() if t.strip()]
+        report["effect_options"] = option_texts
+        (out/"effect_options.json").write_text(json.dumps(option_texts,indent=2),encoding="utf-8")
+        # Close once before looping.
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(250)
+
+        for label in option_texts:
+            try:
+                # Reacquire the combobox each time because its visible text changes.
+                combo = None
+                for ii in range(page.locator('button[role="combobox"]').count()):
+                    loc = page.locator('button[role="combobox"]').nth(ii)
+                    box = loc.bounding_box()
+                    if box and box["x"] < 400 and 180 < box["y"] < 300:
+                        combo = loc
+                        break
+                if combo is None:
+                    raise RuntimeError("effect combobox disappeared")
+                combo.click()
+                page.wait_for_timeout(250)
+                page.get_by_role("option", name=label, exact=True).click()
+                page.wait_for_timeout(2500)
+
                 info = largest_svg()
-                rec = {"requested":name,"label":label}
+                rec = {"label":label}
                 if info and info["area"] > 50000:
                     slug = "".join(ch.lower() if ch.isalnum() else "_" for ch in label).strip("_")[:40] or "effect"
                     png = out / ("effect_" + slug + ".png")
                     svg = out / ("effect_" + slug + ".svg")
                     sloc = page.locator("svg").nth(info["i"])
-                    sloc.screenshot(path=str(png))
-                    svg.write_text(sloc.evaluate("e=>e.outerHTML"), encoding="utf-8")
-                    rec.update({"captured":True,"png":png.name,"svg":svg.name,"area":info["area"]})
+                    if sloc.is_visible():
+                        sloc.screenshot(path=str(png), timeout=12000)
+                        svg.write_text(sloc.evaluate("e=>e.outerHTML"), encoding="utf-8")
+                        rec.update({"captured":True,"png":png.name,"svg":svg.name,"area":info["area"]})
+                    else:
+                        rec["captured"] = False
                 else:
                     rec["captured"] = False
                 report["effect_survey"].append(rec)
-            except Exception as e:
-                report["effect_survey"].append({"requested":name,"label":label,"error":str(e)})
+                (out/"report.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
+            except Exception as err:
+                report["effect_survey"].append({"label":label,"error":str(err)})
+                try:
+                    page.keyboard.press("Escape")
+                except Exception:
+                    pass
+
         report["events"].append("effect_family_survey_complete")
     except Exception as e:
         report["effect_survey_error"] = str(e)
