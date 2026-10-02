@@ -1,0 +1,41 @@
+{
+  "asset_id": "ichabod-001",
+  "source": "books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg",
+  "translator": "Boxlab Engraver",
+  "effect": "Crosshatch",
+  "selected_variant": "woodcut_coarse",
+  "effect_settings": {
+    "lines_per_cm": 10,
+    "angle_degrees": 45,
+    "finest_mm": 0.08,
+    "widest_mm": 0.9,
+    "layers": 3,
+    "turn_degrees": 45,
+    "sample_step_mm": 0.35
+  },
+  "tone_settings": {
+    "brightness_percent": 0,
+    "contrast_percent": 0,
+    "gamma": 1,
+    "smooth_px": 1,
+    "paper_under_percent": 72,
+    "solid_over_percent": 100
+  },
+  "linda": {
+    "technical_status": "PASS",
+    "checks": [
+      "source image uploaded successfully",
+      "scene remains recognizable after engraving transform",
+      "black-and-white carved-line structure is present",
+      "output captured as scalable SVG and raster PNG",
+      "result is materially different from rejected Vexy stripe fields"
+    ],
+    "aesthetic_status": "READY_FOR_USER_REVIEW",
+    "note": "Selected coarse crosshatch because it preserves the composition while retaining visibly cut, non-smooth mark structure."
+  },
+  "provenance": {
+    "job": "books/sleepy-hollow/art/engraver/JOB-ICHABOD-002.json",
+    "report": "books/sleepy-hollow/art/engraver/out/ichabod-002/report.json",
+    "derived_from": "woodcut_coarse"
+  }
+}
