@@ -145,6 +145,7 @@ with sync_playwright() as p:
         page.wait_for_timeout(900)
         report["tone_panel_text"] = page.locator("body").inner_text()[:12000]
         report["tone_inputs"] = page.eval_on_selector_all("input", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,type:e.type||'',value:e.value||'',min:e.min||'',max:e.max||'',step:e.step||'',checked:!!e.checked,visible:r.width>0&&r.height>0,x:r.x,y:r.y,outerHTML:e.outerHTML.slice(0,1000)}})""")
+        report["tone_checkboxes"] = page.eval_on_selector_all('input[type="checkbox"]', """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,checked:!!e.checked,visible:r.width>0&&r.height>0,x:r.x,y:r.y,outerHTML:e.outerHTML.slice(0,1000)}})""")
         report["tone_buttons"] = page.eval_on_selector_all("button", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,text:(e.innerText||'').trim(),visible:r.width>0&&r.height>0,x:r.x,y:r.y,w:r.width,h:r.height,aria:e.getAttribute('aria-label')||'',title:e.title||''}})""")
         report["events"].append("tone_controls_surveyed")
         # Focused Linda pass: Crosshatch is the closest wood-engraving family.
@@ -192,12 +193,13 @@ with sync_playwright() as p:
         page.wait_for_timeout(300)
 
         tone_presets = [
-            {"name":"default","values":[0,0,1.0,1,4,100]},
-            {"name":"open_1","values":[15,10,1.0,1,8,100]},
-            {"name":"open_2","values":[25,15,1.0,1,12,100]},
-            {"name":"open_3","values":[30,20,1.1,1,15,100]},
-            {"name":"gamma_low","values":[22,18,0.8,1,10,100]},
-            {"name":"gamma_high","values":[22,18,1.3,1,10,100]}
+            {"name":"paper_25","values":[0,0,1.0,1,25,95]},
+            {"name":"paper_40","values":[0,0,1.0,1,40,95]},
+            {"name":"paper_55","values":[0,0,1.0,1,55,95]},
+            {"name":"paper_65","values":[0,0,1.0,1,65,98]},
+            {"name":"paper_75","values":[0,0,1.0,1,75,100]},
+            {"name":"paper_55_gamma08","values":[0,0,0.8,1,55,95]},
+            {"name":"paper_55_gamma13","values":[0,0,1.3,1,55,95]}
         ]
         report["crosshatch_tone_sweep"]=[]
         for preset in tone_presets:
