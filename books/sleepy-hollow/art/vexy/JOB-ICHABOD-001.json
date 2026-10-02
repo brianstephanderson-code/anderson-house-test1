@@ -24,7 +24,9 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "SHADOW_SIGNAL_SURVEY",
+  "status": "CANCELLED_REJECTED",
   "retry_reason": "inspect Playlines shadow DOM levels and signal controls",
-  "retry_nonce": 14
+  "retry_nonce": 14,
+  "final_disposition": "Product output not suitable for Sleepy Hollow woodcut production; route retired.",
+  "no_further_runs": true
 }
