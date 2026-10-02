@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "ACTIVE_SOURCE_VERIFY_REQUESTED",
-  "retry_reason": "verify exact Playlines stage source pixels against Ichabod input",
-  "retry_nonce": 3
+  "status": "ACTIVE_SOURCE_VERIFY_RETRY",
+  "retry_reason": "report did not yet include source pixel verification fields",
+  "retry_nonce": 4
 }
