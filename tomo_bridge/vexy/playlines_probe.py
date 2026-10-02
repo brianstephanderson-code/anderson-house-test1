@@ -5,18 +5,32 @@ from playwright.sync_api import sync_playwright
 
 OUT = Path("vexy_probe_out")
 OUT.mkdir(exist_ok=True)
-SRC = OUT / "probe_input.png"
 
-# Synthetic test image: strong tones and curves so engraving output is obvious.
-im = Image.new("L", (640, 480), 245)
-d = ImageDraw.Draw(im)
-d.ellipse((70, 70, 300, 360), fill=70)
-d.rectangle((340, 90, 570, 360), fill=140)
-d.line((0, 450, 640, 30), fill=15, width=24)
-d.text((24, 18), "VEXY PROBE", fill=0)
-im.save(SRC)
+# Production input if present; otherwise retain the synthetic probe fallback.
+INPUT = Path(os.environ.get(
+    "VEXY_INPUT",
+    "tomo_bridge/vexy/input/ichabod_vexy_input.jpg"
+))
+if INPUT.exists():
+    SRC = INPUT
+    source_mode = "production_input"
+else:
+    SRC = OUT / "probe_input.png"
+    source_mode = "synthetic_probe"
+    im = Image.new("L", (640, 480), 245)
+    d = ImageDraw.Draw(im)
+    d.ellipse((70, 70, 300, 360), fill=70)
+    d.rectangle((340, 90, 570, 360), fill=140)
+    d.line((0, 450, 640, 30), fill=15, width=24)
+    d.text((24, 18), "VEXY PROBE", fill=0)
+    im.save(SRC)
 
-report = {"url": "https://playlines.vexy.art/", "events": []}
+report = {
+    "url": "https://playlines.vexy.art/",
+    "events": [],
+    "source_mode": source_mode,
+    "source_path": str(SRC)
+}
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
