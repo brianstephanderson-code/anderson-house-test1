@@ -2,10 +2,15 @@
   "job_id": "ichabod-001",
   "owner": "The 3 Amigos",
   "function": "vexy-vector-engraving",
-  "source_path": "books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.png",
-  "source_sha256": "d921d12aa602c4bffe37589eb30b684b8c05b927002d49c68959cb2146e8009a",
-  "source_dimensions": "1448x1086",
-  "source_role": "approved-master",
+  "source_path": "books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg",
+  "source_sha256": "1d86c350d1f5030257fa998ff3a144615bffdd0cf1f548ccd103d8559e46f4d5",
+  "source_dimensions": "960x720",
+  "source_role": "approved-master-working-copy",
+  "master_lineage": {
+    "recovered_source_dimensions": "1448x1086",
+    "recovered_source_sha256": "2e60858ed772cfc4c7936e4243bf68c6a7771d800bc99d5a7e7b69e86e8e659d",
+    "note": "Repository copy is a resized JPEG derivative of the recovered approved working master for reliable binary ingress."
+  },
   "output_path": "books/sleepy-hollow/art/vexy/out/ichabod-001/",
   "required_outputs": [
     "output.svg",
@@ -19,5 +24,5 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "WAITING_FOR_MASTER_INGRESS"
+  "status": "READY_FOR_VEXY"
 }
