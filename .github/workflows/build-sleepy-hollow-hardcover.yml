@@ -1,0 +1,25 @@
+name: Build Sleepy Hollow Hardcover Prototype
+on:
+  push:
+    paths:
+      - 'books/sleepy-hollow/build_hardcover_prototype.py'
+      - 'books/sleepy-hollow/source/**'
+      - '.github/workflows/build-sleepy-hollow-hardcover.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install reportlab pypdf
+      - run: python books/sleepy-hollow/build_hardcover_prototype.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sleepy-hollow-hardcover-prototype
+          path: |
+            books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf
+            books/sleepy-hollow/build/build_report.json
