@@ -393,6 +393,20 @@ with sync_playwright() as p:
         for key,val in best_fill["params"].items():
             set_range(key,val)
         page.wait_for_timeout(3500)
+    # Linda gate: free fills must actually communicate the source scene.
+    # Source is pixel-identical, but current free-fill scores remain low and
+    # visually collapse to decorative fields. Do not promote a false winner.
+    if best_fill:
+        report["linda_visual_gate"] = {
+            "status": "REJECTED" if best_fill["score"] < 0.60 else "CANDIDATE",
+            "reason": "free fill does not preserve recognizable scene structure" if best_fill["score"] < 0.60 else "candidate requires human visual approval",
+            "threshold": 0.60,
+            "best_score": best_fill["score"],
+            "best_fill": best_fill["name"]
+        }
+        if best_fill["score"] < 0.60:
+            report["events"].append("linda_rejected_free_fill_output")
+
     page.screenshot(path=str(out / "preview.png"), full_page=True)
     candidates = page.eval_on_selector_all(
         "svg",
