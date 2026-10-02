@@ -7,6 +7,7 @@
     "effect_family_survey_complete",
     "tone_controls_surveyed",
     "crosshatch_tone_sweep_complete",
+    "tuned_engraving_variants_captured",
     "probe_captured",
     "effect_previews_encoded",
     "candidate_svg_captured"
@@ -1158,6 +1159,50 @@
       "captured": true,
       "png": "crosshatch_gamma_high.png",
       "svg": "crosshatch_gamma_high.svg"
+    }
+  ],
+  "final_variants": [
+    {
+      "effect": "Line screen",
+      "tone": [
+        8,
+        18,
+        0.9,
+        0,
+        12,
+        88
+      ],
+      "png": "line_final.png",
+      "svg": "line_final.svg",
+      "captured": true
+    },
+    {
+      "effect": "Crosshatch",
+      "tone": [
+        12,
+        24,
+        0.85,
+        0,
+        14,
+        86
+      ],
+      "png": "crosshatch_final.png",
+      "svg": "crosshatch_final.svg",
+      "captured": true
+    },
+    {
+      "effect": "Wave",
+      "tone": [
+        10,
+        20,
+        0.9,
+        0,
+        12,
+        88
+      ],
+      "png": "wave_final.png",
+      "svg": "wave_final.svg",
+      "captured": true
     }
   ],
   "candidate_type": "svg"
