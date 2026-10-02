@@ -3,6 +3,8 @@
   "function": "woodcut-translation-candidate",
   "translator": "Boxlab Engraver",
   "source": "books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg",
-  "status": "PROBE_REQUESTED",
-  "acceptance": "recognizable scene structure with one-color engraving linework; no decorative-only pattern"
+  "status": "APP_ROUTE_RETRY",
+  "acceptance": "recognizable scene structure with one-color engraving linework; no decorative-only pattern",
+  "retry_nonce": 1,
+  "retry_reason": "run against actual Boxlab Engraver app route"
 }
