@@ -242,6 +242,21 @@ with sync_playwright() as p:
       )).slice(0,120);
     }""")
 
+    report["levels_neighborhood"] = page.evaluate("""() => {
+      return [...document.querySelectorAll('*')].map((e,i)=>{
+        const r=e.getBoundingClientRect();
+        return {
+          i,tag:e.tagName,id:e.id||'',cls:String(e.className||''),
+          title:e.getAttribute('title')||'',aria:e.getAttribute('aria-label')||'',
+          x:r.x,y:r.y,width:r.width,height:r.height,
+          value:('value' in e)?String(e.value):'',
+          min:('min' in e)?String(e.min):'',
+          max:('max' in e)?String(e.max):'',
+          html:e.outerHTML.slice(0,1600)
+        };
+      }).filter(x => x.x>700 && x.y>610 && x.y<720 && x.width>0 && x.height>0).slice(0,160);
+    }""")
+
 
     # Compare the free Playlines fill families against the same verified source.
     # Linear has been proven source-bound but visually unsuitable, so cast wider.
