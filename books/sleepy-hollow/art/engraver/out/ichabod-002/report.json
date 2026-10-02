@@ -810,6 +810,7 @@
       "outerHTML": "<input inputmode=\"decimal\" min=\"1\" max=\"100\" step=\"1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"100\">"
     }
   ],
+  "tone_checkboxes": [],
   "tone_buttons": [
     {
       "i": 0,
@@ -1077,88 +1078,102 @@
   ],
   "crosshatch_tone_sweep": [
     {
-      "name": "default",
+      "name": "paper_25",
       "values": [
         0,
         0,
         1.0,
         1,
-        4,
-        100
-      ],
-      "captured": true,
-      "png": "crosshatch_default.png",
-      "svg": "crosshatch_default.svg"
-    },
-    {
-      "name": "open_1",
-      "values": [
-        15,
-        10,
-        1.0,
-        1,
-        8,
-        100
-      ],
-      "captured": true,
-      "png": "crosshatch_open_1.png",
-      "svg": "crosshatch_open_1.svg"
-    },
-    {
-      "name": "open_2",
-      "values": [
         25,
-        15,
+        95
+      ],
+      "captured": true,
+      "png": "crosshatch_paper_25.png",
+      "svg": "crosshatch_paper_25.svg"
+    },
+    {
+      "name": "paper_40",
+      "values": [
+        0,
+        0,
         1.0,
         1,
-        12,
-        100
+        40,
+        95
       ],
       "captured": true,
-      "png": "crosshatch_open_2.png",
-      "svg": "crosshatch_open_2.svg"
+      "png": "crosshatch_paper_40.png",
+      "svg": "crosshatch_paper_40.svg"
     },
     {
-      "name": "open_3",
+      "name": "paper_55",
       "values": [
-        30,
-        20,
-        1.1,
+        0,
+        0,
+        1.0,
         1,
-        15,
+        55,
+        95
+      ],
+      "captured": true,
+      "png": "crosshatch_paper_55.png",
+      "svg": "crosshatch_paper_55.svg"
+    },
+    {
+      "name": "paper_65",
+      "values": [
+        0,
+        0,
+        1.0,
+        1,
+        65,
+        98
+      ],
+      "captured": true,
+      "png": "crosshatch_paper_65.png",
+      "svg": "crosshatch_paper_65.svg"
+    },
+    {
+      "name": "paper_75",
+      "values": [
+        0,
+        0,
+        1.0,
+        1,
+        75,
         100
       ],
       "captured": true,
-      "png": "crosshatch_open_3.png",
-      "svg": "crosshatch_open_3.svg"
+      "png": "crosshatch_paper_75.png",
+      "svg": "crosshatch_paper_75.svg"
     },
     {
-      "name": "gamma_low",
+      "name": "paper_55_gamma08",
       "values": [
-        22,
-        18,
+        0,
+        0,
         0.8,
         1,
-        10,
-        100
+        55,
+        95
       ],
       "captured": true,
-      "png": "crosshatch_gamma_low.png",
-      "svg": "crosshatch_gamma_low.svg"
+      "png": "crosshatch_paper_55_gamma08.png",
+      "svg": "crosshatch_paper_55_gamma08.svg"
     },
     {
-      "name": "gamma_high",
+      "name": "paper_55_gamma13",
       "values": [
-        22,
-        18,
+        0,
+        0,
         1.3,
         1,
-        10,
-        100
+        55,
+        95
       ],
       "captured": true,
-      "png": "crosshatch_gamma_high.png",
-      "svg": "crosshatch_gamma_high.svg"
+      "png": "crosshatch_paper_55_gamma13.png",
+      "svg": "crosshatch_paper_55_gamma13.svg"
     }
   ],
   "final_variants": [
