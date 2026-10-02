@@ -1,3 +1,4 @@
+import re
 import json, sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -224,6 +225,59 @@ with sync_playwright() as p:
         report["events"].append("crosshatch_tone_sweep_complete")
     except Exception as e:
         report["tone_survey_error"] = str(e)
+
+    # Produce final tuned wood-engraving candidates from the strongest structural effects.
+    def set_visible_numbers(values):
+        nums = page.locator('input[type="number"]:visible')
+        for i, v in enumerate(values):
+            if i >= nums.count():
+                break
+            nums.nth(i).fill(str(v))
+            nums.nth(i).dispatch_event("input")
+            nums.nth(i).dispatch_event("change")
+        page.wait_for_timeout(1800)
+
+    final_variants = [
+        {"effect":"Line screen","tone":[8,18,0.9,0,12,88],"slug":"line_final"},
+        {"effect":"Crosshatch","tone":[12,24,0.85,0,14,86],"slug":"crosshatch_final"},
+        {"effect":"Wave","tone":[10,20,0.9,0,12,88],"slug":"wave_final"},
+    ]
+    report["final_variants"] = []
+    for variant in final_variants:
+        try:
+            page.get_by_role("button", name="Effect", exact=True).click()
+            page.wait_for_timeout(400)
+            trigger = page.get_by_role("button", name=re.compile("Line screen|Crosshatch|Wave", re.I)).first
+            if trigger.count():
+                trigger.click()
+                page.wait_for_timeout(350)
+            opt = page.get_by_role("option", name=variant["effect"], exact=True)
+            if opt.count():
+                opt.click()
+            else:
+                btn = page.get_by_role("button", name=variant["effect"], exact=True)
+                if btn.count() and btn.first.is_visible():
+                    btn.first.click()
+            page.wait_for_timeout(1500)
+
+            page.get_by_role("button", name="Tone", exact=True).click()
+            page.wait_for_timeout(500)
+            set_visible_numbers(variant["tone"])
+
+            # For a traditional print look, keep normal black ink on paper.
+            info = largest_svg()
+            if info and info["area"] > 50000:
+                loc = page.locator("svg").nth(info["i"])
+                png = out / (variant["slug"] + ".png")
+                svg = out / (variant["slug"] + ".svg")
+                loc.screenshot(path=str(png), timeout=15000)
+                svg.write_text(loc.evaluate("e=>e.outerHTML"), encoding="utf-8")
+                report["final_variants"].append({"effect":variant["effect"],"tone":variant["tone"],"png":png.name,"svg":svg.name,"captured":True})
+        except Exception as e:
+            report["final_variants"].append({"effect":variant["effect"],"error":str(e),"captured":False})
+
+    if report["final_variants"]:
+        report["events"].append("tuned_engraving_variants_captured")
 
     # Return to Effect for canonical capture after survey.
     try:
