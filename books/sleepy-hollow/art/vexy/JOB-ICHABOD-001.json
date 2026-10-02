@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "LEVELS_NEIGHBORHOOD_SURVEY",
-  "retry_reason": "inspect Playlines levels/image-signal controls",
-  "retry_nonce": 8
+  "status": "TRACE_LEVELS_PARENT_CHAIN",
+  "retry_reason": "inspect exact DOM around levels/image signal controls",
+  "retry_nonce": 9
 }
