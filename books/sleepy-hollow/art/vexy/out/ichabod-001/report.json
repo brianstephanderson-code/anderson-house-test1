@@ -1,0 +1,71 @@
+{
+  "function": "three-amigos-vexy-vector-engraving",
+  "source": "/home/runner/work/anderson-house-test1/anderson-house-test1/books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg",
+  "url": "https://playlines.vexy.art/",
+  "events": [
+    "image_uploaded",
+    "large_svg_captured"
+  ],
+  "svg_candidates": [
+    {
+      "i": 17,
+      "area": 1643210.31253016,
+      "width": 1466.666748046875,
+      "height": 1120.37060546875
+    },
+    {
+      "i": 9,
+      "area": 324,
+      "width": 18,
+      "height": 18
+    },
+    {
+      "i": 0,
+      "area": 256,
+      "width": 16,
+      "height": 16
+    },
+    {
+      "i": 15,
+      "area": 81,
+      "width": 9,
+      "height": 9
+    },
+    {
+      "i": 16,
+      "area": 81,
+      "width": 9,
+      "height": 9
+    },
+    {
+      "i": 1,
+      "area": 60,
+      "width": 10,
+      "height": 6
+    },
+    {
+      "i": 2,
+      "area": 60,
+      "width": 10,
+      "height": 6
+    },
+    {
+      "i": 19,
+      "area": 48,
+      "width": 8,
+      "height": 6
+    },
+    {
+      "i": 20,
+      "area": 48,
+      "width": 8,
+      "height": 6
+    },
+    {
+      "i": 3,
+      "area": 0,
+      "width": 0,
+      "height": 0
+    }
+  ]
+}
