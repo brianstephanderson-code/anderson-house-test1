@@ -28,7 +28,21 @@ jobs:
           pip install pillow playwright
           python -m playwright install --with-deps chromium
 
+      - name: Reconstruct approved Ichabod input
+        run: |
+          cat tomo_bridge/vexy/input/ichabod_vexy_input.b64.part* | base64 -d > /tmp/ichabod_vexy_input.jpg
+          python - <<'PY'
+          from PIL import Image
+          p = "/tmp/ichabod_vexy_input.jpg"
+          im = Image.open(p)
+          print("ICHABOD_INPUT", im.size, im.mode)
+          im.verify()
+          print("ICHABOD_INPUT_OK")
+          PY
+
       - name: Drive Vexy Playlines
+        env:
+          VEXY_INPUT: /tmp/ichabod_vexy_input.jpg
         run: python tomo_bridge/vexy/playlines_probe.py
 
       - name: Upload probe evidence
