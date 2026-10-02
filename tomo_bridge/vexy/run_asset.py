@@ -116,6 +116,21 @@ with sync_playwright() as p:
         })"""
     )
 
+    report["initial_levels_probe"] = page.evaluate("""() => {
+      const imgs=[...document.images];
+      const e=imgs.find(x => (x.src||'').includes('levels.svg'));
+      if(!e) return {found:false, count:imgs.length};
+      const chain=[];
+      let p=e;
+      for(let n=0;p && n<6;n++,p=p.parentElement){
+        const r=p.getBoundingClientRect();
+        chain.push({n,tag:p.tagName,id:p.id||'',cls:String(p.className||''),
+          x:r.x,y:r.y,width:r.width,height:r.height,
+          outerHTML:p.outerHTML.slice(0,10000)});
+      }
+      return {found:true, index:imgs.indexOf(e), src:e.src, chain};
+    }""")
+
     html_snapshot = page.content()
     idx_levels = html_snapshot.find("levels.svg")
     report["levels_html_context"] = html_snapshot[max(0, idx_levels-6000): idx_levels+9000] if idx_levels >= 0 else ""
