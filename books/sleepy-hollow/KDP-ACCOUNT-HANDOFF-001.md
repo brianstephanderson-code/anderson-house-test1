@@ -38,17 +38,19 @@ Known consequence:
 
 If Anderson House later wants the same ISBN usable outside KDP or a registered Anderson House imprint, recast this choice before publication and use an owned ISBN instead.
 
-## AI-content answer for current coded-art build
+## AI-content answer for current build
 
 Current production record:
 - Irving text: public-domain human-authored source
-- Anderson House reader notes: human-directed/original production matter
+- Anderson House reader notes: **AI-GENERATED TEXT** drafted with ChatGPT/OpenAI
 - Interior illustrations: original coded illustration plates; no AI image generator used
 - Cover art: original coded artwork; no AI image generator used
 
-Current KDP AI-generated disclosure expected: **No**, provided no asset is replaced later with AI-generated text/image/translation.
+Current KDP AI-generated disclosure: **YES — TEXT**.
 
-If any AI-generated asset is introduced before upload, this answer MUST be recalculated.
+Do not mark the illustrations or cover as AI-generated unless those assets are later replaced with AI-generated imagery.
+
+If any production asset changes before upload, recalculate the disclosure from the actual final files.
 
 ## Product description — KDP public-domain differentiation opening
 
