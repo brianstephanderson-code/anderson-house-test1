@@ -1,0 +1,56 @@
+name: Three Amigos Vexy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_path:
+        description: Repository path to approved source image
+        required: true
+        default: books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.png
+      job_id:
+        description: Warehouse job id
+        required: true
+        default: ichabod-001
+
+permissions:
+  contents: write
+
+jobs:
+  vexy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify approved source exists
+        run: test -f "${{ inputs.source_path }}"
+
+      - name: Install Vexy bridge dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Pass approved asset through Vexy
+        run: |
+          python tomo_bridge/vexy/run_asset.py             "${{ inputs.source_path }}"             "books/sleepy-hollow/art/vexy/out/${{ inputs.job_id }}"
+
+      - name: Warehouse Vexy output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add books/sleepy-hollow/art/vexy/out
+          if ! git diff --cached --quiet; then
+            git commit -m "Warehouse Vexy output ${{ inputs.job_id }} [skip ci]"
+            git push
+          fi
+
+      - name: Upload inspection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vexy-${{ inputs.job_id }}
+          path: books/sleepy-hollow/art/vexy/out/${{ inputs.job_id }}/
