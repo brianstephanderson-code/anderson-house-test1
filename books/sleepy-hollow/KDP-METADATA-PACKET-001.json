@@ -1,0 +1,41 @@
+{
+  "work": "The Legend of Sleepy Hollow",
+  "author": "Washington Irving",
+  "edition_type": "Illustrated public-domain hardcover edition",
+  "language": "English",
+  "format_target": "Amazon KDP Hardcover",
+  "trim_inches": [5.5, 8.5],
+  "interior": {
+    "ink": "black",
+    "paper": "cream candidate",
+    "bleed": false
+  },
+  "rights": {
+    "underlying_work": "public domain in the United States",
+    "source_chain": "Project Gutenberg eBook #41 / GITenberg mirror / Anderson House protected working copy",
+    "added_matter": "original Anderson House edition matter and coded-vector illustrations"
+  },
+  "ai_content": {
+    "prototype_interior_illustrations": "NONE - coded vector artwork",
+    "prototype_cover_art": "NONE - coded raster/vector-style artwork",
+    "kdp_ai_generated_disclosure_currently_expected": false,
+    "rule": "Re-evaluate if any production asset is replaced by AI-generated text/image/translation."
+  },
+  "public_domain_differentiation": {
+    "method": "illustrated edition",
+    "target_original_relevant_illustrations": 12
+  },
+  "publication_fields_requiring_human_or_account-side choice": [
+    "ISBN route / KDP free ISBN or owned ISBN",
+    "publisher/imprint name",
+    "book description",
+    "keywords",
+    "categories",
+    "territories/rights selection",
+    "price",
+    "marketplaces",
+    "tax/bank/KYC confirmations",
+    "final publish button"
+  ],
+  "status": "PREPARED_FOR_FINAL_RENDER_AND_ACCOUNT_SIDE_COMPLETION"
+}
