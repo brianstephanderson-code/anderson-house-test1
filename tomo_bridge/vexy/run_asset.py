@@ -60,7 +60,47 @@ with sync_playwright() as p:
     if not uploaded:
         raise SystemExit("NO_IMAGE_FILE_INPUT_FOUND")
 
-    page.wait_for_timeout(12000)
+    page.wait_for_timeout(3000)
+
+    # Choose the uploaded source from Playlines' left image strip. The file
+    # chooser adds it to the library; the canvas does not necessarily switch
+    # to it automatically.
+    src_probe = Image.open(src)
+    src_w, src_h = src_probe.size
+    src_probe.close()
+    images = page.eval_on_selector_all(
+        "img",
+        """els => els.map((e,i) => {
+            const r=e.getBoundingClientRect();
+            return {i, naturalWidth:e.naturalWidth, naturalHeight:e.naturalHeight,
+                    width:r.width, height:r.height, src:(e.src||'').slice(0,160),
+                    alt:e.alt||''};
+        })"""
+    )
+    report["image_inventory"] = images
+    best_img = None
+    best_score = 10**9
+    target_ratio = src_w / max(src_h, 1)
+    for info in images:
+        nw, nh = info["naturalWidth"], info["naturalHeight"]
+        if nw <= 0 or nh <= 0:
+            continue
+        ratio = nw / nh
+        score = abs(ratio - target_ratio)
+        if nw == src_w and nh == src_h:
+            score -= 10
+        if score < best_score:
+            best_score = score
+            best_img = info["i"]
+    if best_img is not None:
+        try:
+            page.locator("img").nth(best_img).click(timeout=5000)
+            report["events"].append(f"uploaded_image_selected_{best_img}")
+            page.wait_for_timeout(12000)
+        except Exception as e:
+            report["image_select_error"] = str(e)
+    else:
+        page.wait_for_timeout(12000)
 
     for selector in [
         'text=Linear',
