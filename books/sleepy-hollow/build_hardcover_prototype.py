@@ -351,7 +351,8 @@ def centered(text,y,font,fill):
     box=d.textbbox((0,0),text,font=font); w=box[2]-box[0]
     d.text(((1650-w)//2,y),text,font=font,fill=fill)
 centered("THE LEGEND OF",650,ft,(236,231,213))
-centered("SLEEPY HOLLOW",790,ft,(236,231,213))\ncentered("(ILLUSTRATED)",930,fe,(184,175,148))
+centered("SLEEPY HOLLOW",790,ft,(236,231,213))
+centered("(ILLUSTRATED)",930,fe,(184,175,148))
 centered("WASHINGTON IRVING",2140,fa,(236,231,213))
 centered("ANDERSON HOUSE EDITION",2240,fe,(184,175,148))
 img.save(COVER,dpi=(300,300))
