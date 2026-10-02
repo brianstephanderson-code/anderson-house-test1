@@ -56,7 +56,7 @@ with sync_playwright() as p:
     # Survey the actual effect and tone controls, then cast across every visible engraving effect.
     def largest_svg():
         svs = page.eval_on_selector_all("svg", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,width:r.width,height:r.height,area:r.width*r.height}}).sort((a,b)=>b.area-a.area)""")
-        return svs[0] if svs else None
+        return next((s for s in svs if s["width"] > 0 and s["height"] > 0), None)
 
     effect_names = ["Line", "Lines", "Line screen", "Wave", "Crosshatch", "Contour", "Isolines", "Spiral", "Rings", "Scribble", "Stipple", "Halftone"]
     report["effect_survey"] = []
@@ -67,6 +67,7 @@ with sync_playwright() as p:
         report["effect_panel_text"] = page.locator("body").inner_text()[:12000]
         report["effect_inputs"] = page.eval_on_selector_all("input", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,type:e.type||'',value:e.value||'',min:e.min||'',max:e.max||'',step:e.step||'',checked:!!e.checked,visible:r.width>0&&r.height>0,x:r.x,y:r.y,outerHTML:e.outerHTML.slice(0,1000)}})""")
         report["effect_buttons"] = page.eval_on_selector_all("button", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,text:(e.innerText||'').trim(),visible:r.width>0&&r.height>0,x:r.x,y:r.y,w:r.width,h:r.height,aria:e.getAttribute('aria-label')||'',title:e.title||''}})""")
+        (out/"effect_panel.json").write_text(json.dumps({"text":report["effect_panel_text"],"inputs":report["effect_inputs"],"buttons":report["effect_buttons"]},indent=2),encoding="utf-8")
 
         seen = set()
         for name in effect_names:
@@ -131,19 +132,29 @@ with sync_playwright() as p:
     page.screenshot(path=str(out/"page.png"), full_page=True)
     report["events"].append("probe_captured")
 
+    # Persist the survey before any optional canonical capture.
+    (out/"report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+
     canv = [x for x in report["canvases"] if x["cssWidth"]*x["cssHeight"] > 50000]
-    if canv:
-        page.locator("canvas").nth(canv[0]["i"]).screenshot(path=str(out/"candidate.png"))
-        report["candidate_type"] = "canvas"
-        report["events"].append("candidate_canvas_captured")
-    else:
-        sv = [x for x in report["svgs"] if x["area"] > 50000]
-        if sv:
-            loc = page.locator("svg").nth(sv[0]["i"])
-            loc.screenshot(path=str(out/"candidate.png"))
-            (out/"candidate.svg").write_text(loc.evaluate("e=>e.outerHTML"), encoding="utf-8")
-            report["candidate_type"] = "svg"
-            report["events"].append("candidate_svg_captured")
+    try:
+        if canv:
+            loc = page.locator("canvas").nth(canv[0]["i"])
+            if loc.is_visible():
+                loc.screenshot(path=str(out/"candidate.png"), timeout=10000)
+                report["candidate_type"] = "canvas"
+                report["events"].append("candidate_canvas_captured")
+        else:
+            # Re-evaluate after tab changes and choose only a visible large SVG.
+            sv_now = page.eval_on_selector_all("svg", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,width:r.width,height:r.height,area:r.width*r.height,visible:!!(r.width&&r.height)}}).filter(x=>x.visible).sort((a,b)=>b.area-a.area)""")
+            sv = [x for x in sv_now if x["area"] > 50000]
+            if sv:
+                loc = page.locator("svg").nth(sv[0]["i"])
+                loc.screenshot(path=str(out/"candidate.png"), timeout=10000)
+                (out/"candidate.svg").write_text(loc.evaluate("e=>e.outerHTML"), encoding="utf-8")
+                report["candidate_type"] = "svg"
+                report["events"].append("candidate_svg_captured")
+    except Exception as e:
+        report["candidate_capture_error"] = str(e)
 
     (out/"report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     browser.close()
