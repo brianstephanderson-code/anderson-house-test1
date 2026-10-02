@@ -3,17 +3,24 @@
   "source": "/home/runner/work/anderson-house-test1/anderson-house-test1/books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg",
   "url": "https://playlines.vexy.art/",
   "events": [
-    "image_uploaded",
+    "image_uploaded_via_input_0",
     "large_svg_captured",
     "vexy_result_screenshot",
     "portable_preview_created"
   ],
+  "choose_image_error": "Timeout 5000ms exceeded while waiting for event \"filechooser\"\n=========================== logs ===========================\nwaiting for event \"filechooser\"\n============================================================",
   "svg_candidates": [
     {
       "i": 17,
       "area": 1643210.31253016,
       "width": 1466.666748046875,
       "height": 1120.37060546875
+    },
+    {
+      "i": 10,
+      "area": 1096.230712890625,
+      "width": 33.109375,
+      "height": 33.109375
     },
     {
       "i": 9,
@@ -62,12 +69,8 @@
       "area": 48,
       "width": 8,
       "height": 6
-    },
-    {
-      "i": 3,
-      "area": 0,
-      "width": 0,
-      "height": 0
     }
-  ]
+  ],
+  "preview_b64_length": 184112,
+  "preview_b64_chunks": 5
 }
