@@ -1,6 +1,6 @@
 {
   "file": "sleepy_hollow_hardcover_interior_prototype.pdf",
-  "page_count": 71,
+  "page_count": 74,
   "trim_inches": [
     5.5,
     8.5
@@ -20,7 +20,9 @@
     7,
     8,
     9,
-    10
+    10,
+    11,
+    12
   ],
   "kdp_hardcover_min_pages": 75,
   "meets_minimum": false,
