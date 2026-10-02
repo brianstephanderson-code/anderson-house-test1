@@ -9,7 +9,7 @@ OUT.mkdir(exist_ok=True)
 # Production input if present; otherwise retain the synthetic probe fallback.
 INPUT = Path(os.environ.get(
     "VEXY_INPUT",
-    "tomo_bridge/vexy/input/ichabod_vexy_input.jpg"
+    "tomo_bridge/vexy/input/ichabod_vexy_input.svg"
 ))
 if INPUT.exists():
     SRC = INPUT
