@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "FREE_FILL_SURVEY_REQUESTED",
-  "retry_reason": "compare Linear Wave Circular Spiral Halftone on verified source",
-  "retry_nonce": 5
+  "status": "BOUND_SOURCE_PREVIEW_VERIFY",
+  "retry_reason": "render exact bound source preview and continue debugging",
+  "retry_nonce": 6
 }
