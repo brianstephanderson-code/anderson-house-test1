@@ -158,6 +158,29 @@ with sync_playwright() as p:
     except Exception as e:
         report["source_binding_error"] = str(e)
 
+    # Save the exact image Playlines bound to #stageImg and compare it with
+    # the repository source. This distinguishes a real source load from the
+    # built-in demo image.
+    try:
+        import io
+        stage = page.locator("#stageImg")
+        stage_src = stage.get_attribute("src") if stage.count() else ""
+        if stage_src and stage_src.startswith("data:image") and "," in stage_src:
+            raw = base64.b64decode(stage_src.split(",",1)[1])
+            (out / "stage_source.png").write_bytes(raw)
+            stage_im = Image.open(io.BytesIO(raw)).convert("RGB")
+            ref_im = Image.open(src).convert("RGB").resize(stage_im.size, Image.Resampling.LANCZOS)
+            stage_gray = ImageOps.autocontrast(stage_im.convert("L"))
+            ref_gray = ImageOps.autocontrast(ref_im.convert("L"))
+            diff = ImageChops.difference(stage_gray, ref_gray)
+            mad = ImageStat.Stat(diff).mean[0]
+            report["source_binding_mad"] = mad
+            report["source_binding_matches_input"] = mad < 35
+            report["stage_source_size"] = list(stage_im.size)
+            report["events"].append("stage_source_saved")
+    except Exception as e:
+        report["stage_source_extract_error"] = str(e)
+
     # Capture the source view as evidence before transforming.
     try:
         page.locator("#viewSource").click(force=True, timeout=3000)
