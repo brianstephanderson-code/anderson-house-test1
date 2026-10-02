@@ -11,7 +11,7 @@ out.mkdir(parents=True, exist_ok=True)
 if not src.is_file():
     raise SystemExit("missing input image: " + str(src))
 
-report = {"function":"three-amigos-boxlab-engraver","source":str(src),"url":"https://boxlab.io/tools/engraver/en","events":[]}
+report = {"function":"three-amigos-boxlab-engraver","source":str(src),"url":"https://boxlab.io/tools/engraver/app/en","events":[]}
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
