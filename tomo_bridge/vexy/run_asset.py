@@ -260,6 +260,24 @@ with sync_playwright() as p:
       return out;
     }""")
 
+    report["shadow_signal_inventory"] = page.evaluate("""() => {
+      const host=document.querySelector('raster-to-svg');
+      const root=host?.shadowRoot;
+      if(!root) return {found:false};
+      const all=[...root.querySelectorAll('*')];
+      const selected=all.map((e,i)=>({
+        i,tag:e.tagName,id:e.id||'',cls:String(e.className||''),
+        title:e.getAttribute('title')||'',aria:e.getAttribute('aria-label')||'',
+        role:e.getAttribute('role')||'',type:e.getAttribute('type')||'',
+        value:('value' in e)?String(e.value):'',min:('min' in e)?String(e.min):'',
+        max:('max' in e)?String(e.max):'',step:('step' in e)?String(e.step):'',
+        html:e.outerHTML.slice(0,3200)
+      })).filter(x => /level|threshold|signal|hist|tone|invert|range/i.test(
+        [x.id,x.cls,x.title,x.aria,x.role,x.type,x.html].join(' ')
+      ));
+      return {found:true,count:all.length,selected:selected.slice(0,160)};
+    }""")
+
     report["signal_dom_inventory"] = page.evaluate("""() => {
       const all=[...document.querySelectorAll('*')];
       return all.map((e,i)=>({
