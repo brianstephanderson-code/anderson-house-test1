@@ -250,11 +250,13 @@ with sync_playwright() as p:
             return 0.0
 
     sweeps = [
-        {"thickness":180, "interval":180, "organic":10, "contrast":1.20, "brightness":0},
-        {"thickness":220, "interval":260, "organic":20, "contrast":1.35, "brightness":-5},
-        {"thickness":260, "interval":340, "organic":30, "contrast":1.50, "brightness":-10},
-        {"thickness":320, "interval":420, "organic":40, "contrast":1.65, "brightness":-15},
-        {"thickness":140, "interval":300, "organic":50, "contrast":1.45, "brightness":5},
+        {"thickness":35,  "interval":70,  "organic":10, "contrast":1.00, "brightness":55},
+        {"thickness":50,  "interval":90,  "organic":15, "contrast":1.10, "brightness":65},
+        {"thickness":70,  "interval":110, "organic":20, "contrast":1.20, "brightness":70},
+        {"thickness":90,  "interval":130, "organic":25, "contrast":1.30, "brightness":75},
+        {"thickness":120, "interval":150, "organic":30, "contrast":1.20, "brightness":80},
+        {"thickness":60,  "interval":60,  "organic":20, "contrast":1.00, "brightness":85},
+        {"thickness":100, "interval":80,  "organic":35, "contrast":1.40, "brightness":90},
     ]
     report["parameter_sweeps"] = []
     best_sweep = None
