@@ -116,6 +116,10 @@ with sync_playwright() as p:
         })"""
     )
 
+    html_snapshot = page.content()
+    idx_levels = html_snapshot.find("levels.svg")
+    report["levels_html_context"] = html_snapshot[max(0, idx_levels-6000): idx_levels+9000] if idx_levels >= 0 else ""
+
     # Prefer a newly-added image tile matching source aspect ratio and click it.
     src_im = Image.open(src)
     src_w, src_h = src_im.size
