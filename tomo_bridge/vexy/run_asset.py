@@ -28,26 +28,39 @@ with sync_playwright() as p:
     page = browser.new_page(viewport={"width": 1440, "height": 1100}, accept_downloads=True)
     page.goto(report["url"], wait_until="networkidle", timeout=120000)
 
-    fin = page.locator('input[type="file"]')
-    if fin.count() < 1:
-        for word in ["Upload", "Drop", "Open", "Image", "Start"]:
-            loc = page.get_by_text(word, exact=False)
-            if loc.count():
-                try:
-                    loc.first.click(timeout=2000)
-                    page.wait_for_timeout(1000)
-                    if page.locator('input[type="file"]').count():
-                        break
-                except Exception:
-                    pass
-        fin = page.locator('input[type="file"]')
+    uploaded = False
 
-    if fin.count() < 1:
-        raise SystemExit("NO_FILE_INPUT_FOUND")
+    # Use the visible Choose image control. Playlines also has an
+    # "Open .playlines" file input, so blindly using the first file input
+    # can feed the artwork into the wrong control.
+    try:
+        choose = page.get_by_text("Choose image", exact=False)
+        if choose.count():
+            with page.expect_file_chooser(timeout=5000) as fc:
+                choose.first.click()
+            fc.value.set_files(str(src))
+            uploaded = True
+            report["events"].append("image_uploaded_via_choose_image")
+    except Exception as e:
+        report["choose_image_error"] = str(e)
 
-    fin.first.set_input_files(str(src))
-    report["events"].append("image_uploaded")
-    page.wait_for_timeout(8000)
+    if not uploaded:
+        inputs = page.locator('input[type="file"]')
+        for i in range(inputs.count()):
+            try:
+                accept = inputs.nth(i).get_attribute("accept") or ""
+                if "image" in accept.lower() or not accept:
+                    inputs.nth(i).set_input_files(str(src))
+                    uploaded = True
+                    report["events"].append(f"image_uploaded_via_input_{i}")
+                    break
+            except Exception:
+                pass
+
+    if not uploaded:
+        raise SystemExit("NO_IMAGE_FILE_INPUT_FOUND")
+
+    page.wait_for_timeout(12000)
 
     for selector in [
         'text=Linear',
