@@ -7,7 +7,7 @@
     "source_binding_verified",
     "stage_source_saved",
     "linear_selected_visible_control",
-    "linear_parameter_sweep_complete",
+    "free_fill_family_survey_complete",
     "large_svg_captured",
     "portable_preview_created"
   ],
@@ -377,7 +377,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/girl1.jpeg\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/dahlia-white.png\" alt=\"\"></button>"
     },
     {
       "i": 31,
@@ -388,7 +388,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/kitten.jpeg\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/sax-white.png\" alt=\"\"></button>"
     },
     {
       "i": 32,
@@ -399,7 +399,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/unicorn.jpeg\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/tree1.jpeg\" alt=\"\"></button>"
     },
     {
       "i": 33,
@@ -421,7 +421,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/sax-white.png\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/kitten.jpeg\" alt=\"\"></button>"
     },
     {
       "i": 35,
@@ -432,7 +432,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/tree1.jpeg\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/dog.jpeg\" alt=\"\"></button>"
     },
     {
       "i": 36,
@@ -443,7 +443,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/tree2.jpeg\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/girl2.jpeg\" alt=\"\"></button>"
     },
     {
       "i": 37,
@@ -454,7 +454,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/dahlia-white.png\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/unicorn.jpeg\" alt=\"\"></button>"
     },
     {
       "i": 38,
@@ -465,7 +465,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/dog.jpeg\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/girl1.jpeg\" alt=\"\"></button>"
     },
     {
       "i": 39,
@@ -476,7 +476,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/girl2.jpeg\" alt=\"\"></button>"
+      "outerHTML": "<button class=\"sample\"><img src=\"https://playlines.vexy.art/public/samples/tree2.jpeg\" alt=\"\"></button>"
     },
     {
       "i": 40,
@@ -586,7 +586,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Stipple\" aria-pressed=\"false\"><img data-fill=\"stipple\" alt=\"Stipple\" src=\"blob:https://playlines.vexy.art/32804f34-db38-48bd-82f7-d8a0de7aa540\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Stipple\" aria-pressed=\"false\"><img data-fill=\"stipple\" alt=\"Stipple\" src=\"blob:https://playlines.vexy.art/0680104f-47af-4970-8685-26efa5d378bd\"></button>"
     },
     {
       "i": 50,
@@ -597,7 +597,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Hex\" aria-pressed=\"false\"><img data-fill=\"hex\" alt=\"Hex\" src=\"blob:https://playlines.vexy.art/4a253194-3ccb-430c-bbc3-a25708f4e7c0\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Hex\" aria-pressed=\"false\"><img data-fill=\"hex\" alt=\"Hex\" src=\"blob:https://playlines.vexy.art/6cc4bb0b-2808-4b0f-a311-efde0cf1c191\"></button>"
     },
     {
       "i": 51,
@@ -608,7 +608,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Contour\" aria-pressed=\"false\"><img data-fill=\"contour\" alt=\"Contour\" src=\"blob:https://playlines.vexy.art/70b7c720-9160-43fb-8c92-8f0ea25da3f2\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Contour\" aria-pressed=\"false\"><img data-fill=\"contour\" alt=\"Contour\" src=\"blob:https://playlines.vexy.art/4373ca53-8566-4e49-8f55-9561e15514be\"></button>"
     },
     {
       "i": 52,
@@ -619,7 +619,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Low-Poly\" aria-pressed=\"false\"><img data-fill=\"lowpoly\" alt=\"Low-Poly\" src=\"blob:https://playlines.vexy.art/f2b8e79d-7aff-4567-9cfe-1f7a0f27248d\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Low-Poly\" aria-pressed=\"false\"><img data-fill=\"lowpoly\" alt=\"Low-Poly\" src=\"blob:https://playlines.vexy.art/c47ed0f4-500b-417d-bcf6-6bf24291722e\"></button>"
     },
     {
       "i": 53,
@@ -630,7 +630,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Pattern\" aria-pressed=\"false\"><img data-fill=\"pattern\" alt=\"Pattern\" src=\"blob:https://playlines.vexy.art/0e15c5bf-bdea-4356-b67b-df552c12714a\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Pattern\" aria-pressed=\"false\"><img data-fill=\"pattern\" alt=\"Pattern\" src=\"blob:https://playlines.vexy.art/de62f939-2216-4561-96ac-ccc7d948dc44\"></button>"
     },
     {
       "i": 54,
@@ -641,7 +641,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Wireframe\" aria-pressed=\"false\"><img data-fill=\"wireframe\" alt=\"Wireframe\" src=\"blob:https://playlines.vexy.art/a14f98b8-11df-4b29-bf3b-2b3192afa1d8\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Wireframe\" aria-pressed=\"false\"><img data-fill=\"wireframe\" alt=\"Wireframe\" src=\"blob:https://playlines.vexy.art/57830c29-edd6-4d02-8dc9-3ab1c2b991e9\"></button>"
     },
     {
       "i": 55,
@@ -652,7 +652,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Fractal\" aria-pressed=\"false\"><img data-fill=\"fractal\" alt=\"Fractal\" src=\"blob:https://playlines.vexy.art/6f7afe31-4177-49da-94b3-125627274bb9\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Fractal\" aria-pressed=\"false\"><img data-fill=\"fractal\" alt=\"Fractal\" src=\"blob:https://playlines.vexy.art/13f89fea-ba2f-46d5-859a-5a32b6022881\"></button>"
     },
     {
       "i": 56,
@@ -663,7 +663,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"String Art\" aria-pressed=\"false\"><img data-fill=\"stringart\" alt=\"String Art\" src=\"blob:https://playlines.vexy.art/f936af0f-f09f-4971-9cbe-aa7b394801b4\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"String Art\" aria-pressed=\"false\"><img data-fill=\"stringart\" alt=\"String Art\" src=\"blob:https://playlines.vexy.art/d64a3edc-437f-40a6-b67e-c66a34d278fd\"></button>"
     },
     {
       "i": 57,
@@ -674,7 +674,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"ASCII\" aria-pressed=\"false\"><img data-fill=\"ascii\" alt=\"ASCII\" src=\"blob:https://playlines.vexy.art/fbca5791-9668-4f04-a4e4-a73e22497d5f\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"ASCII\" aria-pressed=\"false\"><img data-fill=\"ascii\" alt=\"ASCII\" src=\"blob:https://playlines.vexy.art/0811829f-314a-40f2-8b0c-3a8dcf6bb1b4\"></button>"
     },
     {
       "i": 58,
@@ -762,7 +762,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn\" title=\"Wave\" aria-pressed=\"true\"><img data-fill=\"wave\" alt=\"Wave\" src=\"blob:https://playlines.vexy.art/e0d476a6-952f-48e8-896c-735109cbdfc3\"></button>"
+      "outerHTML": "<button class=\"fillBtn\" title=\"Wave\" aria-pressed=\"true\"><img data-fill=\"wave\" alt=\"Wave\" src=\"blob:https://playlines.vexy.art/eb56328f-0377-430b-9227-3c62d38ab9ea\"></button>"
     },
     {
       "i": 66,
@@ -806,7 +806,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Stipple\" aria-pressed=\"false\"><img data-fill=\"stipple\" alt=\"Stipple\" src=\"blob:https://playlines.vexy.art/4edfc02f-e51a-4a90-a3ff-880659f01580\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Stipple\" aria-pressed=\"false\"><img data-fill=\"stipple\" alt=\"Stipple\" src=\"blob:https://playlines.vexy.art/5d321aff-4cc8-415a-8990-309aa3db6ada\"></button>"
     },
     {
       "i": 70,
@@ -817,7 +817,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Hex\" aria-pressed=\"false\"><img data-fill=\"hex\" alt=\"Hex\" src=\"blob:https://playlines.vexy.art/ec3e6565-5706-4416-8500-35e21b63dade\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Hex\" aria-pressed=\"false\"><img data-fill=\"hex\" alt=\"Hex\" src=\"blob:https://playlines.vexy.art/5fecf1c9-dd98-46ea-8e80-0f472c14847b\"></button>"
     },
     {
       "i": 71,
@@ -828,7 +828,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Contour\" aria-pressed=\"false\"><img data-fill=\"contour\" alt=\"Contour\" src=\"blob:https://playlines.vexy.art/82c37df4-7658-4f6b-9bdd-f72b89d17080\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Contour\" aria-pressed=\"false\"><img data-fill=\"contour\" alt=\"Contour\" src=\"blob:https://playlines.vexy.art/36edc6ab-0389-4b55-be14-6990b338683a\"></button>"
     },
     {
       "i": 72,
@@ -839,7 +839,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Low-Poly\" aria-pressed=\"false\"><img data-fill=\"lowpoly\" alt=\"Low-Poly\" src=\"blob:https://playlines.vexy.art/e144e917-8c37-42f6-aed9-b5465073d310\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Low-Poly\" aria-pressed=\"false\"><img data-fill=\"lowpoly\" alt=\"Low-Poly\" src=\"blob:https://playlines.vexy.art/ca86967d-5149-4943-81dd-4535e9921b8e\"></button>"
     },
     {
       "i": 73,
@@ -850,7 +850,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Pattern\" aria-pressed=\"false\"><img data-fill=\"pattern\" alt=\"Pattern\" src=\"blob:https://playlines.vexy.art/d559050c-f3e9-4d29-9017-9c700f64574f\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Pattern\" aria-pressed=\"false\"><img data-fill=\"pattern\" alt=\"Pattern\" src=\"blob:https://playlines.vexy.art/32ca4845-ac6d-4f5c-a566-a06d4ff98bf5\"></button>"
     },
     {
       "i": 74,
@@ -861,7 +861,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Wireframe\" aria-pressed=\"false\"><img data-fill=\"wireframe\" alt=\"Wireframe\" src=\"blob:https://playlines.vexy.art/35b1e8f7-9847-482a-8dac-7bf2cebca271\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Wireframe\" aria-pressed=\"false\"><img data-fill=\"wireframe\" alt=\"Wireframe\" src=\"blob:https://playlines.vexy.art/28d30912-b904-40c7-b6e2-ae60307b186e\"></button>"
     },
     {
       "i": 75,
@@ -872,7 +872,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Fractal\" aria-pressed=\"false\"><img data-fill=\"fractal\" alt=\"Fractal\" src=\"blob:https://playlines.vexy.art/fbaf57b0-5e07-4f83-bb51-63d7fbb554ba\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"Fractal\" aria-pressed=\"false\"><img data-fill=\"fractal\" alt=\"Fractal\" src=\"blob:https://playlines.vexy.art/e2276961-c4a1-4d4c-b6b7-bb5747dce402\"></button>"
     },
     {
       "i": 76,
@@ -883,7 +883,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"String Art\" aria-pressed=\"false\"><img data-fill=\"stringart\" alt=\"String Art\" src=\"blob:https://playlines.vexy.art/b45f8e54-7907-4b92-8451-18f0832febe1\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"String Art\" aria-pressed=\"false\"><img data-fill=\"stringart\" alt=\"String Art\" src=\"blob:https://playlines.vexy.art/eb048080-b98a-4105-8b38-1a745ec46331\"></button>"
     },
     {
       "i": 77,
@@ -894,7 +894,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"ASCII\" aria-pressed=\"false\"><img data-fill=\"ascii\" alt=\"ASCII\" src=\"blob:https://playlines.vexy.art/409ce08f-7ae3-4ee0-b940-ee05034481f9\"></button>"
+      "outerHTML": "<button class=\"fillBtn premium login-required\" title=\"ASCII\" aria-pressed=\"false\"><img data-fill=\"ascii\" alt=\"ASCII\" src=\"blob:https://playlines.vexy.art/69cbd029-a679-4687-9ad6-16334afb28ef\"></button>"
     },
     {
       "i": 78,
@@ -916,7 +916,7 @@
       "height": 32,
       "x": 1217,
       "y": 108.390625,
-      "outerHTML": "<button id=\"fillWave\" class=\"fillBtn\" aria-pressed=\"true\" title=\"Wave\"><img data-fill=\"wave\" alt=\"Wave\" src=\"blob:https://playlines.vexy.art/0bf7b249-132f-471c-9ede-1659616d1665\"></button>"
+      "outerHTML": "<button id=\"fillWave\" class=\"fillBtn\" aria-pressed=\"true\" title=\"Wave\"><img data-fill=\"wave\" alt=\"Wave\" src=\"blob:https://playlines.vexy.art/9f7f0e04-1677-44c4-beec-da56934d67fa\"></button>"
     },
     {
       "i": 80,
@@ -960,7 +960,7 @@
       "height": 32,
       "x": 1167,
       "y": 148.390625,
-      "outerHTML": "<button id=\"fillStipple\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Stipple\"><img data-fill=\"stipple\" alt=\"Stipple\" src=\"blob:https://playlines.vexy.art/fd9e8073-760c-4faf-bb27-3b8be70e9bd9\"></button>"
+      "outerHTML": "<button id=\"fillStipple\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Stipple\"><img data-fill=\"stipple\" alt=\"Stipple\" src=\"blob:https://playlines.vexy.art/86e09fd0-8451-44f1-84a5-920778c0a753\"></button>"
     },
     {
       "i": 84,
@@ -971,7 +971,7 @@
       "height": 32,
       "x": 1217,
       "y": 148.390625,
-      "outerHTML": "<button id=\"fillHex\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Hex\"><img data-fill=\"hex\" alt=\"Hex\" src=\"blob:https://playlines.vexy.art/0d89507a-9127-4455-bfed-40da3605e7d8\"></button>"
+      "outerHTML": "<button id=\"fillHex\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Hex\"><img data-fill=\"hex\" alt=\"Hex\" src=\"blob:https://playlines.vexy.art/3ceacbd2-60b8-4d85-8fb0-c2c91b41ee5d\"></button>"
     },
     {
       "i": 85,
@@ -982,7 +982,7 @@
       "height": 32,
       "x": 1267,
       "y": 148.390625,
-      "outerHTML": "<button id=\"fillContour\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Contour\"><img data-fill=\"contour\" alt=\"Contour\" src=\"blob:https://playlines.vexy.art/55f5d002-a6ae-4596-88c9-1d9bec65f490\"></button>"
+      "outerHTML": "<button id=\"fillContour\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Contour\"><img data-fill=\"contour\" alt=\"Contour\" src=\"blob:https://playlines.vexy.art/2eeb60c0-6403-4baa-9883-c05a247f40a0\"></button>"
     },
     {
       "i": 86,
@@ -993,7 +993,7 @@
       "height": 32,
       "x": 1317,
       "y": 148.390625,
-      "outerHTML": "<button id=\"fillLowpoly\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Low-Poly\"><img data-fill=\"lowpoly\" alt=\"Low-Poly\" src=\"blob:https://playlines.vexy.art/83e007a9-32c7-457c-b89c-2bc3b94f23b7\"></button>"
+      "outerHTML": "<button id=\"fillLowpoly\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Low-Poly\"><img data-fill=\"lowpoly\" alt=\"Low-Poly\" src=\"blob:https://playlines.vexy.art/5c9b41e5-ad28-49f4-9517-058f6a0a7093\"></button>"
     },
     {
       "i": 87,
@@ -1004,7 +1004,7 @@
       "height": 32,
       "x": 1367,
       "y": 148.390625,
-      "outerHTML": "<button id=\"fillPattern\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Pattern\"><img data-fill=\"pattern\" alt=\"Pattern\" src=\"blob:https://playlines.vexy.art/eed23005-e9c1-46e8-a778-b354676841aa\"></button>"
+      "outerHTML": "<button id=\"fillPattern\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Pattern\"><img data-fill=\"pattern\" alt=\"Pattern\" src=\"blob:https://playlines.vexy.art/984f7e5f-f6cd-4d28-92de-d88794e420b9\"></button>"
     },
     {
       "i": 88,
@@ -1015,7 +1015,7 @@
       "height": 32,
       "x": 1167,
       "y": 188.390625,
-      "outerHTML": "<button id=\"fillWireframe\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Wireframe\"><img data-fill=\"wireframe\" alt=\"Wireframe\" src=\"blob:https://playlines.vexy.art/1bc64468-bcb6-4268-a0f8-cccc26e2944a\"></button>"
+      "outerHTML": "<button id=\"fillWireframe\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Wireframe\"><img data-fill=\"wireframe\" alt=\"Wireframe\" src=\"blob:https://playlines.vexy.art/99b64cf8-626e-418c-9cb4-faac62313673\"></button>"
     },
     {
       "i": 89,
@@ -1026,7 +1026,7 @@
       "height": 32,
       "x": 1217,
       "y": 188.390625,
-      "outerHTML": "<button id=\"fillFractal\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Fractal\"><img data-fill=\"fractal\" alt=\"Fractal\" src=\"blob:https://playlines.vexy.art/102a1d1b-2f48-496b-91c0-5d324fc557ec\"></button>"
+      "outerHTML": "<button id=\"fillFractal\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"Fractal\"><img data-fill=\"fractal\" alt=\"Fractal\" src=\"blob:https://playlines.vexy.art/f13ff095-1057-4de0-8c6c-359a33580054\"></button>"
     },
     {
       "i": 90,
@@ -1037,7 +1037,7 @@
       "height": 32,
       "x": 1267,
       "y": 188.390625,
-      "outerHTML": "<button id=\"fillStringart\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"String Art\"><img data-fill=\"stringart\" alt=\"String Art\" src=\"blob:https://playlines.vexy.art/86d95df7-bcf6-4291-912a-2eec5752cb16\"></button>"
+      "outerHTML": "<button id=\"fillStringart\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"String Art\"><img data-fill=\"stringart\" alt=\"String Art\" src=\"blob:https://playlines.vexy.art/8d41f0a3-5ee3-41b0-bc5e-de894ad84a70\"></button>"
     },
     {
       "i": 91,
@@ -1048,7 +1048,7 @@
       "height": 32,
       "x": 1317,
       "y": 188.390625,
-      "outerHTML": "<button id=\"fillAscii\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"ASCII\"><img data-fill=\"ascii\" alt=\"ASCII\" src=\"blob:https://playlines.vexy.art/79423d36-2096-43ab-a287-d6ae67c9a8b1\"></button>"
+      "outerHTML": "<button id=\"fillAscii\" class=\"fillBtn premium login-required\" aria-pressed=\"false\" title=\"ASCII\"><img data-fill=\"ascii\" alt=\"ASCII\" src=\"blob:https://playlines.vexy.art/4965cf09-525f-4905-b183-0bc0ca05351d\"></button>"
     },
     {
       "i": 92,
@@ -1959,35 +1959,35 @@
     },
     {
       "i": 7,
+      "naturalWidth": 1024,
+      "naturalHeight": 1024,
+      "width": 0,
+      "height": 0,
+      "x": 0,
+      "y": 0,
+      "src": "https://playlines.vexy.art/public/samples/dahlia-white.png",
+      "alt": ""
+    },
+    {
+      "i": 8,
+      "naturalWidth": 1024,
+      "naturalHeight": 1024,
+      "width": 0,
+      "height": 0,
+      "x": 0,
+      "y": 0,
+      "src": "https://playlines.vexy.art/public/samples/sax-white.png",
+      "alt": ""
+    },
+    {
+      "i": 9,
       "naturalWidth": 1232,
       "naturalHeight": 928,
       "width": 0,
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "https://playlines.vexy.art/public/samples/girl1.jpeg",
-      "alt": ""
-    },
-    {
-      "i": 8,
-      "naturalWidth": 2464,
-      "naturalHeight": 1856,
-      "width": 0,
-      "height": 0,
-      "x": 0,
-      "y": 0,
-      "src": "https://playlines.vexy.art/public/samples/kitten.jpeg",
-      "alt": ""
-    },
-    {
-      "i": 9,
-      "naturalWidth": 2464,
-      "naturalHeight": 1856,
-      "width": 0,
-      "height": 0,
-      "x": 0,
-      "y": 0,
-      "src": "https://playlines.vexy.art/public/samples/unicorn.jpeg",
+      "src": "https://playlines.vexy.art/public/samples/tree1.jpeg",
       "alt": ""
     },
     {
@@ -2003,50 +2003,17 @@
     },
     {
       "i": 11,
-      "naturalWidth": 1024,
-      "naturalHeight": 1024,
+      "naturalWidth": 2464,
+      "naturalHeight": 1856,
       "width": 0,
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "https://playlines.vexy.art/public/samples/sax-white.png",
+      "src": "https://playlines.vexy.art/public/samples/kitten.jpeg",
       "alt": ""
     },
     {
       "i": 12,
-      "naturalWidth": 1232,
-      "naturalHeight": 928,
-      "width": 0,
-      "height": 0,
-      "x": 0,
-      "y": 0,
-      "src": "https://playlines.vexy.art/public/samples/tree1.jpeg",
-      "alt": ""
-    },
-    {
-      "i": 13,
-      "naturalWidth": 1232,
-      "naturalHeight": 928,
-      "width": 0,
-      "height": 0,
-      "x": 0,
-      "y": 0,
-      "src": "https://playlines.vexy.art/public/samples/tree2.jpeg",
-      "alt": ""
-    },
-    {
-      "i": 14,
-      "naturalWidth": 1024,
-      "naturalHeight": 1024,
-      "width": 0,
-      "height": 0,
-      "x": 0,
-      "y": 0,
-      "src": "https://playlines.vexy.art/public/samples/dahlia-white.png",
-      "alt": ""
-    },
-    {
-      "i": 15,
       "naturalWidth": 2464,
       "naturalHeight": 1856,
       "width": 0,
@@ -2057,7 +2024,7 @@
       "alt": ""
     },
     {
-      "i": 16,
+      "i": 13,
       "naturalWidth": 2464,
       "naturalHeight": 1856,
       "width": 0,
@@ -2065,6 +2032,39 @@
       "x": 0,
       "y": 0,
       "src": "https://playlines.vexy.art/public/samples/girl2.jpeg",
+      "alt": ""
+    },
+    {
+      "i": 14,
+      "naturalWidth": 2464,
+      "naturalHeight": 1856,
+      "width": 0,
+      "height": 0,
+      "x": 0,
+      "y": 0,
+      "src": "https://playlines.vexy.art/public/samples/unicorn.jpeg",
+      "alt": ""
+    },
+    {
+      "i": 15,
+      "naturalWidth": 1232,
+      "naturalHeight": 928,
+      "width": 0,
+      "height": 0,
+      "x": 0,
+      "y": 0,
+      "src": "https://playlines.vexy.art/public/samples/girl1.jpeg",
+      "alt": ""
+    },
+    {
+      "i": 16,
+      "naturalWidth": 1232,
+      "naturalHeight": 928,
+      "width": 0,
+      "height": 0,
+      "x": 0,
+      "y": 0,
+      "src": "https://playlines.vexy.art/public/samples/tree2.jpeg",
       "alt": ""
     },
     {
@@ -2163,7 +2163,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/32804f34-db38-48bd-82f7-d8a0de7aa540",
+      "src": "blob:https://playlines.vexy.art/0680104f-47af-4970-8685-26efa5d378bd",
       "alt": "Stipple"
     },
     {
@@ -2174,7 +2174,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/4a253194-3ccb-430c-bbc3-a25708f4e7c0",
+      "src": "blob:https://playlines.vexy.art/6cc4bb0b-2808-4b0f-a311-efde0cf1c191",
       "alt": "Hex"
     },
     {
@@ -2185,7 +2185,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/70b7c720-9160-43fb-8c92-8f0ea25da3f2",
+      "src": "blob:https://playlines.vexy.art/4373ca53-8566-4e49-8f55-9561e15514be",
       "alt": "Contour"
     },
     {
@@ -2196,7 +2196,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/f2b8e79d-7aff-4567-9cfe-1f7a0f27248d",
+      "src": "blob:https://playlines.vexy.art/c47ed0f4-500b-417d-bcf6-6bf24291722e",
       "alt": "Low-Poly"
     },
     {
@@ -2207,7 +2207,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/0e15c5bf-bdea-4356-b67b-df552c12714a",
+      "src": "blob:https://playlines.vexy.art/de62f939-2216-4561-96ac-ccc7d948dc44",
       "alt": "Pattern"
     },
     {
@@ -2218,7 +2218,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/a14f98b8-11df-4b29-bf3b-2b3192afa1d8",
+      "src": "blob:https://playlines.vexy.art/57830c29-edd6-4d02-8dc9-3ab1c2b991e9",
       "alt": "Wireframe"
     },
     {
@@ -2229,7 +2229,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/6f7afe31-4177-49da-94b3-125627274bb9",
+      "src": "blob:https://playlines.vexy.art/13f89fea-ba2f-46d5-859a-5a32b6022881",
       "alt": "Fractal"
     },
     {
@@ -2240,7 +2240,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/f936af0f-f09f-4971-9cbe-aa7b394801b4",
+      "src": "blob:https://playlines.vexy.art/d64a3edc-437f-40a6-b67e-c66a34d278fd",
       "alt": "String Art"
     },
     {
@@ -2251,7 +2251,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/fbca5791-9668-4f04-a4e4-a73e22497d5f",
+      "src": "blob:https://playlines.vexy.art/0811829f-314a-40f2-8b0c-3a8dcf6bb1b4",
       "alt": "ASCII"
     },
     {
@@ -2306,7 +2306,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/e0d476a6-952f-48e8-896c-735109cbdfc3",
+      "src": "blob:https://playlines.vexy.art/eb56328f-0377-430b-9227-3c62d38ab9ea",
       "alt": "Wave"
     },
     {
@@ -2350,7 +2350,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/4edfc02f-e51a-4a90-a3ff-880659f01580",
+      "src": "blob:https://playlines.vexy.art/5d321aff-4cc8-415a-8990-309aa3db6ada",
       "alt": "Stipple"
     },
     {
@@ -2361,7 +2361,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/ec3e6565-5706-4416-8500-35e21b63dade",
+      "src": "blob:https://playlines.vexy.art/5fecf1c9-dd98-46ea-8e80-0f472c14847b",
       "alt": "Hex"
     },
     {
@@ -2372,7 +2372,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/82c37df4-7658-4f6b-9bdd-f72b89d17080",
+      "src": "blob:https://playlines.vexy.art/36edc6ab-0389-4b55-be14-6990b338683a",
       "alt": "Contour"
     },
     {
@@ -2383,7 +2383,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/e144e917-8c37-42f6-aed9-b5465073d310",
+      "src": "blob:https://playlines.vexy.art/ca86967d-5149-4943-81dd-4535e9921b8e",
       "alt": "Low-Poly"
     },
     {
@@ -2394,7 +2394,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/d559050c-f3e9-4d29-9017-9c700f64574f",
+      "src": "blob:https://playlines.vexy.art/32ca4845-ac6d-4f5c-a566-a06d4ff98bf5",
       "alt": "Pattern"
     },
     {
@@ -2405,7 +2405,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/35b1e8f7-9847-482a-8dac-7bf2cebca271",
+      "src": "blob:https://playlines.vexy.art/28d30912-b904-40c7-b6e2-ae60307b186e",
       "alt": "Wireframe"
     },
     {
@@ -2416,7 +2416,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/fbaf57b0-5e07-4f83-bb51-63d7fbb554ba",
+      "src": "blob:https://playlines.vexy.art/e2276961-c4a1-4d4c-b6b7-bb5747dce402",
       "alt": "Fractal"
     },
     {
@@ -2427,7 +2427,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/b45f8e54-7907-4b92-8451-18f0832febe1",
+      "src": "blob:https://playlines.vexy.art/eb048080-b98a-4105-8b38-1a745ec46331",
       "alt": "String Art"
     },
     {
@@ -2438,7 +2438,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/409ce08f-7ae3-4ee0-b940-ee05034481f9",
+      "src": "blob:https://playlines.vexy.art/69cbd029-a679-4687-9ad6-16334afb28ef",
       "alt": "ASCII"
     },
     {
@@ -2460,7 +2460,7 @@
       "height": 20,
       "x": 1228,
       "y": 114.390625,
-      "src": "blob:https://playlines.vexy.art/0bf7b249-132f-471c-9ede-1659616d1665",
+      "src": "blob:https://playlines.vexy.art/9f7f0e04-1677-44c4-beec-da56934d67fa",
       "alt": "Wave"
     },
     {
@@ -2504,7 +2504,7 @@
       "height": 20,
       "x": 1178,
       "y": 154.390625,
-      "src": "blob:https://playlines.vexy.art/fd9e8073-760c-4faf-bb27-3b8be70e9bd9",
+      "src": "blob:https://playlines.vexy.art/86e09fd0-8451-44f1-84a5-920778c0a753",
       "alt": "Stipple"
     },
     {
@@ -2515,7 +2515,7 @@
       "height": 20,
       "x": 1228,
       "y": 154.390625,
-      "src": "blob:https://playlines.vexy.art/0d89507a-9127-4455-bfed-40da3605e7d8",
+      "src": "blob:https://playlines.vexy.art/3ceacbd2-60b8-4d85-8fb0-c2c91b41ee5d",
       "alt": "Hex"
     },
     {
@@ -2526,7 +2526,7 @@
       "height": 20,
       "x": 1278,
       "y": 154.390625,
-      "src": "blob:https://playlines.vexy.art/55f5d002-a6ae-4596-88c9-1d9bec65f490",
+      "src": "blob:https://playlines.vexy.art/2eeb60c0-6403-4baa-9883-c05a247f40a0",
       "alt": "Contour"
     },
     {
@@ -2537,7 +2537,7 @@
       "height": 20,
       "x": 1328,
       "y": 154.390625,
-      "src": "blob:https://playlines.vexy.art/83e007a9-32c7-457c-b89c-2bc3b94f23b7",
+      "src": "blob:https://playlines.vexy.art/5c9b41e5-ad28-49f4-9517-058f6a0a7093",
       "alt": "Low-Poly"
     },
     {
@@ -2548,7 +2548,7 @@
       "height": 20,
       "x": 1378,
       "y": 154.390625,
-      "src": "blob:https://playlines.vexy.art/eed23005-e9c1-46e8-a778-b354676841aa",
+      "src": "blob:https://playlines.vexy.art/984f7e5f-f6cd-4d28-92de-d88794e420b9",
       "alt": "Pattern"
     },
     {
@@ -2559,7 +2559,7 @@
       "height": 20,
       "x": 1178,
       "y": 194.390625,
-      "src": "blob:https://playlines.vexy.art/1bc64468-bcb6-4268-a0f8-cccc26e2944a",
+      "src": "blob:https://playlines.vexy.art/99b64cf8-626e-418c-9cb4-faac62313673",
       "alt": "Wireframe"
     },
     {
@@ -2570,7 +2570,7 @@
       "height": 20,
       "x": 1228,
       "y": 194.390625,
-      "src": "blob:https://playlines.vexy.art/102a1d1b-2f48-496b-91c0-5d324fc557ec",
+      "src": "blob:https://playlines.vexy.art/f13ff095-1057-4de0-8c6c-359a33580054",
       "alt": "Fractal"
     },
     {
@@ -2581,7 +2581,7 @@
       "height": 20,
       "x": 1278,
       "y": 194.390625,
-      "src": "blob:https://playlines.vexy.art/86d95df7-bcf6-4291-912a-2eec5752cb16",
+      "src": "blob:https://playlines.vexy.art/8d41f0a3-5ee3-41b0-bc5e-de894ad84a70",
       "alt": "String Art"
     },
     {
@@ -2592,7 +2592,7 @@
       "height": 20,
       "x": 1328,
       "y": 194.390625,
-      "src": "blob:https://playlines.vexy.art/79423d36-2096-43ab-a287-d6ae67c9a8b1",
+      "src": "blob:https://playlines.vexy.art/4965cf09-525f-4905-b183-0bc0ca05351d",
       "alt": "ASCII"
     },
     {
@@ -2935,7 +2935,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/32804f34-db38-48bd-82f7-d8a0de7aa540",
+      "src": "blob:https://playlines.vexy.art/0680104f-47af-4970-8685-26efa5d378bd",
       "alt": "Stipple"
     },
     {
@@ -2946,7 +2946,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/4a253194-3ccb-430c-bbc3-a25708f4e7c0",
+      "src": "blob:https://playlines.vexy.art/6cc4bb0b-2808-4b0f-a311-efde0cf1c191",
       "alt": "Hex"
     },
     {
@@ -2957,7 +2957,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/70b7c720-9160-43fb-8c92-8f0ea25da3f2",
+      "src": "blob:https://playlines.vexy.art/4373ca53-8566-4e49-8f55-9561e15514be",
       "alt": "Contour"
     },
     {
@@ -2968,7 +2968,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/f2b8e79d-7aff-4567-9cfe-1f7a0f27248d",
+      "src": "blob:https://playlines.vexy.art/c47ed0f4-500b-417d-bcf6-6bf24291722e",
       "alt": "Low-Poly"
     },
     {
@@ -2979,7 +2979,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/0e15c5bf-bdea-4356-b67b-df552c12714a",
+      "src": "blob:https://playlines.vexy.art/de62f939-2216-4561-96ac-ccc7d948dc44",
       "alt": "Pattern"
     },
     {
@@ -2990,7 +2990,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/a14f98b8-11df-4b29-bf3b-2b3192afa1d8",
+      "src": "blob:https://playlines.vexy.art/57830c29-edd6-4d02-8dc9-3ab1c2b991e9",
       "alt": "Wireframe"
     },
     {
@@ -3001,7 +3001,7 @@
       "height": 0,
       "x": 0,
       "y": 0,
-      "src": "blob:https://playlines.vexy.art/6f7afe31-4177-49da-94b3-125627274bb9",
+      "src": "blob:https://playlines.vexy.art/13f89fea-ba2f-46d5-859a-5a32b6022881",
       "alt": "Fractal"
     }
   ],
@@ -3132,87 +3132,97 @@
       "aria": ""
     }
   ],
-  "parameter_sweeps": [
+  "fill_family_tests": [
     {
-      "index": 1,
-      "thickness": 35,
-      "interval": 70,
-      "organic": 10,
-      "contrast": 1.0,
-      "brightness": 55,
+      "name": "Linear",
+      "selected": true,
+      "active_label": "Linear",
       "score": 0.4005044176687602,
-      "png": "linear_sweep_1.png"
+      "png": "fill_1_linear.png",
+      "svg": "fill_1_linear.svg",
+      "params": {
+        "thickness": 35,
+        "interval": 70,
+        "organic": 10,
+        "contrast": 1.0,
+        "brightness": 55
+      }
     },
     {
-      "index": 2,
-      "thickness": 50,
-      "interval": 90,
-      "organic": 15,
-      "contrast": 1.1,
-      "brightness": 65,
-      "score": 0.3967811734068627,
-      "png": "linear_sweep_2.png"
+      "name": "Wave",
+      "selected": true,
+      "active_label": "Wave",
+      "score": 0.43002588608685666,
+      "png": "fill_2_wave.png",
+      "svg": "fill_2_wave.svg",
+      "params": {
+        "thickness": 120,
+        "interval": 220,
+        "organic": 20,
+        "contrast": 1.25,
+        "brightness": 0
+      }
     },
     {
-      "index": 3,
-      "thickness": 70,
-      "interval": 110,
-      "organic": 20,
-      "contrast": 1.2,
-      "brightness": 70,
-      "score": 0.3955095877055249,
-      "png": "linear_sweep_3.png"
+      "name": "Circular",
+      "selected": true,
+      "active_label": "Circular",
+      "score": 0.42921443764680356,
+      "png": "fill_3_circular.png",
+      "svg": "fill_3_circular.svg",
+      "params": {
+        "thickness": 120,
+        "interval": 220,
+        "organic": 20,
+        "contrast": 1.25,
+        "brightness": 0
+      }
     },
     {
-      "index": 4,
-      "thickness": 90,
-      "interval": 130,
-      "organic": 25,
-      "contrast": 1.3,
-      "brightness": 75,
-      "score": 0.39313524034288194,
-      "png": "linear_sweep_4.png"
+      "name": "Spiral",
+      "selected": true,
+      "active_label": "Spiral",
+      "score": 0.42964846542458124,
+      "png": "fill_4_spiral.png",
+      "svg": "fill_4_spiral.svg",
+      "params": {
+        "thickness": 120,
+        "interval": 220,
+        "organic": 20,
+        "contrast": 1.25,
+        "brightness": 0
+      }
     },
     {
-      "index": 5,
-      "thickness": 120,
-      "interval": 150,
-      "organic": 30,
-      "contrast": 1.2,
-      "brightness": 80,
-      "score": 0.39507109199474055,
-      "png": "linear_sweep_5.png"
-    },
-    {
-      "index": 6,
-      "thickness": 60,
-      "interval": 60,
-      "organic": 20,
-      "contrast": 1.0,
-      "brightness": 85,
-      "score": 0.3895848691853043,
-      "png": "linear_sweep_6.png"
-    },
-    {
-      "index": 7,
-      "thickness": 100,
-      "interval": 80,
-      "organic": 35,
-      "contrast": 1.4,
-      "brightness": 90,
-      "score": 0.39453499987234475,
-      "png": "linear_sweep_7.png"
+      "name": "Halftone",
+      "selected": true,
+      "active_label": "Halftone",
+      "score": 0.3365054460911969,
+      "png": "fill_5_halftone.png",
+      "svg": "fill_5_halftone.svg",
+      "params": {
+        "thickness": 120,
+        "interval": 220,
+        "organic": 0,
+        "contrast": 1.35,
+        "brightness": 0
+      }
     }
   ],
-  "best_sweep": {
-    "index": 1,
-    "thickness": 35,
-    "interval": 70,
-    "organic": 10,
-    "contrast": 1.0,
-    "brightness": 55,
-    "score": 0.4005044176687602,
-    "png": "linear_sweep_1.png"
+  "best_fill": {
+    "name": "Wave",
+    "selected": true,
+    "active_label": "Wave",
+    "score": 0.43002588608685666,
+    "png": "fill_2_wave.png",
+    "svg": "fill_2_wave.svg",
+    "params": {
+      "thickness": 120,
+      "interval": 220,
+      "organic": 20,
+      "contrast": 1.25,
+      "brightness": 0
+    }
   },
   "svg_candidates": [
     {
@@ -3276,5 +3286,5 @@
       "height": 0
     }
   ],
-  "preview_b64_length": 159584
+  "preview_b64_length": 135912
 }
