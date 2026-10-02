@@ -1,0 +1,23 @@
+{
+  "job_id": "ichabod-001",
+  "owner": "The 3 Amigos",
+  "function": "vexy-vector-engraving",
+  "source_path": "books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.png",
+  "source_sha256": "d921d12aa602c4bffe37589eb30b684b8c05b927002d49c68959cb2146e8009a",
+  "source_dimensions": "1448x1086",
+  "source_role": "approved-master",
+  "output_path": "books/sleepy-hollow/art/vexy/out/ichabod-001/",
+  "required_outputs": [
+    "output.svg",
+    "preview.png",
+    "report.json"
+  ],
+  "linda_checks": [
+    "composition preserved",
+    "eye trail preserved",
+    "rough engraving character",
+    "no glossy smoothing",
+    "ambiguity preserved"
+  ],
+  "status": "WAITING_FOR_MASTER_INGRESS"
+}
