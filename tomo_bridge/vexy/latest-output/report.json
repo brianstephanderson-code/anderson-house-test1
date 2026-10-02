@@ -5,7 +5,7 @@
     "large_svg_captured"
   ],
   "source_mode": "production_input",
-  "source_path": "tomo_bridge/vexy/input/ichabod_vexy_input.jpg",
+  "source_path": "/tmp/ichabod_vexy_input.jpg",
   "title": "Vexy Playlines \u2014 Transform Images to Vector Art",
   "inputs": 20,
   "file_inputs": 2,
@@ -352,9 +352,9 @@
   "svg_candidates": [
     {
       "i": 17,
-      "area": 1605250.37093091,
-      "width": 1460.8232421875,
-      "height": 1098.866943359375
+      "area": 1643210.31253016,
+      "width": 1466.666748046875,
+      "height": 1120.37060546875
     },
     {
       "i": 9,
