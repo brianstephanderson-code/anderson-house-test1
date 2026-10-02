@@ -1,5 +1,26 @@
 # Sleepy Hollow — Illustration Opportunity Map 001
 
+## STATUS CORRECTION
+**PROVISIONAL ONLY — NOT PRODUCTION-READY.**
+
+This map was created before the literary-analysis layer was complete. It may be used only as a rough candidate list of visually notable scenes.
+
+No illustration slot, placement, brief, or production decision is final until the following upstream functions are DONE and VERIFIED:
+1. scene/section map;
+2. mood map;
+3. tone map;
+4. pacing map;
+5. suspense/tension map;
+6. comic-relief map;
+7. character-emphasis map;
+8. transition map;
+9. reader-flow / page-turn analysis;
+10. combined literary-to-visual opportunity function.
+
+After those functions are verified, Bill must resurvey illustration opportunities, Ted must rebuild the briefs from the verified literary data, and Linda must re-verify all placements.
+
+
+
 **Purpose:** Identify meaningful, source-anchored illustration opportunities for the first Anderson House KDP hardcover edition.
 
 **Status:** BILL SURVEY COMPLETE → TED BRIEF-BUILD READY  
