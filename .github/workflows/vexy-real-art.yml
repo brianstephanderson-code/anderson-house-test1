@@ -1,0 +1,36 @@
+name: Vexy Real Art Test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/vexy-real-art.yml'
+      - 'tomo_bridge/vexy/playlines_real.py'
+      - 'tomo_bridge/vexy/input/ichabod_vexy_probe.jpg.b64'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  engrave:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Send approved Ichabod art through Vexy
+        run: python tomo_bridge/vexy/playlines_real.py
+      - name: Save Vexy real-art evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vexy-real-art
+          path: vexy_real_out/
+          if-no-files-found: warn
