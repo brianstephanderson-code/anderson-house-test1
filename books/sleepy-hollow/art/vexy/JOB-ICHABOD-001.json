@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "INITIAL_LEVELS_PROBE",
-  "retry_reason": "probe levels/image-signal controls at initial DOM state",
-  "retry_nonce": 12
+  "status": "LEVELS_POINT_PROBE",
+  "retry_reason": "inspect image-level handles and continue signal debugging",
+  "retry_nonce": 13
 }
