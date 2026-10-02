@@ -79,6 +79,11 @@ Washington Irving's classic tale moves from rural comedy and courtship into one 
 
 This illustrated Anderson House edition pairs Irving's original public-domain text with twelve original scene-based illustrations and concise reader notes on the story's setting, comedy, folklore, and deliberate ambiguity.
 
+**Irving's final wink to the reader:**
+“Faith, sir … as to that matter, I don’t believe one-half of it myself.”
+
+The story gives you evidence. The legend gives you another answer. The final judgment is yours.
+
 Leave the lower-right back-cover barcode zone free for KDP's generated ISBN barcode.
 
 ## Human/account-only completion points
