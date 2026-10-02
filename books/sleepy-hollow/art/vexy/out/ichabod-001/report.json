@@ -4,7 +4,9 @@
   "url": "https://playlines.vexy.art/",
   "events": [
     "image_uploaded",
-    "large_svg_captured"
+    "large_svg_captured",
+    "vexy_result_screenshot",
+    "portable_preview_created"
   ],
   "svg_candidates": [
     {
