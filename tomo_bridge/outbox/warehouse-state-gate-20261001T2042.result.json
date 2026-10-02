@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "warehouse-state-gate-20261001T2042",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "warehouse candidate state gate: PASS\n"
+}
