@@ -286,3 +286,5 @@ centered("AN ILLUSTRATED EDITION",2240,fe,(184,175,148))
 img.save(COVER,dpi=(300,300))
 report["front_cover_asset"]=COVER.name
 REPORT.write_text(json.dumps(report,indent=2),encoding="utf-8")
+
+# BUILD_TRIGGER_V3
