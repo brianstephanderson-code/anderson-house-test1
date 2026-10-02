@@ -124,10 +124,13 @@ class Illustration(Flowable):
             # carried head
             c.circle(w*.58,h*.50,10,stroke=1,fill=0)
         elif i==12:
-            # chase / thrown object
-            c.ellipse(w*.18,h*.28,w*.50,h*.42,stroke=1,fill=0); c.ellipse(w*.55,h*.25,w*.85,h*.40,stroke=1,fill=0)
-            c.circle(w*.38,h*.57,9,stroke=1,fill=0); c.circle(w*.68,h*.56,9,stroke=1,fill=0)
-            c.circle(w*.50,h*.74,8,stroke=1,fill=0); c.line(w*.46,h*.69,w*.42,h*.63); c.line(w*.54,h*.69,w*.58,h*.63)
+            # morning evidence: bridge, hat, shattered pumpkin
+            c.line(w*.12,h*.35,w*.84,h*.35); c.line(w*.18,h*.42,w*.78,h*.42)
+            c.bezier(w*.10,h*.20,w*.30,h*.08,w*.55,h*.10,w*.88,h*.20)
+            c.ellipse(w*.28,h*.22,w*.43,h*.29,stroke=1,fill=0)
+            c.line(w*.30,h*.29,w*.41,h*.29)
+            c.circle(w*.64,h*.25,28,stroke=1,fill=0)
+            c.line(w*.62,h*.28,w*.70,h*.34); c.line(w*.64,h*.25,w*.73,h*.20)
         # caption
         c.setFont("Times-Italic",9)
         c.drawCentredString(w/2,10,self.caption)
@@ -165,8 +168,8 @@ anchors=[
 ("And now the sound of the music",8,"The Dance"),
 ("When the dance was at an end",9,"Ghost Stories"),
 ("As Ichabod approached this fearful tree",10,"The Haunted Bridge"),
-("On mounting a rising ground",11,"The Headless Horseman"),
-("Just then he heard the black steed",12,"The Chase"),
+("Ichabod, who had no relish for this strange midnight companion",11,"The Headless Horseman"),
+("The next morning the old horse was found",12,"Morning Evidence"),
 ]
 used=set()
 
@@ -191,7 +194,7 @@ for p in body_parts:
     story.append(Paragraph(text,body))
 
 story += [PageBreak(), Paragraph("Illustrations in This Edition",h2),
-          Paragraph("The Hollow; Ichabod Crane; The Schoolhouse; Reading at Dusk; Katrina and the Van Tassel Farm; Brom Bones; The Autumn Feast; The Dance; Ghost Stories; The Haunted Bridge; The Headless Horseman; The Chase.",body),
+          Paragraph("The Hollow; Ichabod Crane; The Schoolhouse; Reading at Dusk; Katrina and the Van Tassel Farm; Brom Bones; The Autumn Feast; The Dance; Ghost Stories; The Haunted Bridge; The Headless Horseman; Morning Evidence.",body),
           PageBreak(),
           Paragraph("Washington Irving",h2),
           Paragraph("Washington Irving (1783-1859) was an American essayist, biographer, historian, and writer of short fiction. <i>The Legend of Sleepy Hollow</i> appeared in <i>The Sketch Book of Geoffrey Crayon, Gent.</i> and combines comic social observation, local legend, and deliberate uncertainty about the supernatural.",body),
