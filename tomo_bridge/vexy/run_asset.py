@@ -272,6 +272,29 @@ with sync_playwright() as p:
       return out;
     }""")
 
+    report["levels_control_probe"] = page.evaluate("""() => {
+      const img=[...document.images].find(e => (e.src||'').includes('levels.svg'));
+      if(!img) return {found:false};
+      const chain=[];
+      let e=img;
+      for(let n=0;e && n<6;n++,e=e.parentElement){
+        const r=e.getBoundingClientRect();
+        chain.push({n,tag:e.tagName,id:e.id||'',cls:String(e.className||''),
+          x:r.x,y:r.y,width:r.width,height:r.height,html:e.outerHTML.slice(0,8000)});
+      }
+      const root=img.parentElement?.parentElement?.parentElement || img.parentElement;
+      const controls=root ? [...root.querySelectorAll('input,button,canvas,select,[role="slider"],[data-*]')].map((q,i)=>{
+        const r=q.getBoundingClientRect();
+        return {i,tag:q.tagName,id:q.id||'',type:q.getAttribute('type')||'',
+          cls:String(q.className||''),title:q.getAttribute('title')||'',
+          aria:q.getAttribute('aria-label')||'',role:q.getAttribute('role')||'',
+          value:('value' in q)?String(q.value):'',min:('min' in q)?String(q.min):'',
+          max:('max' in q)?String(q.max):'',x:r.x,y:r.y,width:r.width,height:r.height,
+          html:q.outerHTML.slice(0,3000)};
+      }) : [];
+      return {found:true,chain,controls};
+    }""")
+
 
     # Compare the free Playlines fill families against the same verified source.
     # Linear has been proven source-bound but visually unsuitable, so cast wider.
