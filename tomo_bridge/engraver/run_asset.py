@@ -225,6 +225,58 @@ with sync_playwright() as p:
                 report["crosshatch_tone_sweep"].append({"name":preset["name"],"error":str(err)})
 
         report["events"].append("crosshatch_tone_sweep_complete")
+        # Final geometry sweep: keep the readable paper threshold and vary carving density.
+        def set_effect_numbers(vals):
+            page.get_by_role("button", name="Effect", exact=True).click()
+            page.wait_for_timeout(250)
+            vis=[]
+            for ii in range(page.locator('input[type="number"]').count()):
+                loc=page.locator('input[type="number"]').nth(ii)
+                try:
+                    box=loc.bounding_box()
+                    if box and box["x"] < 360 and box["y"] > 190:
+                        vis.append((box["y"],box["x"],loc))
+                except Exception:
+                    pass
+            vis.sort(key=lambda t:(t[0],t[1]))
+            if len(vis) < 7:
+                raise RuntimeError("expected seven Crosshatch inputs, found " + str(len(vis)))
+            for (_,_,loc),val in zip(vis[:7],vals):
+                loc.fill(str(val))
+                loc.press("Tab")
+                page.wait_for_timeout(120)
+
+        geometry_presets=[
+            {"name":"coarse","effect":[10,45,0.08,0.90,3,45,0.35],"tone":[0,0,1.0,1,72,100]},
+            {"name":"medium","effect":[16,45,0.05,0.65,3,45,0.25],"tone":[0,0,1.0,1,72,100]},
+            {"name":"fine","effect":[22,45,0.04,0.48,3,45,0.18],"tone":[0,0,1.0,1,72,100]}
+        ]
+        report["woodcut_geometry_sweep"]=[]
+        for preset in geometry_presets:
+            try:
+                set_effect_numbers(preset["effect"])
+                page.wait_for_timeout(800)
+                page.get_by_role("button", name="Tone", exact=True).click()
+                page.wait_for_timeout(250)
+                set_tone_values(preset["tone"])
+                page.wait_for_timeout(1800)
+                info=largest_svg()
+                rec={"name":preset["name"],"effect":preset["effect"],"tone":preset["tone"]}
+                if info and info["area"] > 50000:
+                    png=out/("woodcut_"+preset["name"]+".png")
+                    svg=out/("woodcut_"+preset["name"]+".svg")
+                    sloc=page.locator("svg").nth(info["i"])
+                    if sloc.is_visible():
+                        sloc.screenshot(path=str(png),timeout=12000)
+                        svg.write_text(sloc.evaluate("e=>e.outerHTML"),encoding="utf-8")
+                        rec.update({"captured":True,"png":png.name,"svg":svg.name})
+                    else:
+                        rec["captured"]=False
+                report["woodcut_geometry_sweep"].append(rec)
+                (out/"report.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
+            except Exception as err:
+                report["woodcut_geometry_sweep"].append({"name":preset["name"],"error":str(err)})
+        report["events"].append("woodcut_geometry_sweep_complete")
     except Exception as e:
         report["tone_survey_error"] = str(e)
 
