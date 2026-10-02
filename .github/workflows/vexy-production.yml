@@ -1,6 +1,11 @@
 name: Three Amigos Vexy Production
 
 on:
+  push:
+    paths:
+      - 'books/sleepy-hollow/art/master/**'
+      - 'tomo_bridge/vexy/run_asset.py'
+      - '.github/workflows/vexy-production.yml'
   workflow_dispatch:
     inputs:
       source_path:
