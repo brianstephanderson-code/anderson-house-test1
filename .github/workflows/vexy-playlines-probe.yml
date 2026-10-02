@@ -1,0 +1,39 @@
+name: Vexy Playlines Probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/vexy-playlines-probe.yml'
+      - 'tomo_bridge/vexy/playlines_probe.py'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install probe dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pillow playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Drive Vexy Playlines
+        run: python tomo_bridge/vexy/playlines_probe.py
+
+      - name: Upload probe evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vexy-playlines-probe
+          path: vexy_probe_out/
+          if-no-files-found: warn
