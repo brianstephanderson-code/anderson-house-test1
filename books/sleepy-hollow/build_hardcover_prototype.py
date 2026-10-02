@@ -24,13 +24,17 @@ MARGIN_OUT = 0.62*inch
 MARGIN_TOP = 0.70*inch
 MARGIN_BOTTOM = 0.70*inch
 
-styles = getSampleStyleSheet()
-body = ParagraphStyle("Body", parent=styles["BodyText"], fontName="Times-Roman", fontSize=12.0, leading=17.6, spaceAfter=8, firstLineIndent=0.18*inch)
-title = ParagraphStyle("Title", parent=styles["Title"], fontName="Times-Bold", fontSize=21, leading=25, alignment=TA_CENTER, spaceAfter=18)
-subtitle = ParagraphStyle("Subtitle", parent=styles["BodyText"], fontName="Times-Italic", fontSize=11, leading=14, alignment=TA_CENTER)
-center = ParagraphStyle("Center", parent=styles["BodyText"], fontName="Times-Roman", fontSize=10.5, leading=14, alignment=TA_CENTER)
-small = ParagraphStyle("Small", parent=styles["BodyText"], fontName="Times-Roman", fontSize=8.5, leading=11)
-h2 = ParagraphStyle("H2", parent=styles["Heading2"], fontName="Times-Bold", fontSize=13, leading=16, spaceBefore=10, spaceAfter=8)
+FONT_DIR = Path("/usr/share/fonts/truetype/dejavu")
+pdfmetrics.registerFont(TTFont("AHSerif", str(FONT_DIR / "DejaVuSerif.ttf")))
+pdfmetrics.registerFont(TTFont("AHSerif-Bold", str(FONT_DIR / "DejaVuSerif-Bold.ttf")))
+pdfmetrics.registerFont(TTFont("AHSerif-Italic", str(FONT_DIR / "DejaVuSerif-Italic.ttf")))
+\nstyles = getSampleStyleSheet()
+body = ParagraphStyle("Body", parent=styles["BodyText"], fontName="AHSerif", fontSize=12.0, leading=17.6, spaceAfter=8, firstLineIndent=0.18*inch)
+title = ParagraphStyle("Title", parent=styles["Title"], fontName="AHSerif-Bold", fontSize=21, leading=25, alignment=TA_CENTER, spaceAfter=18)
+subtitle = ParagraphStyle("Subtitle", parent=styles["BodyText"], fontName="AHSerif-Italic", fontSize=11, leading=14, alignment=TA_CENTER)
+center = ParagraphStyle("Center", parent=styles["BodyText"], fontName="AHSerif", fontSize=10.5, leading=14, alignment=TA_CENTER)
+small = ParagraphStyle("Small", parent=styles["BodyText"], fontName="AHSerif", fontSize=8.5, leading=11)
+h2 = ParagraphStyle("H2", parent=styles["Heading2"], fontName="AHSerif-Bold", fontSize=13, leading=16, spaceBefore=10, spaceAfter=8)
 
 class Illustration(Flowable):
     def __init__(self, idx, caption):
@@ -185,7 +189,7 @@ class Illustration(Flowable):
 
         # plate title band
         c.setFillGray(.04); c.rect(1,1,w-2,28,stroke=0,fill=1)
-        c.setFillGray(.93); c.setFont("Times-Roman",8.5)
+        c.setFillGray(.93); c.setFont("AHSerif",8.5)
         c.drawCentredString(w/2,10,self.caption.upper())
         c.restoreState()
 
@@ -193,7 +197,7 @@ def page_number(canvas, doc):
     n=canvas.getPageNumber()
     canvas.saveState()
     if n>4:
-        canvas.setFont("Times-Roman",8)
+        canvas.setFont("AHSerif",8)
         canvas.drawCentredString(PAGE_W/2,0.36*inch,str(n))
     canvas.restoreState()
 
@@ -230,8 +234,8 @@ story=[]
 # Front matter
 story += [Spacer(1,1.6*inch), Paragraph("THE LEGEND OF<br/>SLEEPY HOLLOW<br/><font size=\"12\">(ILLUSTRATED)</font>",title), Paragraph("Washington Irving",subtitle), PageBreak()]
 story += [Illustration(1,"Frontispiece: The Hollow"), PageBreak()]
-story += [Spacer(1,1.25*inch), Paragraph("The Legend of Sleepy Hollow<br/><font size=\"12\">(Illustrated)</font>",title), Paragraph("Washington Irving",subtitle), Spacer(1,0.5*inch), Paragraph("An illustrated Anderson House reader hardcover prototype",center), PageBreak()]
-story += [Paragraph("Edition Note",h2), Paragraph("This prototype preserves Washington Irving's public-domain text while adding original Anderson House coded-vector illustrations and production matter. The literary text is kept separate from the production layer.",body), Spacer(1,0.15*inch), Paragraph("<b>Source basis:</b> Project Gutenberg eBook #41 / GITenberg mirror. The original public-domain work is by Washington Irving. Production provenance is maintained separately in the Anderson House repository.",small), PageBreak()]
+story += [Spacer(1,1.25*inch), Paragraph("The Legend of Sleepy Hollow<br/><font size=\"12\">(Illustrated)</font>",title), Paragraph("Washington Irving",subtitle), Spacer(1,0.5*inch), Paragraph("An illustrated Anderson House reader edition",center), PageBreak()]
+story += [Paragraph("Edition Note",h2), Paragraph("This illustrated edition preserves Washington Irving's public-domain text while adding original Anderson House illustrations and concise reader notes. Irving's wording and story order remain unchanged.",body), Spacer(1,0.15*inch), Paragraph("<b>Source note:</b> Washington Irving's original work is in the public domain in the United States. Anderson House maintains the production source lineage and verification record separately.",small), PageBreak()]
 
 for p in body_parts:
     inserted=False
@@ -256,9 +260,9 @@ story += [PageBreak(), Paragraph("Illustrations in This Edition",h2),
           Paragraph("The story draws on the Hudson River communities around Tarry Town and Sleepy Hollow, using Dutch-settler traditions, Revolutionary-era memories, wooded roads, farms, churchyards, and the river landscape as part of its atmosphere. This edition keeps those setting functions visible in the illustration program without attempting to turn the tale into documentary history.",body),
           PageBreak(),
           Paragraph("About This Edition",h2),
-          Paragraph("This is a prototype of a differentiated public-domain hardcover edition. The production system records source provenance, illustration provenance, platform requirements, and verification gates outside the reader-facing text.",body),
+          Paragraph("This is a differentiated illustrated edition of Washington Irving's public-domain work. Its added illustrations and reader notes are original to this edition.",body),
           Spacer(1,0.2*inch),
-          Paragraph("Production note: the illustrations in this prototype are original vector drawings generated by Anderson House production code and are not copied from third-party artwork.",body),
+          Paragraph("Illustration note: the illustrations in this edition are original Anderson House coded drawings and are not copied from third-party artwork.",body),
           PageBreak(),
           Paragraph("A Few Period Words",h2),
           Paragraph("<b>wight</b> - an old word for a person or fellow. <b>psalmody</b> - the singing or practice of psalms. <b>peradventure</b> - perhaps or possibly. <b>stomacher</b> - a decorated front panel worn on a woman's bodice. <b>swain</b> - a young country man or suitor. These notes are reader aids only; Irving's wording remains unchanged.",body),
@@ -285,7 +289,7 @@ story += [PageBreak(), Paragraph("Illustrations in This Edition",h2),
           Paragraph("The illustrations in this edition are placed unevenly on purpose. Atmospheric and transitional scenes receive more visual breathing room, while the fastest section of the chase is left comparatively uninterrupted. The aim is to support Irving's pacing rather than impose a fixed picture rhythm on the story.",body),
           PageBreak(),
           Paragraph("Production Provenance",h2),
-          Paragraph("Source text: Washington Irving, public-domain work, obtained from the Project Gutenberg / GITenberg source chain. The clean production copy is stored with source lineage in the Anderson House repository. Full internal provenance and verification records are maintained separately so the reading experience remains uncluttered.",body),
+          Paragraph("Underlying text: Washington Irving, public-domain work. Anderson House maintains an internal source-lineage, build, and verification record for this edition so the reader-facing book can remain uncluttered.",body),
           PageBreak()]
 
 doc=SimpleDocTemplate(str(PDF),pagesize=(PAGE_W,PAGE_H),
