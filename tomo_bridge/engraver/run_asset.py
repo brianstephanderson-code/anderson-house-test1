@@ -94,7 +94,7 @@ with sync_playwright() as p:
         page.keyboard.press("Escape")
         page.wait_for_timeout(250)
 
-        for label in option_texts:
+        for label in [x for x in option_texts if x == "Crosshatch"]:
             try:
                 # Reacquire the combobox each time because its visible text changes.
                 combo = None
@@ -146,6 +146,82 @@ with sync_playwright() as p:
         report["tone_inputs"] = page.eval_on_selector_all("input", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,type:e.type||'',value:e.value||'',min:e.min||'',max:e.max||'',step:e.step||'',checked:!!e.checked,visible:r.width>0&&r.height>0,x:r.x,y:r.y,outerHTML:e.outerHTML.slice(0,1000)}})""")
         report["tone_buttons"] = page.eval_on_selector_all("button", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,text:(e.innerText||'').trim(),visible:r.width>0&&r.height>0,x:r.x,y:r.y,w:r.width,h:r.height,aria:e.getAttribute('aria-label')||'',title:e.title||''}})""")
         report["events"].append("tone_controls_surveyed")
+        # Focused Linda pass: Crosshatch is the closest wood-engraving family.
+        # Sweep a handful of tone curves to open the dark source without losing carved structure.
+        def set_tone_values(vals):
+            vis=[]
+            for ii in range(page.locator('input[type="number"]').count()):
+                loc=page.locator('input[type="number"]').nth(ii)
+                try:
+                    box=loc.bounding_box()
+                    if box and box["x"] < 360 and box["y"] > 190:
+                        vis.append((box["y"],box["x"],loc))
+                except Exception:
+                    pass
+            vis.sort(key=lambda t:(t[0],t[1]))
+            if len(vis) < 6:
+                raise RuntimeError("expected six visible tone inputs, found " + str(len(vis)))
+            for (_,_,loc),val in zip(vis[:6],vals):
+                loc.fill(str(val))
+                loc.press("Tab")
+                page.wait_for_timeout(120)
+            return [v for v in vals]
+
+        # Select Crosshatch again before tone tuning.
+        page.get_by_role("button", name="Effect", exact=True).click()
+        page.wait_for_timeout(300)
+        combo=None
+        for ii in range(page.locator('button[role="combobox"]').count()):
+            loc=page.locator('button[role="combobox"]').nth(ii)
+            box=loc.bounding_box()
+            if box and box["x"] < 400 and 180 < box["y"] < 300:
+                combo=loc
+                break
+        if combo is None:
+            raise RuntimeError("effect combobox unavailable for Crosshatch focus")
+        combo.click()
+        page.wait_for_timeout(200)
+        page.get_by_role("option", name="Crosshatch", exact=True).click()
+        page.wait_for_timeout(1500)
+
+        report["crosshatch_panel_text"] = page.locator("body").inner_text()[:12000]
+        report["crosshatch_inputs"] = page.eval_on_selector_all("input", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,type:e.type||'',value:e.value||'',min:e.min||'',max:e.max||'',step:e.step||'',visible:r.width>0&&r.height>0,x:r.x,y:r.y,outerHTML:e.outerHTML.slice(0,1000)}})""")
+
+        page.get_by_role("button", name="Tone", exact=True).click()
+        page.wait_for_timeout(300)
+
+        tone_presets = [
+            {"name":"default","values":[0,0,1.0,1,4,100]},
+            {"name":"open_1","values":[15,10,1.0,1,8,100]},
+            {"name":"open_2","values":[25,15,1.0,1,12,100]},
+            {"name":"open_3","values":[30,20,1.1,1,15,100]},
+            {"name":"gamma_low","values":[22,18,0.8,1,10,100]},
+            {"name":"gamma_high","values":[22,18,1.3,1,10,100]}
+        ]
+        report["crosshatch_tone_sweep"]=[]
+        for preset in tone_presets:
+            try:
+                applied=set_tone_values(preset["values"])
+                page.wait_for_timeout(1800)
+                info=largest_svg()
+                rec={"name":preset["name"],"values":applied}
+                if info and info["area"] > 50000:
+                    slug=preset["name"]
+                    png=out/("crosshatch_"+slug+".png")
+                    svg=out/("crosshatch_"+slug+".svg")
+                    sloc=page.locator("svg").nth(info["i"])
+                    if sloc.is_visible():
+                        sloc.screenshot(path=str(png),timeout=12000)
+                        svg.write_text(sloc.evaluate("e=>e.outerHTML"),encoding="utf-8")
+                        rec.update({"captured":True,"png":png.name,"svg":svg.name})
+                    else:
+                        rec["captured"]=False
+                report["crosshatch_tone_sweep"].append(rec)
+                (out/"report.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
+            except Exception as err:
+                report["crosshatch_tone_sweep"].append({"name":preset["name"],"error":str(err)})
+
+        report["events"].append("crosshatch_tone_sweep_complete")
     except Exception as e:
         report["tone_survey_error"] = str(e)
 
