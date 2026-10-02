@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "RETRY_REQUESTED",
-  "retry_reason": "linear parameter sweep",
-  "retry_nonce": 1
+  "status": "RETRY_REQUESTED_AFTER_IMPORT_FIX",
+  "retry_reason": "rerun parameter sweep after scoring import fix",
+  "retry_nonce": 2
 }
