@@ -1,6 +1,6 @@
 import base64, json, sys
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageOps, ImageChops, ImageStat
 from playwright.sync_api import sync_playwright
 
 if len(sys.argv) < 3:
