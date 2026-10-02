@@ -234,6 +234,17 @@ used=set()
 story=[]
 # Front matter
 story += [Spacer(1,1.6*inch), Paragraph("THE LEGEND OF<br/>SLEEPY HOLLOW<br/><font size=\"12\">(ILLUSTRATED)</font>",title), Paragraph("Washington Irving",subtitle), PageBreak()]
+story += [
+    Spacer(1,1.15*inch),
+    Paragraph("WASHINGTON IRVING ON STORY",h2),
+    Spacer(1,0.25*inch),
+    Paragraph("<i>For my part … I consider a story merely as a frame on which to stretch the materials…</i>",body),
+    Spacer(1,0.12*inch),
+    Paragraph("<i>the play of thought, and sentiment, and language, the weaving in of characters, lightly yet expressively delineated; the familiar and faithful exhibition of scenes in common life; and the half-concealed vein of humor…</i>",body),
+    Spacer(1,0.30*inch),
+    Paragraph("— Washington Irving, letter to Henry Brevoort, December 11, 1824",center),
+    PageBreak()
+]
 story += [Illustration(1,"Frontispiece: The Hollow"), PageBreak()]
 story += [Spacer(1,1.25*inch), Paragraph("The Legend of Sleepy Hollow<br/><font size=\"12\">(Illustrated)</font>",title), Paragraph("Washington Irving",subtitle), Spacer(1,0.5*inch), Paragraph("An illustrated Anderson House reader edition",center), PageBreak()]
 story += [Spacer(1,1.55*inch),
