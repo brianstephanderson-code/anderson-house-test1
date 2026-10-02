@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "LEVELS_POINT_PROBE",
-  "retry_reason": "inspect image-level handles and continue signal debugging",
-  "retry_nonce": 13
+  "status": "SHADOW_SIGNAL_SURVEY",
+  "retry_reason": "inspect Playlines shadow DOM levels and signal controls",
+  "retry_nonce": 14
 }
