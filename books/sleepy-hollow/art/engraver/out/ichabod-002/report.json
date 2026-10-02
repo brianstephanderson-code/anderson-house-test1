@@ -7,6 +7,7 @@
     "effect_family_survey_complete",
     "tone_controls_surveyed",
     "crosshatch_tone_sweep_complete",
+    "woodcut_geometry_sweep_complete",
     "tuned_engraving_variants_captured",
     "probe_captured",
     "effect_previews_encoded",
@@ -1174,6 +1175,77 @@
       "captured": true,
       "png": "crosshatch_paper_55_gamma13.png",
       "svg": "crosshatch_paper_55_gamma13.svg"
+    }
+  ],
+  "woodcut_geometry_sweep": [
+    {
+      "name": "coarse",
+      "effect": [
+        10,
+        45,
+        0.08,
+        0.9,
+        3,
+        45,
+        0.35
+      ],
+      "tone": [
+        0,
+        0,
+        1.0,
+        1,
+        72,
+        100
+      ],
+      "captured": true,
+      "png": "woodcut_coarse.png",
+      "svg": "woodcut_coarse.svg"
+    },
+    {
+      "name": "medium",
+      "effect": [
+        16,
+        45,
+        0.05,
+        0.65,
+        3,
+        45,
+        0.25
+      ],
+      "tone": [
+        0,
+        0,
+        1.0,
+        1,
+        72,
+        100
+      ],
+      "captured": true,
+      "png": "woodcut_medium.png",
+      "svg": "woodcut_medium.svg"
+    },
+    {
+      "name": "fine",
+      "effect": [
+        22,
+        45,
+        0.04,
+        0.48,
+        3,
+        45,
+        0.18
+      ],
+      "tone": [
+        0,
+        0,
+        1.0,
+        1,
+        72,
+        100
+      ],
+      "captured": true,
+      "png": "woodcut_fine.png",
+      "svg": "woodcut_fine.svg"
     }
   ],
   "final_variants": [
