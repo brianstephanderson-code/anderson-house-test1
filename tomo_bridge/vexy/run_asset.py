@@ -142,17 +142,58 @@ with sync_playwright() as p:
         except Exception as e:
             report["image_select_error"] = str(e)
 
-    # If Linear is exposed, select it.
-    for selector in ['text=Linear','button:has-text("Linear")','[role="button"]:has-text("Linear")']:
+    # Prove the uploaded source is actually bound to Playlines.
+    try:
+        stage = page.locator("#stageImg")
+        if stage.count():
+            src_meta = stage.evaluate("""e => ({
+                src:(e.src||'').slice(0,120),
+                naturalWidth:e.naturalWidth,
+                naturalHeight:e.naturalHeight
+            })""")
+            report["source_binding"] = src_meta
+            report["source_bound"] = bool(src_meta["naturalWidth"] and src_meta["naturalHeight"] and src_meta["src"].startswith("data:image"))
+            if report["source_bound"]:
+                report["events"].append("source_binding_verified")
+    except Exception as e:
+        report["source_binding_error"] = str(e)
+
+    # Capture the source view as evidence before transforming.
+    try:
+        page.locator("#viewSource").click(force=True, timeout=3000)
+        page.wait_for_timeout(1200)
+        page.screenshot(path=str(out / "source_view.png"), full_page=True)
+        report["events"].append("source_view_captured")
+        page.locator("#viewResult").click(force=True, timeout=3000)
+        page.wait_for_timeout(1200)
+    except Exception as e:
+        report["source_view_error"] = str(e)
+
+    # Select the actual visible Linear button. Earlier generic text selectors
+    # were hitting hidden duplicate controls, leaving Playlines in Wave mode.
+    try:
+        linear = page.locator("#fillLinear")
+        if not linear.count():
+            linear = page.locator('button.fillBtn[title="Linear"]:visible')
+        linear.first.click(force=True, timeout=5000)
+        page.wait_for_timeout(6000)
+        report["events"].append("linear_selected_visible_control")
         try:
-            loc = page.locator(selector)
-            if loc.count():
-                loc.first.click(timeout=3000)
-                report["events"].append("linear_selected")
-                page.wait_for_timeout(5000)
-                break
+            report["active_fill_label"] = page.locator("#fillLabel").inner_text(timeout=2000)
         except Exception:
             pass
+    except Exception as e:
+        report["linear_select_error"] = str(e)
+
+    # Inventory live tuning sliders so the next pass can steer deliberately.
+    report["range_inventory"] = page.eval_on_selector_all(
+        'input[type="range"]',
+        """els => els.map((e,i) => ({
+            i, id:e.id||'', min:e.min||'', max:e.max||'', step:e.step||'',
+            value:e.value||'', name:e.name||'', title:e.title||'',
+            aria:e.getAttribute('aria-label')||''
+        }))"""
+    )
 
     page.screenshot(path=str(out / "preview.png"), full_page=True)
     candidates = page.eval_on_selector_all(
