@@ -226,6 +226,22 @@ with sync_playwright() as p:
         }))"""
     )
 
+    report["signal_dom_inventory"] = page.evaluate("""() => {
+      const all=[...document.querySelectorAll('*')];
+      return all.map((e,i)=>({
+        i,
+        tag:e.tagName,
+        id:e.id||'',
+        cls:String(e.className||''),
+        title:e.getAttribute('title')||'',
+        aria:e.getAttribute('aria-label')||'',
+        text:(e.innerText||'').trim().slice(0,200),
+        html:e.outerHTML.slice(0,1200)
+      })).filter(x => /threshold|signal|histogram|level|tone|image.*range|range.*image/i.test(
+        [x.id,x.cls,x.title,x.aria,x.text].join(' ')
+      )).slice(0,120);
+    }""")
+
 
     # Compare the free Playlines fill families against the same verified source.
     # Linear has been proven source-bound but visually unsuitable, so cast wider.
