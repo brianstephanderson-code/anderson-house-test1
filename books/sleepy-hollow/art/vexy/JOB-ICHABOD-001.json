@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "RETRY_REQUESTED_AFTER_IMPORT_FIX",
-  "retry_reason": "rerun parameter sweep after scoring import fix",
-  "retry_nonce": 2
+  "status": "ACTIVE_SOURCE_VERIFY_REQUESTED",
+  "retry_reason": "verify exact Playlines stage source pixels against Ichabod input",
+  "retry_nonce": 3
 }
