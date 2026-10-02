@@ -6,6 +6,7 @@
     "image_uploaded_via_input_0",
     "effect_family_survey_complete",
     "tone_controls_surveyed",
+    "crosshatch_tone_sweep_complete",
     "probe_captured",
     "effect_previews_encoded",
     "candidate_svg_captured"
@@ -451,73 +452,10 @@
   ],
   "effect_survey": [
     {
-      "label": "Line screen",
-      "captured": true,
-      "png": "effect_line_screen.png",
-      "svg": "effect_line_screen.svg",
-      "area": 705675
-    },
-    {
-      "label": "Contour",
-      "captured": true,
-      "png": "effect_contour.png",
-      "svg": "effect_contour.svg",
-      "area": 705675
-    },
-    {
-      "label": "Wave",
-      "captured": true,
-      "png": "effect_wave.png",
-      "svg": "effect_wave.svg",
-      "area": 705675
-    },
-    {
       "label": "Crosshatch",
       "captured": true,
       "png": "effect_crosshatch.png",
       "svg": "effect_crosshatch.svg",
-      "area": 705675
-    },
-    {
-      "label": "Stipple",
-      "captured": true,
-      "png": "effect_stipple.png",
-      "svg": "effect_stipple.svg",
-      "area": 705675
-    },
-    {
-      "label": "Halftone screen",
-      "captured": true,
-      "png": "effect_halftone_screen.png",
-      "svg": "effect_halftone_screen.svg",
-      "area": 705675
-    },
-    {
-      "label": "Isolines",
-      "captured": true,
-      "png": "effect_isolines.png",
-      "svg": "effect_isolines.svg",
-      "area": 705675
-    },
-    {
-      "label": "Spiral",
-      "captured": true,
-      "png": "effect_spiral.png",
-      "svg": "effect_spiral.svg",
-      "area": 705675
-    },
-    {
-      "label": "Rings",
-      "captured": true,
-      "png": "effect_rings.png",
-      "svg": "effect_rings.svg",
-      "area": 705675
-    },
-    {
-      "label": "Scribble",
-      "captured": true,
-      "png": "effect_scribble.png",
-      "svg": "effect_scribble.svg",
       "area": 705675
     }
   ],
@@ -790,7 +728,7 @@
     "Rings",
     "Scribble"
   ],
-  "tone_panel_text": "BoxLab\n/\nTools\n/\nEngraver\n/\nEngraver \u2014 photographs as vector line work\nSupport\nEnglish\nPhoto\nEffect\nTone\nInk\nTone curve\n\nWorked on luminance in linear light, so the midtones do not go muddy.\n\nBrightness\n%\nContrast\n%\nGamma\n\u03b3\nSmooth\npx\nTwo ends\n?\nUnder the first there is paper; over the second, solid ink. The pair that decides whether an engraving works.\n\nUnder the first there is paper; over the second, solid ink.\n\nPaper under\n%\nSolid over\n%\nInvert\nWhite marks on a dark ground, once you print it that way.\n200 \u00d7 150 mm\nPage\n0.83 mm\nBetween lines\n297\nMarks\n335,168\nNodes\n128%\nSave",
+  "tone_panel_text": "BoxLab\n/\nTools\n/\nEngraver\n/\nEngraver \u2014 photographs as vector line work\nSupport\nEnglish\nPhoto\nEffect\nTone\nInk\nTone curve\n\nWorked on luminance in linear light, so the midtones do not go muddy.\n\nBrightness\n%\nContrast\n%\nGamma\n\u03b3\nSmooth\npx\nTwo ends\n?\nUnder the first there is paper; over the second, solid ink. The pair that decides whether an engraving works.\n\nUnder the first there is paper; over the second, solid ink.\n\nPaper under\n%\nSolid over\n%\nInvert\nWhite marks on a dark ground, once you print it that way.\n200 \u00d7 150 mm\nPage\n0.83 mm\nBetween lines\n1,589\nMarks\n135,322\nNodes\n128%\nSave",
   "tone_inputs": [
     {
       "i": 0,
@@ -1047,6 +985,179 @@
       "h": 0,
       "aria": "",
       "title": ""
+    }
+  ],
+  "crosshatch_panel_text": "BoxLab\n/\nTools\n/\nEngraver\n/\nEngraver \u2014 photographs as vector line work\nSupport\nEnglish\nPhoto\nEffect\nTone\nInk\nEffect\nHow the tone is built\nCrosshatch\nA direction per band of tone, laid over each other.\nLines\n/cm\nAngle\n\u00b0\nHow wide a mark\n\nThe tone is the width: solid black draws the widest mark, and under the finest nothing is drawn.\n\nFinest\nmm\nWidest\nmm\nSet 0.83 mm \u2014 the width that prints a solid\nLayers\n\nEach layer owns a band of tone and turns 45\u00b0 from the last.\n\nLayers\n\u00d7\nTurn\n\u00b0\nSampling\n?\nHow often a line is measured along its length. Finer follows the picture more closely and costs nodes.\n\nHow often a line is measured along its length.\n\nStep\nmm\n200 \u00d7 150 mm\nPage\n0.83 mm\nBetween lines\n1,589\nMarks\n135,322\nNodes\n128%\nSave",
+  "crosshatch_inputs": [
+    {
+      "i": 0,
+      "type": "number",
+      "value": "12",
+      "min": "1",
+      "max": "60",
+      "step": "0.1",
+      "visible": true,
+      "x": 41,
+      "y": 307,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"1\" max=\"60\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"12\">"
+    },
+    {
+      "i": 1,
+      "type": "number",
+      "value": "45",
+      "min": "",
+      "max": "360",
+      "step": "1",
+      "visible": true,
+      "x": 198,
+      "y": 307,
+      "outerHTML": "<input inputmode=\"decimal\" max=\"360\" step=\"1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"45\">"
+    },
+    {
+      "i": 2,
+      "type": "number",
+      "value": "0.06",
+      "min": "0.01",
+      "max": "5",
+      "step": "0.1",
+      "visible": true,
+      "x": 41,
+      "y": 457,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"0.01\" max=\"5\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"0.06\">"
+    },
+    {
+      "i": 3,
+      "type": "number",
+      "value": "0.83",
+      "min": "0.02",
+      "max": "20",
+      "step": "0.1",
+      "visible": true,
+      "x": 198,
+      "y": 457,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"0.02\" max=\"20\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"0.83\">"
+    },
+    {
+      "i": 4,
+      "type": "number",
+      "value": "3",
+      "min": "1",
+      "max": "6",
+      "step": "1",
+      "visible": true,
+      "x": 41,
+      "y": 639,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"1\" max=\"6\" step=\"1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"3\">"
+    },
+    {
+      "i": 5,
+      "type": "number",
+      "value": "45",
+      "min": "5",
+      "max": "180",
+      "step": "1",
+      "visible": true,
+      "x": 198,
+      "y": 639,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"5\" max=\"180\" step=\"1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"45\">"
+    },
+    {
+      "i": 6,
+      "type": "number",
+      "value": "0.35",
+      "min": "0.05",
+      "max": "3",
+      "step": "0.1",
+      "visible": true,
+      "x": 41,
+      "y": 773,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"0.05\" max=\"3\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"0.35\">"
+    }
+  ],
+  "crosshatch_tone_sweep": [
+    {
+      "name": "default",
+      "values": [
+        0,
+        0,
+        1.0,
+        1,
+        4,
+        100
+      ],
+      "captured": true,
+      "png": "crosshatch_default.png",
+      "svg": "crosshatch_default.svg"
+    },
+    {
+      "name": "open_1",
+      "values": [
+        15,
+        10,
+        1.0,
+        1,
+        8,
+        100
+      ],
+      "captured": true,
+      "png": "crosshatch_open_1.png",
+      "svg": "crosshatch_open_1.svg"
+    },
+    {
+      "name": "open_2",
+      "values": [
+        25,
+        15,
+        1.0,
+        1,
+        12,
+        100
+      ],
+      "captured": true,
+      "png": "crosshatch_open_2.png",
+      "svg": "crosshatch_open_2.svg"
+    },
+    {
+      "name": "open_3",
+      "values": [
+        30,
+        20,
+        1.1,
+        1,
+        15,
+        100
+      ],
+      "captured": true,
+      "png": "crosshatch_open_3.png",
+      "svg": "crosshatch_open_3.svg"
+    },
+    {
+      "name": "gamma_low",
+      "values": [
+        22,
+        18,
+        0.8,
+        1,
+        10,
+        100
+      ],
+      "captured": true,
+      "png": "crosshatch_gamma_low.png",
+      "svg": "crosshatch_gamma_low.svg"
+    },
+    {
+      "name": "gamma_high",
+      "values": [
+        22,
+        18,
+        1.3,
+        1,
+        10,
+        100
+      ],
+      "captured": true,
+      "png": "crosshatch_gamma_high.png",
+      "svg": "crosshatch_gamma_high.svg"
     }
   ],
   "candidate_type": "svg"
