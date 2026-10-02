@@ -158,6 +158,14 @@ with sync_playwright() as p:
 
     page.screenshot(path=str(out/"page.png"), full_page=True)
     report["events"].append("probe_captured")
+    # Make the effect survey visually inspectable through GitHub's text API.
+    import base64
+    for item in report.get("effect_survey", []):
+        png = out / item.get("png", "")
+        if png.is_file():
+            (out / (png.name + ".b64")).write_text(base64.b64encode(png.read_bytes()).decode("ascii"), encoding="ascii")
+    report["events"].append("effect_previews_encoded")
+
 
     # Persist the survey before any optional canonical capture.
     (out/"report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
