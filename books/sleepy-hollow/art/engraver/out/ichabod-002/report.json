@@ -4,6 +4,7 @@
   "url": "https://boxlab.io/tools/engraver/app/en",
   "events": [
     "image_uploaded_via_input_0",
+    "effect_family_survey_complete",
     "probe_captured",
     "candidate_svg_captured"
   ],
@@ -446,5 +447,273 @@
       "area": 0
     }
   ],
+  "effect_survey": [
+    {
+      "requested": "Line",
+      "label": "Line screen",
+      "captured": true,
+      "png": "effect_line_screen.png",
+      "svg": "effect_line_screen.svg",
+      "area": 705675
+    }
+  ],
+  "effect_panel_text": "BoxLab\n/\nTools\n/\nEngraver\n/\nEngraver \u2014 photographs as vector line work\nSupport\nEnglish\nPhoto\nEffect\nTone\nInk\nEffect\nHow the tone is built\nLine screen\nParallel lines, each swelling where the picture is darker.\nLines\n/cm\nAngle\n\u00b0\nHow wide a mark\n\nThe tone is the width: solid black draws the widest mark, and under the finest nothing is drawn.\n\nFinest\nmm\nWidest\nmm\nSet 0.83 mm \u2014 the width that prints a solid\nSampling\n?\nHow often a line is measured along its length. Finer follows the picture more closely and costs nodes.\n\nHow often a line is measured along its length.\n\nStep\nmm\n200 \u00d7 150 mm\nPage\n0.83 mm\nBetween lines\n297\nMarks\n74,692\nNodes\n128%\nSave",
+  "effect_inputs": [
+    {
+      "i": 0,
+      "type": "number",
+      "value": "12",
+      "min": "1",
+      "max": "60",
+      "step": "0.1",
+      "checked": false,
+      "visible": true,
+      "x": 41,
+      "y": 323,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"1\" max=\"60\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"12\">"
+    },
+    {
+      "i": 1,
+      "type": "number",
+      "value": "45",
+      "min": "",
+      "max": "360",
+      "step": "1",
+      "checked": false,
+      "visible": true,
+      "x": 198,
+      "y": 323,
+      "outerHTML": "<input inputmode=\"decimal\" max=\"360\" step=\"1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"45\">"
+    },
+    {
+      "i": 2,
+      "type": "number",
+      "value": "0.06",
+      "min": "0.01",
+      "max": "5",
+      "step": "0.1",
+      "checked": false,
+      "visible": true,
+      "x": 41,
+      "y": 473,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"0.01\" max=\"5\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"0.06\">"
+    },
+    {
+      "i": 3,
+      "type": "number",
+      "value": "0.83",
+      "min": "0.02",
+      "max": "20",
+      "step": "0.1",
+      "checked": false,
+      "visible": true,
+      "x": 198,
+      "y": 473,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"0.02\" max=\"20\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"0.83\">"
+    },
+    {
+      "i": 4,
+      "type": "number",
+      "value": "0.35",
+      "min": "0.05",
+      "max": "3",
+      "step": "0.1",
+      "checked": false,
+      "visible": true,
+      "x": 41,
+      "y": 639,
+      "outerHTML": "<input inputmode=\"decimal\" min=\"0.05\" max=\"3\" step=\"0.1\" class=\"w-full appearance-none rounded-md border border-border bg-card text-foreground disabled:cursor-not-allowed disabled:bg-subtle disabled:text-muted-foreground [&amp;::-webkit-inner-spin-button]:appearance-none [&amp;::-webkit-outer-spin-button]:appearance-none py-1 pl-3 text-sm pr-9 outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-200 ease-out focus:ring-0 focus-visible:outline-ring\" type=\"number\" value=\"0.35\">"
+    }
+  ],
+  "effect_buttons": [
+    {
+      "i": 0,
+      "text": "English",
+      "visible": false,
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "aria": "Language",
+      "title": ""
+    },
+    {
+      "i": 1,
+      "text": "English",
+      "visible": true,
+      "x": 1301,
+      "y": 20,
+      "w": 119,
+      "h": 38,
+      "aria": "Language",
+      "title": ""
+    },
+    {
+      "i": 2,
+      "text": "Photo",
+      "visible": true,
+      "x": 25,
+      "y": 79,
+      "w": 79.5,
+      "h": 52,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 3,
+      "text": "Effect",
+      "visible": true,
+      "x": 108.5,
+      "y": 79,
+      "w": 79.5,
+      "h": 52,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 4,
+      "text": "Tone",
+      "visible": true,
+      "x": 192,
+      "y": 79,
+      "w": 79.5,
+      "h": 52,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 5,
+      "text": "Ink",
+      "visible": true,
+      "x": 275.5,
+      "y": 79,
+      "w": 79.5,
+      "h": 52,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 6,
+      "text": "Line screen",
+      "visible": true,
+      "x": 41,
+      "y": 225,
+      "w": 298,
+      "h": 34,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 7,
+      "text": "Set 0.83 mm \u2014 the width that prints a solid",
+      "visible": true,
+      "x": 41,
+      "y": 521,
+      "w": 251,
+      "h": 16,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 8,
+      "text": "?\nHow often a line is measured along its length. Finer follows the picture more closely and costs nodes.",
+      "visible": true,
+      "x": 147,
+      "y": 567,
+      "w": 16,
+      "h": 16,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 9,
+      "text": "",
+      "visible": true,
+      "x": 820,
+      "y": 171,
+      "w": 28,
+      "h": 28,
+      "aria": "Further",
+      "title": "Further"
+    },
+    {
+      "i": 10,
+      "text": "128%",
+      "visible": true,
+      "x": 850,
+      "y": 173,
+      "w": 67,
+      "h": 24,
+      "aria": "Life size \u2014 hold a ruler to it.",
+      "title": "Life size \u2014 hold a ruler to it."
+    },
+    {
+      "i": 11,
+      "text": "",
+      "visible": true,
+      "x": 919,
+      "y": 171,
+      "w": 28,
+      "h": 28,
+      "aria": "Closer",
+      "title": "Closer"
+    },
+    {
+      "i": 12,
+      "text": "",
+      "visible": true,
+      "x": 956,
+      "y": 171,
+      "w": 28,
+      "h": 28,
+      "aria": "Fit",
+      "title": "Fit"
+    },
+    {
+      "i": 13,
+      "text": "Save",
+      "visible": true,
+      "x": 1315,
+      "y": 165,
+      "w": 88,
+      "h": 40,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 14,
+      "text": "Light",
+      "visible": false,
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 15,
+      "text": "System",
+      "visible": false,
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "aria": "",
+      "title": ""
+    },
+    {
+      "i": 16,
+      "text": "Dark",
+      "visible": false,
+      "x": 0,
+      "y": 0,
+      "w": 0,
+      "h": 0,
+      "aria": "",
+      "title": ""
+    }
+  ],
+  "tone_survey_error": "Locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for get_by_role(\"button\", name=\"Tone\", exact=True)\n",
   "candidate_type": "svg"
 }
