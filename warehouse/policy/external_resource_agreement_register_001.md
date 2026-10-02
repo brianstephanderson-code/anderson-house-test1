@@ -98,3 +98,68 @@ For every external resource maintain:
 - **Cloudflare:** no fixed free-plan expiry currently identified.
 - **GitHub Free:** no fixed free-plan expiry currently identified.
 
+
+
+---
+
+## KDP / Amazon Kindle Direct Publishing
+
+**Relationship:** KDP Terms and Conditions + Content Guidelines + payment/tax/banking requirements + book-format/program-specific terms.
+
+**Plan/expiry shape:** KDP is not treated as a simple fixed-term membership that must be annually renewed. The account/agreement continues until terminated/closed, but the governing terms, publishing requirements, payment requirements, and program-specific rules can change.
+
+**Current operational rule:** Every publication submission must satisfy the current KDP Terms and Content Guidelines at the time of submission.
+
+**Current change risk examples:**
+- content/publishing requirements can change;
+- payment-service-provider requirements can change;
+- KYC/banking requirements can change;
+- KDP Select and other optional programs can have their own renewal/exclusivity rules;
+- technical print/file specifications can change independently of the general account agreement.
+
+**Human intervention:** Required when:
+- KDP notifies the account of required banking/KYC/tax action;
+- publishing/content requirements materially change;
+- a program with exclusivity/renewal terms is entered;
+- account status, payment method, tax profile, or rights declarations require confirmation;
+- Anderson House is about to publish and the last KDP policy check is stale.
+
+**Publication gate:** Bill must re-check current KDP contract/policy/technical requirements close to actual publication. Ted updates the KDP adapter. Linda verifies compliance immediately before upload.
+
+---
+
+# LIVING AGREEMENT REGISTER RULE
+
+External agreements are not static facts. Each Anderson House external dependency must be treated as a **living contract record**.
+
+For every provider / receiver record:
+
+**PROVIDER → AGREEMENT FAMILY → CURRENT VERSION / EFFECTIVE DATE → ACCOUNT PLAN → START DATE → FIXED EXPIRY (IF ANY) → QUOTA/CREDIT RESET → CHANGE-NOTICE CHANNEL → LAST CHECKED → NEXT REVIEW → HUMAN ACTION TRIGGERS → CONTINUITY ROUTE**
+
+## Review types
+
+1. **Fixed-expiry review**
+   - Used for trials, credits, subscriptions, certificates, domains, or programs with an explicit end/renewal date.
+
+2. **Quota/reset review**
+   - Used for ongoing free plans with monthly or periodic allowances.
+
+3. **Terms-change review**
+   - Used for agreements that remain in force but can be amended by the provider.
+
+4. **Pre-use / pre-publication review**
+   - Used where the current rule matters at the exact time of action, such as KDP publishing, API use, licensed data use, or a new external receiver.
+
+5. **Notification-triggered review**
+   - If provider email/dashboard notices a material account, legal, payment, KYC, policy, or service change, Bill surveys immediately.
+
+## Standing coordinator rule
+
+**NO ASSUMPTION THAT YESTERDAY'S CONTRACT IS TODAY'S CONTRACT.**
+
+Before a material external dependency is relied upon:
+- check the stored agreement record;
+- determine whether its last verification is fresh enough for the risk;
+- resurvey current official terms when needed;
+- update the adapter if terms changed;
+- Linda verifies before the dependency is released into production.
