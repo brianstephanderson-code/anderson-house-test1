@@ -3,7 +3,8 @@ name: Three Amigos Vexy Production
 on:
   push:
     paths:
-      - 'books/sleepy-hollow/art/master/**'
+      - 'books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg'
+      - 'books/sleepy-hollow/art/vexy/JOB-ICHABOD-001.json'
       - 'tomo_bridge/vexy/run_asset.py'
       - '.github/workflows/vexy-production.yml'
   workflow_dispatch:
@@ -16,12 +17,6 @@ on:
         description: Warehouse job id
         required: true
         default: ichabod-001
-  push:
-    paths:
-      - 'books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg'
-      - 'books/sleepy-hollow/art/vexy/JOB-ICHABOD-001.json'
-      - 'tomo_bridge/vexy/run_asset.py'
-      - '.github/workflows/vexy-production.yml'
 
 permissions:
   contents: write
@@ -46,7 +41,7 @@ jobs:
       - name: Install Vexy bridge dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install playwright
+          pip install pillow playwright
           python -m playwright install --with-deps chromium
 
       - name: Pass approved asset through Vexy
@@ -69,6 +64,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vexy-$JOB_ID
-          path: books/sleepy-hollow/art/vexy/out/$JOB_ID/
+          name: vexy-${{ env.JOB_ID }}
+          path: books/sleepy-hollow/art/vexy/out/${{ env.JOB_ID }}/
           if-no-files-found: warn
