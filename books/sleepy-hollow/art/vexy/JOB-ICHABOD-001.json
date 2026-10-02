@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "BOUND_SOURCE_PREVIEW_VERIFY",
-  "retry_reason": "render exact bound source preview and continue debugging",
-  "retry_nonce": 6
+  "status": "SIGNAL_CONTROL_SURVEY",
+  "retry_reason": "inspect image and signal threshold controls after free-fill survey",
+  "retry_nonce": 7
 }
