@@ -245,6 +245,21 @@ with sync_playwright() as p:
         }))"""
     )
 
+    report["levels_point_probe"] = page.evaluate("""() => {
+      const pts=[[1180,676],[1328,676],[1255,658]];
+      const out=[];
+      for (const [x,y] of pts) {
+        const els=document.elementsFromPoint(x,y).slice(0,8).map((e,i)=>({
+          i,tag:e.tagName,id:e.id||'',cls:String(e.className||''),
+          title:e.getAttribute('title')||'',aria:e.getAttribute('aria-label')||'',
+          role:e.getAttribute('role')||'',draggable:e.getAttribute('draggable')||'',
+          html:e.outerHTML.slice(0,2600)
+        }));
+        out.push({x,y,els});
+      }
+      return out;
+    }""")
+
     report["signal_dom_inventory"] = page.evaluate("""() => {
       const all=[...document.querySelectorAll('*')];
       return all.map((e,i)=>({
