@@ -233,3 +233,47 @@ report={
 }
 REPORT.write_text(json.dumps(report,indent=2),encoding="utf-8")
 print(json.dumps(report,indent=2))
+
+
+# Front-cover artwork asset (page-count independent; final case geometry handled by KDP Cover Creator/template)
+from PIL import Image, ImageDraw, ImageFont
+COVER = OUT / "sleepy_hollow_front_cover_1650x2550.png"
+img=Image.new("RGB",(1650,2550),(28,31,38))
+d=ImageDraw.Draw(img)
+# moon
+d.ellipse((1080,180,1460,560),fill=(221,207,161))
+# distant hills
+d.polygon([(0,1300),(260,980),(530,1270),(790,900),(1080,1210),(1380,870),(1650,1160),(1650,2550),(0,2550)],fill=(50,54,58))
+# ground
+d.rectangle((0,1650,1650,2550),fill=(22,24,26))
+# trees
+for x,hgt in [(100,1050),(260,1250),(1380,1180),(1510,980)]:
+    d.rectangle((x,1200-hgt//4,x+28,1900),fill=(10,11,12))
+    d.line((x+14,1320,x-100,980),fill=(10,11,12),width=22)
+    d.line((x+14,1400,x+130,1030),fill=(10,11,12),width=20)
+# horse and headless rider silhouette
+d.ellipse((760,1630,1180,1810),fill=(8,8,9))
+d.ellipse((1130,1580,1260,1690),fill=(8,8,9))
+for xx in (820,930,1060,1140):
+    d.line((xx,1760,xx-35,1990),fill=(8,8,9),width=24)
+# rider torso no head
+d.polygon([(900,1540),(1030,1450),(1120,1570),(1090,1710),(910,1700)],fill=(8,8,9))
+d.line((1000,1570,1180,1640),fill=(8,8,9),width=26)
+# carried round head / pumpkin ambiguity
+d.ellipse((1160,1580,1260,1680),outline=(221,207,161),width=12)
+# title typography
+font_paths=["/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf","/usr/share/fonts/truetype/liberation2/LiberationSerif-Bold.ttf"]
+reg_paths=["/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf","/usr/share/fonts/truetype/liberation2/LiberationSerif-Regular.ttf"]
+fp=next((p for p in font_paths if Path(p).exists()),font_paths[0])
+rp=next((p for p in reg_paths if Path(p).exists()),reg_paths[0])
+ft=ImageFont.truetype(fp,112); fa=ImageFont.truetype(rp,56); fe=ImageFont.truetype(rp,38)
+def centered(text,y,font,fill):
+    box=d.textbbox((0,0),text,font=font); w=box[2]-box[0]
+    d.text(((1650-w)//2,y),text,font=font,fill=fill)
+centered("THE LEGEND OF",650,ft,(236,231,213))
+centered("SLEEPY HOLLOW",790,ft,(236,231,213))
+centered("WASHINGTON IRVING",2140,fa,(236,231,213))
+centered("AN ILLUSTRATED EDITION",2240,fe,(184,175,148))
+img.save(COVER,dpi=(300,300))
+report["front_cover_asset"]=COVER.name
+REPORT.write_text(json.dumps(report,indent=2),encoding="utf-8")
