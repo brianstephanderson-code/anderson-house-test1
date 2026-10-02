@@ -169,6 +169,14 @@ with sync_playwright() as p:
             raw = base64.b64decode(stage_src.split(",",1)[1])
             (out / "stage_source.png").write_bytes(raw)
             stage_im = Image.open(io.BytesIO(raw)).convert("RGB")
+            stage_preview = stage_im.copy()
+            stage_preview.thumbnail((900,900), Image.Resampling.LANCZOS)
+            stage_preview_path = out / "stage_source_preview.jpg"
+            stage_preview.save(stage_preview_path, "JPEG", quality=80, optimize=True)
+            (out / "stage_source_preview.b64").write_text(
+                base64.b64encode(stage_preview_path.read_bytes()).decode("ascii"),
+                encoding="ascii"
+            )
             ref_im = Image.open(src).convert("RGB").resize(stage_im.size, Image.Resampling.LANCZOS)
             stage_gray = ImageOps.autocontrast(stage_im.convert("L"))
             ref_gray = ImageOps.autocontrast(ref_im.convert("L"))
