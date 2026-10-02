@@ -1,7 +1,9 @@
+import base64
 import json
-import os
 import sys
 from pathlib import Path
+
+from PIL import Image
 from playwright.sync_api import sync_playwright
 
 if len(sys.argv) < 3:
@@ -80,8 +82,24 @@ with sync_playwright() as p:
     if not candidates or candidates[0]["area"] <= 50000:
         raise SystemExit("NO_LARGE_SVG_CAPTURED")
 
-    (out / "output.svg").write_text(candidates[0]["html"], encoding="utf-8")
+    best = candidates[0]
+    (out / "output.svg").write_text(best["html"], encoding="utf-8")
     report["events"].append("large_svg_captured")
+
+    svg = page.locator("svg").nth(best["i"])
+    svg.screenshot(path=str(out / "vexy_result.png"))
+    report["events"].append("vexy_result_screenshot")
+
+    im = Image.open(out / "vexy_result.png").convert("RGB")
+    im.thumbnail((900, 900), Image.Resampling.LANCZOS)
+    preview_path = out / "vexy_result_preview.jpg"
+    im.save(preview_path, "JPEG", quality=72, optimize=True, progressive=True)
+    (out / "vexy_result_preview.b64").write_text(
+        base64.b64encode(preview_path.read_bytes()).decode("ascii"),
+        encoding="ascii"
+    )
+    report["events"].append("portable_preview_created")
+
     (out / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     browser.close()
 
