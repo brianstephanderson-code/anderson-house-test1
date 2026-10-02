@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "RAW_LEVELS_HTML_CAPTURE",
-  "retry_reason": "capture raw Playlines HTML around levels control",
-  "retry_nonce": 11
+  "status": "INITIAL_LEVELS_PROBE",
+  "retry_reason": "probe levels/image-signal controls at initial DOM state",
+  "retry_nonce": 12
 }
