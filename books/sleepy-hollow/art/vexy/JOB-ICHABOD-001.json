@@ -24,5 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "READY_FOR_VEXY"
+  "status": "RETRY_REQUESTED",
+  "retry_reason": "linear parameter sweep",
+  "retry_nonce": 1
 }
