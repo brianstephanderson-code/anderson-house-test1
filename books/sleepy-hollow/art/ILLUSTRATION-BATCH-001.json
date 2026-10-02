@@ -1,11 +1,11 @@
 {
   "batch_id": "SH-ILL-BATCH-001",
-  "purpose": "Use ChatGPT as the composition-maker function, then pass approved masters through the same Three Amigos engraving translator and Linda gate used for the pilot.",
-  "grammar": "BRIEF -> CHATGPT_COMPOSITION -> MASTER -> ENGRAVER -> LINDA_VERIFY -> WAREHOUSE",
+  "purpose": "Use ChatGPT as the composition-maker function, then send approved masters directly through Linda visual verification and into the warehouse.",
+  "grammar": "BRIEF -> CHATGPT_COMPOSITION -> MASTER -> LINDA_VERIFY -> WAREHOUSE",
   "pilot": {
     "source": "books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg",
-    "role": "translator pilot / style calibration",
-    "status": "IN_TRANSLATOR_TEST"
+    "role": "composition / style calibration",
+    "status": "MASTER_REVIEW"
   },
   "policy": {
     "one_scene_per_master": true,
@@ -24,10 +24,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-001-HOLLOW.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-001-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-001/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 1
+      "order": 1,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-001/"
     },
     {
       "id": "SH-ILL-002",
@@ -35,10 +34,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-002-ICHABOD.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-002-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-002/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 2
+      "order": 2,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-002/"
     },
     {
       "id": "SH-ILL-003",
@@ -46,10 +44,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-003-SCHOOLHOUSE.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-003-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-003/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 3
+      "order": 3,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-003/"
     },
     {
       "id": "SH-ILL-004",
@@ -57,10 +54,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-004-READING-AT-DUSK.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-004-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-004/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 4
+      "order": 4,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-004/"
     },
     {
       "id": "SH-ILL-005",
@@ -68,10 +64,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-005-KATRINA-FARM.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-005-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-005/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 5
+      "order": 5,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-005/"
     },
     {
       "id": "SH-ILL-006",
@@ -79,10 +74,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-006-BROM.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-006-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-006/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 6
+      "order": 6,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-006/"
     },
     {
       "id": "SH-ILL-007",
@@ -90,10 +84,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-007-FEAST.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-007-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-007/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 7
+      "order": 7,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-007/"
     },
     {
       "id": "SH-ILL-008",
@@ -101,10 +94,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-008-DANCE.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-008-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-008/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 8
+      "order": 8,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-008/"
     },
     {
       "id": "SH-ILL-009",
@@ -112,10 +104,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-009-GHOST-STORIES.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-009-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-009/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 9
+      "order": 9,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-009/"
     },
     {
       "id": "SH-ILL-010",
@@ -123,10 +114,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-010-HAUNTED-BRIDGE.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-010-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-010/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 10
+      "order": 10,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-010/"
     },
     {
       "id": "SH-ILL-011",
@@ -134,10 +124,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-011-HORSEMAN.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-011-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-011/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 11
+      "order": 11,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-011/"
     },
     {
       "id": "SH-ILL-012",
@@ -145,10 +134,9 @@
       "brief": "books/sleepy-hollow/illustrations/SH-ILL-012-CHASE.md",
       "composition_function": "CHATGPT",
       "master_path": "books/sleepy-hollow/art/master/sh-ill-012-master.png",
-      "translator": "THREE_AMIGOS_ENGRAVER",
-      "output_path": "books/sleepy-hollow/art/engraver/final/sh-ill-012/",
       "status": "NEEDS_COMPOSITION_MASTER",
-      "order": 12
+      "order": 12,
+      "final_path": "books/sleepy-hollow/art/final/sh-ill-012/"
     }
   ]
 }
