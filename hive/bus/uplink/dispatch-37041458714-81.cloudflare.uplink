@@ -1,0 +1,9 @@
+MESSAGE_ID=dispatch-37041458714-81
+CHANNEL=UPLINK
+FROM=CLOUDFLARE
+TO=MANAGEMENT
+TYPE=ORDER_RESULT
+STATUS=DONE
+CORRELATION_ID=dispatch-37041458714-81
+RESULT_JSON={"words":7,"sentences":3,"paragraphs":1,"terminalPunctuation":true,"particleRoute":{"particle":"terminal_punctuation","returnsTo":"text_profile","backupTo":"function_lane_checkpoint","crosstalk":["terminal_punctuation_verifier"]},"crosstalkVerification":{"by":"terminal_punctuation_verifier","passed":true},"uplink":{"via":"primary","to":"text_profile"},"characters":40,"lines":1,"blankLines":0,"candidateTokens":{"namedReferences":[],"wordCandidates":[]},"providerHive":{"provider":"cloudflare","mode":"fanout-join","workerCount":8,"workers":["word_count","sentence_count","paragraph_count","terminal_punctuation","character_count","line_count","blank_line_count","candidate_tokens"],"elapsedMs":0}}
+UTC=2026-10-02T17:33:39Z
