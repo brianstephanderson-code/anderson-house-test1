@@ -20,7 +20,7 @@ jobs:
           python-version: '3.12'
       - run: pip install reportlab pypdf pillow
       - run: python books/sleepy-hollow/build_hardcover_prototype.py
-      - name: Encode PDF for connector retrieval
+      - name: Encode outputs for connector retrieval
         run: |
           base64 -w 76 books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf > books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf.b64
           base64 -w 76 books/sleepy-hollow/build/sleepy_hollow_front_cover_1650x2550.png > books/sleepy-hollow/build/sleepy_hollow_front_cover_1650x2550.png.b64
@@ -28,8 +28,7 @@ jobs:
         run: |
           git config user.name "anderson-house-builder"
           git config user.email "actions@users.noreply.github.com"
-          git add books/sleepy-hollow/build/build_report.json
-            books/sleepy-hollow/build/sleepy_hollow_front_cover_1650x2550.png books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf.b64 books/sleepy-hollow/build/sleepy_hollow_front_cover_1650x2550.png.b64
+          git add             books/sleepy-hollow/build/build_report.json             books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf.b64             books/sleepy-hollow/build/sleepy_hollow_front_cover_1650x2550.png.b64
           git diff --cached --quiet || git commit -m "Build Sleepy Hollow hardcover prototype [skip ci]"
           git push
       - uses: actions/upload-artifact@v4
@@ -37,4 +36,5 @@ jobs:
           name: sleepy-hollow-hardcover-prototype
           path: |
             books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf
+            books/sleepy-hollow/build/sleepy_hollow_front_cover_1650x2550.png
             books/sleepy-hollow/build/build_report.json
