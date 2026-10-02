@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "ACTIVE_SOURCE_VERIFY_RETRY",
-  "retry_reason": "report did not yet include source pixel verification fields",
-  "retry_nonce": 4
+  "status": "FREE_FILL_SURVEY_REQUESTED",
+  "retry_reason": "compare Linear Wave Circular Spiral Halftone on verified source",
+  "retry_nonce": 5
 }
