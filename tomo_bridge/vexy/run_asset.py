@@ -195,6 +195,76 @@ with sync_playwright() as p:
         }))"""
     )
 
+
+    # Sweep the parameters that actually control whether Linear reveals image structure.
+    # The previous run showed Interval=0, which is a strong candidate for the stripe-carpet failure.
+    def set_range(id_, value):
+        loc = page.locator("#" + id_)
+        if not loc.count():
+            return False
+        loc.evaluate(
+            """(e,v) => {
+                e.value = String(v);
+                e.dispatchEvent(new Event('input',{bubbles:true}));
+                e.dispatchEvent(new Event('change',{bubbles:true}));
+            }""",
+            value,
+        )
+        return True
+
+    source_for_score = Image.open(src).convert("L")
+    source_for_score = ImageOps.fit(source_for_score, (512,384))
+    source_for_score = ImageOps.autocontrast(source_for_score)
+
+    def score_png(path):
+        try:
+            cand = Image.open(path).convert("L")
+            cand = ImageOps.fit(cand, (512,384))
+            cand = ImageOps.autocontrast(cand)
+            diff = ImageChops.difference(source_for_score, cand)
+            return max(0.0, min(1.0, 1.0 - ImageStat.Stat(diff).mean[0] / 255.0))
+        except Exception:
+            return 0.0
+
+    sweeps = [
+        {"thickness":180, "interval":180, "organic":10, "contrast":1.20, "brightness":0},
+        {"thickness":220, "interval":260, "organic":20, "contrast":1.35, "brightness":-5},
+        {"thickness":260, "interval":340, "organic":30, "contrast":1.50, "brightness":-10},
+        {"thickness":320, "interval":420, "organic":40, "contrast":1.65, "brightness":-15},
+        {"thickness":140, "interval":300, "organic":50, "contrast":1.45, "brightness":5},
+    ]
+    report["parameter_sweeps"] = []
+    best_sweep = None
+
+    for idx, vals in enumerate(sweeps, start=1):
+        for key, val in vals.items():
+            set_range(key, val)
+        page.wait_for_timeout(3500)
+        candidates_now = page.eval_on_selector_all(
+            "svg",
+            """els => els.map((e,i) => {
+                const r=e.getBoundingClientRect();
+                return {i, area:r.width*r.height, width:r.width, height:r.height};
+            }).sort((a,b)=>b.area-a.area)"""
+        )
+        if not candidates_now or candidates_now[0]["area"] <= 50000:
+            continue
+        svgi = candidates_now[0]["i"]
+        shot = out / f"linear_sweep_{idx}.png"
+        page.locator("svg").nth(svgi).screenshot(path=str(shot))
+        sc = score_png(shot)
+        rec = {"index":idx, **vals, "score":sc, "png":shot.name}
+        report["parameter_sweeps"].append(rec)
+        if best_sweep is None or sc > best_sweep["score"]:
+            best_sweep = rec
+
+    if best_sweep:
+        report["best_sweep"] = best_sweep
+        for key in ["thickness","interval","organic","contrast","brightness"]:
+            set_range(key, best_sweep[key])
+        page.wait_for_timeout(3500)
+        report["events"].append("linear_parameter_sweep_complete")
+
     page.screenshot(path=str(out / "preview.png"), full_page=True)
     candidates = page.eval_on_selector_all(
         "svg",
