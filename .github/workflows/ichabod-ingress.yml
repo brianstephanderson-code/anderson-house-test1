@@ -1,0 +1,41 @@
+name: Ichabod Master Ingress
+
+on:
+  push:
+    paths:
+      - 'tomo_bridge/vexy/ingress/ichabod-001/MANIFEST'
+
+permissions:
+  contents: write
+
+jobs:
+  ingress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct approved working master
+        shell: bash
+        run: |
+          set -euo pipefail
+          STAGE="tomo_bridge/vexy/ingress/ichabod-001"
+          DEST="books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg"
+          mkdir -p "$(dirname "$DEST")"
+          cat "$STAGE"/chunk_* | tr -d '\n' | base64 -d > "$DEST"
+          test "$(sha256sum "$DEST" | awk '{print $1}')" = "cf3e04f18a6c1ec2813a6e4798a503192fa0ec09adeaf18b077f7b17cf52cbbf"
+          file "$DEST"
+          ls -lh "$DEST"
+
+      - name: Commit master and clear transit chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg
+          git rm -r tomo_bridge/vexy/ingress/ichabod-001
+          git commit -m "Ingress approved Ichabod working master [skip ci]"
+          git push
