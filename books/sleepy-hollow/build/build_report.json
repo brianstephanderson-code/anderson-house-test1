@@ -1,0 +1,28 @@
+{
+  "file": "sleepy_hollow_hardcover_interior_prototype.pdf",
+  "page_count": 50,
+  "trim_inches": [
+    5.5,
+    8.5
+  ],
+  "ink": "black",
+  "paper": "cream candidate",
+  "interior_bleed": false,
+  "source_sha256": "6c9144ae5fcc841a339e161e5f30961e2801030fd88f14a475683b8253e30422",
+  "illustrations_expected": 12,
+  "illustration_anchors_found": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "kdp_hardcover_min_pages": 75,
+  "meets_minimum": false,
+  "status": "PROTOTYPE_RENDERED"
+}
