@@ -19,10 +19,15 @@
     "added_matter": "original Anderson House edition matter and coded-vector illustrations"
   },
   "ai_content": {
-    "prototype_interior_illustrations": "NONE - original coded illustration plates",
-    "prototype_cover_art": "NONE - original coded cover artwork",
-    "kdp_ai_generated_disclosure_currently_expected": false,
-    "rule": "Re-evaluate if any production asset is replaced by AI-generated text/image/translation."
+    "underlying_irving_text": "NONE - public-domain human-authored source",
+    "reader_notes": "AI-GENERATED TEXT - drafted with ChatGPT/OpenAI and must be disclosed to KDP",
+    "prototype_interior_illustrations": "NONE - original coded illustration plates; no AI image generator used",
+    "prototype_cover_art": "NONE - original coded cover artwork; no AI image generator used",
+    "kdp_ai_generated_disclosure_expected": true,
+    "disclosure_scope": [
+      "text"
+    ],
+    "rule": "Recalculate if any image or translation is later replaced with AI-generated content."
   },
   "public_domain_differentiation": {
     "method": "illustrated edition",
@@ -40,7 +45,7 @@
     "tax/bank/KYC confirmations",
     "final publish button"
   ],
-  "status": "READY_FOR_FINAL_RENDER_QA_THEN_KDP_ACCOUNT_SIDE_COMPLETION",
+  "status": "READY_FOR_KDP_ACCOUNT_UPLOAD_AFTER_FINAL_HUMAN_PREVIEW",
   "title": "The Legend of Sleepy Hollow (Illustrated)",
   "subtitle": null,
   "product_description": "This illustrated edition includes:\n\n• 12 original illustrations relevant to Irving's story\n• Original reader notes on the tale's frame, comedy, ambiguity, and setting\n• A source-faithful layout designed around the story's pacing and atmosphere\n\nWashington Irving's classic tale follows the schoolmaster Ichabod Crane through the dreamy Dutch settlements of the Hudson Valley, where appetite, courtship, rivalry, local folklore, and a midnight encounter with the Headless Horseman converge.\n\nThis Anderson House edition preserves Irving's public-domain text while adding an original visual and reader-support layer. The illustrations are placed according to the story's literary movement rather than at fixed intervals, leaving the fastest parts of the final chase comparatively uninterrupted.",
