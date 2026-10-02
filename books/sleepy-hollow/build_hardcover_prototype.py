@@ -236,6 +236,13 @@ story=[]
 story += [Spacer(1,1.6*inch), Paragraph("THE LEGEND OF<br/>SLEEPY HOLLOW<br/><font size=\"12\">(ILLUSTRATED)</font>",title), Paragraph("Washington Irving",subtitle), PageBreak()]
 story += [Illustration(1,"Frontispiece: The Hollow"), PageBreak()]
 story += [Spacer(1,1.25*inch), Paragraph("The Legend of Sleepy Hollow<br/><font size=\"12\">(Illustrated)</font>",title), Paragraph("Washington Irving",subtitle), Spacer(1,0.5*inch), Paragraph("An illustrated Anderson House reader edition",center), PageBreak()]
+story += [Spacer(1,1.55*inch),
+          Paragraph("&ldquo;Faith, sir &hellip; as to that matter,<br/>I don&rsquo;t believe one-half of it myself.&rdquo;",subtitle),
+          Spacer(1,0.45*inch),
+          Paragraph("&mdash; Washington Irving, <i>Postscript to The Legend of Sleepy Hollow</i>",center),
+          Spacer(1,0.75*inch),
+          Paragraph("Irving closes the tale by refusing to settle it completely. This edition preserves that ambiguity and leaves the final judgment with the reader.",center),
+          PageBreak()]
 story += [Paragraph("Edition Note",h2), Paragraph("This illustrated edition preserves Washington Irving's public-domain text while adding original Anderson House illustrations and concise reader notes. Irving's wording and story order remain unchanged.",body), Spacer(1,0.15*inch), Paragraph("<b>Source note:</b> Washington Irving's original work is in the public domain in the United States. Anderson House maintains the production source lineage and verification record separately.",small), PageBreak()]
 
 for p in body_parts:
