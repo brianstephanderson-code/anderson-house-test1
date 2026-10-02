@@ -1,0 +1,8 @@
+{
+  "job_id": "termux-heartbeat-001",
+  "action": "heartbeat",
+  "started_utc": "2026-10-02T07:44:37Z",
+  "ok": true,
+  "stdout": "TERMUX_BRIDGE_GREEN",
+  "finished_utc": "2026-10-02T07:44:37Z"
+}
