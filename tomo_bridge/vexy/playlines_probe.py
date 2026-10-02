@@ -108,6 +108,9 @@ with sync_playwright() as p:
         ]
         if candidates and candidates[0]["area"] > 50000:
             (OUT / "candidate.svg").write_text(candidates[0]["html"], encoding="utf-8")
+            page.locator("svg").nth(candidates[0]["i"]).screenshot(
+                path=str(OUT / "candidate_preview.png")
+            )
             report["events"].append("large_svg_captured")
 
         # Also try an actual free Download/Copy SVG control if present.
@@ -124,5 +127,18 @@ with sync_playwright() as p:
 
     (OUT / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     browser.close()
+
+# Make a small, connector-friendly text copy of the visual result.
+preview = OUT / "candidate_preview.png"
+if preview.exists():
+    import base64
+    thumb = Image.open(preview).convert("RGB")
+    thumb.thumbnail((480, 360))
+    thumb_path = OUT / "candidate_preview_small.jpg"
+    thumb.save(thumb_path, "JPEG", quality=65, optimize=True)
+    (OUT / "candidate_preview_small.jpg.b64").write_text(
+        base64.b64encode(thumb_path.read_bytes()).decode("ascii"),
+        encoding="ascii"
+    )
 
 print(json.dumps(report, indent=2))
