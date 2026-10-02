@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "SIGNAL_CONTROL_SURVEY",
-  "retry_reason": "inspect image and signal threshold controls after free-fill survey",
-  "retry_nonce": 7
+  "status": "LEVELS_NEIGHBORHOOD_SURVEY",
+  "retry_reason": "inspect Playlines levels/image-signal controls",
+  "retry_nonce": 8
 }
