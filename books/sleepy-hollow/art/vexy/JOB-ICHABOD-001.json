@@ -24,7 +24,7 @@
     "no glossy smoothing",
     "ambiguity preserved"
   ],
-  "status": "PROBE_LEVELS_CONTROL_STRUCTURE",
-  "retry_reason": "inspect exact Vexy levels and image-signal controls",
-  "retry_nonce": 10
+  "status": "RAW_LEVELS_HTML_CAPTURE",
+  "retry_reason": "capture raw Playlines HTML around levels control",
+  "retry_nonce": 11
 }
