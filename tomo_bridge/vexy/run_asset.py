@@ -219,8 +219,8 @@ with sync_playwright() as p:
     )
 
 
-    # Sweep the parameters that actually control whether Linear reveals image structure.
-    # The previous run showed Interval=0, which is a strong candidate for the stripe-carpet failure.
+    # Compare the free Playlines fill families against the same verified source.
+    # Linear has been proven source-bound but visually unsuitable, so cast wider.
     def set_range(id_, value):
         loc = page.locator("#" + id_)
         if not loc.count():
@@ -249,22 +249,36 @@ with sync_playwright() as p:
         except Exception:
             return 0.0
 
-    sweeps = [
-        {"thickness":35,  "interval":70,  "organic":10, "contrast":1.00, "brightness":55},
-        {"thickness":50,  "interval":90,  "organic":15, "contrast":1.10, "brightness":65},
-        {"thickness":70,  "interval":110, "organic":20, "contrast":1.20, "brightness":70},
-        {"thickness":90,  "interval":130, "organic":25, "contrast":1.30, "brightness":75},
-        {"thickness":120, "interval":150, "organic":30, "contrast":1.20, "brightness":80},
-        {"thickness":60,  "interval":60,  "organic":20, "contrast":1.00, "brightness":85},
-        {"thickness":100, "interval":80,  "organic":35, "contrast":1.40, "brightness":90},
+    fill_tests = [
+        {"id":"fillLinear",   "name":"Linear",   "params":{"thickness":35,"interval":70,"organic":10,"contrast":1.0,"brightness":55}},
+        {"id":"fillWave",     "name":"Wave",     "params":{"thickness":120,"interval":220,"organic":20,"contrast":1.25,"brightness":0}},
+        {"id":"fillCircular", "name":"Circular", "params":{"thickness":120,"interval":220,"organic":20,"contrast":1.25,"brightness":0}},
+        {"id":"fillSpiral",   "name":"Spiral",   "params":{"thickness":120,"interval":220,"organic":20,"contrast":1.25,"brightness":0}},
+        {"id":"fillHalftone", "name":"Halftone", "params":{"thickness":120,"interval":220,"organic":0,"contrast":1.35,"brightness":0}},
     ]
-    report["parameter_sweeps"] = []
-    best_sweep = None
 
-    for idx, vals in enumerate(sweeps, start=1):
-        for key, val in vals.items():
+    report["fill_family_tests"] = []
+    best_fill = None
+
+    for idx, test in enumerate(fill_tests, start=1):
+        try:
+            btn = page.locator("#" + test["id"])
+            btn.click(force=True, timeout=5000)
+            page.wait_for_timeout(3500)
+        except Exception as e:
+            report["fill_family_tests"].append({"name":test["name"],"selected":False,"error":str(e),"score":0.0})
+            continue
+
+        for key, val in test["params"].items():
             set_range(key, val)
-        page.wait_for_timeout(3500)
+        page.wait_for_timeout(3000)
+
+        label = None
+        try:
+            label = page.locator("#fillLabel").inner_text(timeout=1500)
+        except Exception:
+            pass
+
         candidates_now = page.eval_on_selector_all(
             "svg",
             """els => els.map((e,i) => {
@@ -273,23 +287,31 @@ with sync_playwright() as p:
             }).sort((a,b)=>b.area-a.area)"""
         )
         if not candidates_now or candidates_now[0]["area"] <= 50000:
+            report["fill_family_tests"].append({"name":test["name"],"selected":True,"active_label":label,"score":0.0,"captured":False})
             continue
+
         svgi = candidates_now[0]["i"]
-        shot = out / f"linear_sweep_{idx}.png"
-        page.locator("svg").nth(svgi).screenshot(path=str(shot))
-        sc = score_png(shot)
-        rec = {"index":idx, **vals, "score":sc, "png":shot.name}
-        report["parameter_sweeps"].append(rec)
-        if best_sweep is None or sc > best_sweep["score"]:
-            best_sweep = rec
+        png_path = out / f"fill_{idx}_{test['name'].lower()}.png"
+        svg_path = out / f"fill_{idx}_{test['name'].lower()}.svg"
+        page.locator("svg").nth(svgi).screenshot(path=str(png_path))
+        html = page.locator("svg").nth(svgi).evaluate("e => e.outerHTML")
+        svg_path.write_text(html,encoding="utf-8")
+        sc = score_png(png_path)
+        rec={"name":test["name"],"selected":True,"active_label":label,"score":sc,
+             "png":png_path.name,"svg":svg_path.name,"params":test["params"]}
+        report["fill_family_tests"].append(rec)
+        if best_fill is None or sc > best_fill["score"]:
+            best_fill=rec
 
-    if best_sweep:
-        report["best_sweep"] = best_sweep
-        for key in ["thickness","interval","organic","contrast","brightness"]:
-            set_range(key, best_sweep[key])
+    if best_fill:
+        report["best_fill"] = best_fill
+        report["events"].append("free_fill_family_survey_complete")
+        # restore best fill/parameters before canonical export
+        best_id = next(x["id"] for x in fill_tests if x["name"]==best_fill["name"])
+        page.locator("#"+best_id).click(force=True, timeout=5000)
+        for key,val in best_fill["params"].items():
+            set_range(key,val)
         page.wait_for_timeout(3500)
-        report["events"].append("linear_parameter_sweep_complete")
-
     page.screenshot(path=str(out / "preview.png"), full_page=True)
     candidates = page.eval_on_selector_all(
         "svg",
