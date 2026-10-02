@@ -378,6 +378,87 @@ with sync_playwright() as p:
         except Exception:
             return 0.0
 
+
+    # Tune the actual Image Levels signal inside Playlines' shadow-DOM editor.
+    # These two handles are the missing source-signal gate.
+    def set_levels(black_level, white_level):
+        try:
+            bar = page.locator("#thrBar")
+            left = page.locator("#thrWhite")   # UI names are reversed: this controls black cutoff
+            right = page.locator("#thrBlack")  # this controls white cutoff
+            if not bar.count() or not left.count() or not right.count():
+                return None
+            bb = bar.bounding_box()
+            lb = left.bounding_box()
+            rb = right.bounding_box()
+            if not bb or not lb or not rb:
+                return None
+            y = bb["y"] + bb["height"]/2
+            # Drag left/black handle.
+            page.mouse.move(lb["x"]+lb["width"]/2, lb["y"]+lb["height"]/2)
+            page.mouse.down()
+            page.mouse.move(bb["x"] + (black_level/255.0)*bb["width"], y, steps=8)
+            page.mouse.up()
+            page.wait_for_timeout(350)
+            # Re-read right handle after first drag, then drag white cutoff.
+            rb = right.bounding_box()
+            if not rb:
+                return None
+            page.mouse.move(rb["x"]+rb["width"]/2, rb["y"]+rb["height"]/2)
+            page.mouse.down()
+            page.mouse.move(bb["x"] + (white_level/255.0)*bb["width"], y, steps=8)
+            page.mouse.up()
+            page.wait_for_timeout(1000)
+            return page.locator("#thrValue").get_attribute("aria-label")
+        except Exception as e:
+            return "ERROR: "+str(e)
+
+    # Dense, fine hatching is closer to wood engraving than the earlier broad stripes.
+    page.locator("#fillLinear").click(force=True, timeout=5000)
+    set_range("thickness", 18)
+    set_range("interval", 0)
+    set_range("organic", 5)
+    set_range("angle", 45)
+    set_range("contrast", 1.15)
+    set_range("brightness", 0)
+    page.wait_for_timeout(2500)
+
+    threshold_pairs = [
+        (10,245),(20,220),(30,200),(45,185),(60,170),(75,155),
+        (20,180),(35,165),(50,150)
+    ]
+    report["threshold_sweeps"] = []
+    best_threshold = None
+    for tidx,(black_level,white_level) in enumerate(threshold_pairs, start=1):
+        observed = set_levels(black_level, white_level)
+        page.wait_for_timeout(2200)
+        cand = page.eval_on_selector_all(
+            "svg",
+            """els => els.map((e,i) => {
+                const r=e.getBoundingClientRect();
+                return {i, area:r.width*r.height, width:r.width, height:r.height};
+            }).sort((a,b)=>b.area-a.area)"""
+        )
+        if not cand or cand[0]["area"] <= 50000:
+            report["threshold_sweeps"].append({"black":black_level,"white":white_level,"observed":observed,"score":0.0})
+            continue
+        svgi=cand[0]["i"]
+        png_path=out / f"threshold_{tidx}_{black_level}_{white_level}.png"
+        svg_path=out / f"threshold_{tidx}_{black_level}_{white_level}.svg"
+        page.locator("svg").nth(svgi).screenshot(path=str(png_path))
+        html=page.locator("svg").nth(svgi).evaluate("e => e.outerHTML")
+        svg_path.write_text(html,encoding="utf-8")
+        sc=score_png(png_path)
+        rec={"black":black_level,"white":white_level,"observed":observed,"score":sc,
+             "png":png_path.name,"svg":svg_path.name}
+        report["threshold_sweeps"].append(rec)
+        if best_threshold is None or sc > best_threshold["score"]:
+            best_threshold=rec
+
+    if best_threshold:
+        report["best_threshold"] = best_threshold
+        report["events"].append("image_levels_threshold_sweep_complete")
+
     fill_tests = [
         {"id":"fillLinear",   "name":"Linear",   "params":{"thickness":35,"interval":70,"organic":10,"contrast":1.0,"brightness":55}},
         {"id":"fillWave",     "name":"Wave",     "params":{"thickness":120,"interval":220,"organic":20,"contrast":1.25,"brightness":0}},
@@ -435,25 +516,29 @@ with sync_playwright() as p:
     if best_fill:
         report["best_fill"] = best_fill
         report["events"].append("free_fill_family_survey_complete")
-        # restore best fill/parameters before canonical export
-        best_id = next(x["id"] for x in fill_tests if x["name"]==best_fill["name"])
-        page.locator("#"+best_id).click(force=True, timeout=5000)
-        for key,val in best_fill["params"].items():
-            set_range(key,val)
-        page.wait_for_timeout(3500)
-    # Linda gate: free fills must actually communicate the source scene.
-    # Source is pixel-identical, but current free-fill scores remain low and
-    # visually collapse to decorative fields. Do not promote a false winner.
+
+    # Compare the signal-tuned Linear result against the broad fill-family cast.
+    winner = None
     if best_fill:
+        winner={"kind":"fill","name":best_fill["name"],"score":best_fill["score"],"png":best_fill["png"],"svg":best_fill["svg"]}
+    if best_threshold and (winner is None or best_threshold["score"] > winner["score"]):
+        winner={"kind":"threshold","name":"Linear+ImageLevels","score":best_threshold["score"],
+                "png":best_threshold["png"],"svg":best_threshold["svg"],
+                "black":best_threshold["black"],"white":best_threshold["white"]}
+
+    if winner:
+        report["production_winner"] = winner
+        # Promote the exact winning SVG/PNG rather than re-rendering a different state.
+        (out / "output.svg").write_text((out / winner["svg"]).read_text(encoding="utf-8"),encoding="utf-8")
+        Image.open(out / winner["png"]).save(out / "vexy_result.png")
         report["linda_visual_gate"] = {
-            "status": "REJECTED" if best_fill["score"] < 0.60 else "CANDIDATE",
-            "reason": "free fill does not preserve recognizable scene structure" if best_fill["score"] < 0.60 else "candidate requires human visual approval",
+            "status": "CANDIDATE" if winner["score"] >= 0.60 else "REJECTED",
+            "reason": "recognizable scene structure recovered; requires visual approval" if winner["score"] >= 0.60 else "result still does not preserve recognizable scene structure",
             "threshold": 0.60,
-            "best_score": best_fill["score"],
-            "best_fill": best_fill["name"]
+            "best_score": winner["score"],
+            "best_route": winner["name"]
         }
-        if best_fill["score"] < 0.60:
-            report["events"].append("linda_rejected_free_fill_output")
+        report["events"].append("linda_candidate_found" if winner["score"] >= 0.60 else "linda_rejected_all_vexy_routes")
 
     page.screenshot(path=str(out / "preview.png"), full_page=True)
     candidates = page.eval_on_selector_all(
@@ -472,9 +557,10 @@ with sync_playwright() as p:
         raise SystemExit("NO_LARGE_SVG_CAPTURED")
 
     best = candidates[0]
-    (out / "output.svg").write_text(best["html"], encoding="utf-8")
-    svg = page.locator("svg").nth(best["i"])
-    svg.screenshot(path=str(out / "vexy_result.png"))
+    if not report.get("production_winner"):
+        (out / "output.svg").write_text(best["html"], encoding="utf-8")
+        svg = page.locator("svg").nth(best["i"])
+        svg.screenshot(path=str(out / "vexy_result.png"))
     report["events"].append("large_svg_captured")
 
     im = Image.open(out / "vexy_result.png").convert("RGB")
