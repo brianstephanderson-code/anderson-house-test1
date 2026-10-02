@@ -57,7 +57,8 @@ jobs:
           git add books/sleepy-hollow/art/vexy/out
           if ! git diff --cached --quiet; then
             git commit -m "Warehouse Vexy output $JOB_ID [skip ci]"
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
 
       - name: Upload inspection artifact
