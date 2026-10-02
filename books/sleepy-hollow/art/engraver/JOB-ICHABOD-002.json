@@ -1,0 +1,8 @@
+{
+  "job_id": "ichabod-002",
+  "function": "woodcut-translation-candidate",
+  "translator": "Boxlab Engraver",
+  "source": "books/sleepy-hollow/art/master/ichabod_crane_faces_the_headless_horseman.jpg",
+  "status": "PROBE_REQUESTED",
+  "acceptance": "recognizable scene structure with one-color engraving linework; no decorative-only pattern"
+}
