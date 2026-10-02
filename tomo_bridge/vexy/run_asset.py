@@ -94,11 +94,16 @@ with sync_playwright() as p:
     im.thumbnail((900, 900), Image.Resampling.LANCZOS)
     preview_path = out / "vexy_result_preview.jpg"
     im.save(preview_path, "JPEG", quality=72, optimize=True, progressive=True)
-    (out / "vexy_result_preview.b64").write_text(
-        base64.b64encode(preview_path.read_bytes()).decode("ascii"),
-        encoding="ascii"
-    )
+    b64 = base64.b64encode(preview_path.read_bytes()).decode("ascii")
+    (out / "vexy_result_preview.b64").write_text(b64, encoding="ascii")
+    chunk_size = 46000
+    for n, start in enumerate(range(0, len(b64), chunk_size), 1):
+        (out / f"vexy_result_preview.b64.part{n:02d}").write_text(
+            b64[start:start+chunk_size], encoding="ascii"
+        )
     report["events"].append("portable_preview_created")
+    report["preview_b64_length"] = len(b64)
+    report["preview_b64_chunks"] = (len(b64) + chunk_size - 1) // chunk_size
 
     (out / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     browser.close()
