@@ -53,6 +53,81 @@ with sync_playwright() as p:
     report["after_inputs"] = page.eval_on_selector_all("input", """els=>els.map((e,i)=>({i,type:e.type||'',id:e.id||'',value:e.value||'',checked:!!e.checked,min:e.min||'',max:e.max||'',step:e.step||'',aria:e.getAttribute('aria-label')||'',title:e.title||''}))""")
     report["canvases"] = page.eval_on_selector_all("canvas", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,width:e.width,height:e.height,cssWidth:r.width,cssHeight:r.height,x:r.x,y:r.y}})""")
     report["svgs"] = page.eval_on_selector_all("svg", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,width:r.width,height:r.height,area:r.width*r.height}}).sort((a,b)=>b.area-a.area)""")
+    # Survey the actual effect and tone controls, then cast across every visible engraving effect.
+    def largest_svg():
+        svs = page.eval_on_selector_all("svg", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,width:r.width,height:r.height,area:r.width*r.height}}).sort((a,b)=>b.area-a.area)""")
+        return svs[0] if svs else None
+
+    effect_names = ["Line", "Lines", "Line screen", "Wave", "Crosshatch", "Contour", "Isolines", "Spiral", "Rings", "Scribble", "Stipple", "Halftone"]
+    report["effect_survey"] = []
+
+    try:
+        page.get_by_role("button", name="Effect", exact=True).click()
+        page.wait_for_timeout(1200)
+        report["effect_panel_text"] = page.locator("body").inner_text()[:12000]
+        report["effect_inputs"] = page.eval_on_selector_all("input", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,type:e.type||'',value:e.value||'',min:e.min||'',max:e.max||'',step:e.step||'',checked:!!e.checked,visible:r.width>0&&r.height>0,x:r.x,y:r.y,outerHTML:e.outerHTML.slice(0,1000)}})""")
+        report["effect_buttons"] = page.eval_on_selector_all("button", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,text:(e.innerText||'').trim(),visible:r.width>0&&r.height>0,x:r.x,y:r.y,w:r.width,h:r.height,aria:e.getAttribute('aria-label')||'',title:e.title||''}})""")
+
+        seen = set()
+        for name in effect_names:
+            # Prefer exact visible button text, otherwise any visible button containing the effect name.
+            loc = page.get_by_role("button", name=name, exact=True)
+            if loc.count() == 0:
+                loc = page.locator("button").filter(has_text=name)
+            chosen = None
+            for ii in range(loc.count()):
+                try:
+                    if loc.nth(ii).is_visible():
+                        chosen = loc.nth(ii)
+                        break
+                except Exception:
+                    pass
+            if chosen is None:
+                continue
+            label = (chosen.inner_text() or name).strip()
+            key = label.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            try:
+                chosen.click()
+                page.wait_for_timeout(2200)
+                info = largest_svg()
+                rec = {"requested":name,"label":label}
+                if info and info["area"] > 50000:
+                    slug = "".join(ch.lower() if ch.isalnum() else "_" for ch in label).strip("_")[:40] or "effect"
+                    png = out / ("effect_" + slug + ".png")
+                    svg = out / ("effect_" + slug + ".svg")
+                    sloc = page.locator("svg").nth(info["i"])
+                    sloc.screenshot(path=str(png))
+                    svg.write_text(sloc.evaluate("e=>e.outerHTML"), encoding="utf-8")
+                    rec.update({"captured":True,"png":png.name,"svg":svg.name,"area":info["area"]})
+                else:
+                    rec["captured"] = False
+                report["effect_survey"].append(rec)
+            except Exception as e:
+                report["effect_survey"].append({"requested":name,"label":label,"error":str(e)})
+        report["events"].append("effect_family_survey_complete")
+    except Exception as e:
+        report["effect_survey_error"] = str(e)
+
+    try:
+        page.get_by_role("button", name="Tone", exact=True).click()
+        page.wait_for_timeout(900)
+        report["tone_panel_text"] = page.locator("body").inner_text()[:12000]
+        report["tone_inputs"] = page.eval_on_selector_all("input", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,type:e.type||'',value:e.value||'',min:e.min||'',max:e.max||'',step:e.step||'',checked:!!e.checked,visible:r.width>0&&r.height>0,x:r.x,y:r.y,outerHTML:e.outerHTML.slice(0,1000)}})""")
+        report["tone_buttons"] = page.eval_on_selector_all("button", """els=>els.map((e,i)=>{const r=e.getBoundingClientRect();return {i,text:(e.innerText||'').trim(),visible:r.width>0&&r.height>0,x:r.x,y:r.y,w:r.width,h:r.height,aria:e.getAttribute('aria-label')||'',title:e.title||''}})""")
+        report["events"].append("tone_controls_surveyed")
+    except Exception as e:
+        report["tone_survey_error"] = str(e)
+
+    # Return to Effect for canonical capture after survey.
+    try:
+        page.get_by_role("button", name="Effect", exact=True).click()
+        page.wait_for_timeout(500)
+    except Exception:
+        pass
+
     page.screenshot(path=str(out/"page.png"), full_page=True)
     report["events"].append("probe_captured")
 
