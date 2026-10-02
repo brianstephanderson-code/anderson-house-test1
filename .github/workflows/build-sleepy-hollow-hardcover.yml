@@ -7,6 +7,9 @@ on:
       - '.github/workflows/build-sleepy-hollow-hardcover.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,6 +20,16 @@ jobs:
           python-version: '3.12'
       - run: pip install reportlab pypdf
       - run: python books/sleepy-hollow/build_hardcover_prototype.py
+      - name: Encode PDF for connector retrieval
+        run: |
+          base64 -w 76 books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf > books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf.b64
+      - name: Commit build outputs
+        run: |
+          git config user.name "anderson-house-builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add books/sleepy-hollow/build/build_report.json books/sleepy-hollow/build/sleepy_hollow_hardcover_interior_prototype.pdf.b64
+          git diff --cached --quiet || git commit -m "Build Sleepy Hollow hardcover prototype [skip ci]"
+          git push
       - uses: actions/upload-artifact@v4
         with:
           name: sleepy-hollow-hardcover-prototype
