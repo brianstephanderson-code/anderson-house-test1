@@ -1,0 +1,8 @@
+{
+  "id": "plain-sight-native-open-v3",
+  "action": "codex_exec",
+  "prompt": "Repeat the previous Prime Video native detail-page launch for title ID 0NLO0TU5CRDWWOQ4WYX9D7YOFK. Use ~/bin/rish and a single Android VIEW intent with aiv://app.primevideo.com/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK explicitly targeting package com.amazon.avod.thirdpartyclient. Do not tap, type, retry, dismiss dialogs, start playback, purchase anything, or navigate afterward. After sending the launch intent, wait 20 seconds without further input and then report only whether the activity-start command succeeded.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 180
+}
