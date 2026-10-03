@@ -200,6 +200,74 @@ rm -f {tmp1} {tmp2} {tmp3}
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_guarded_markor_cycle":
+            text_value = str(cmd.get("text", "")).strip()
+            expected_before = str(cmd.get("expected_before", "")).strip()
+            expected_after = str(cmd.get("expected_after", "")).strip()
+            test_path = str(cmd.get("test_path", "/sdcard/Documents/TOMO_FINGERS_TEST.md")).strip()
+
+            if test_path != "/sdcard/Documents/TOMO_FINGERS_TEST.md":
+                raise ValueError("only the disposable Markor test path is allowed")
+            if expected_before != "BASELINE" or expected_after != "BASELINETOMO_TEST" or text_value != "TOMO_TEST":
+                raise ValueError("unexpected guarded Markor test payload")
+
+            tmp1 = "/sdcard/tomo_markor_fast_before.xml"
+            tmp2 = "/sdcard/tomo_markor_fast_after.xml"
+            tmp3 = "/sdcard/tomo_markor_fast_restore.xml"
+            deletes = " ".join(["input keyevent KEYCODE_DEL;" for _ in text_value])
+
+            shell = f'''
+set -e
+rm -f {test_path} {tmp1} {tmp2} {tmp3}
+printf BASELINE > {test_path}
+am start -a android.intent.action.VIEW -d file://{test_path} -t text/markdown -p net.gsantner.markor >/dev/null
+sleep 1
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"net.gsantner.markor/"*) ;; *) echo ABORT_WRONG_FOREGROUND_OPEN; rm -f {test_path}; exit 51;; esac
+
+uiautomator dump {tmp1} >/dev/null
+grep -F 'package="net.gsantner.markor"' {tmp1} >/dev/null
+grep -F 'class="android.widget.EditText"' {tmp1} >/dev/null
+grep -F 'text="{expected_before}"' {tmp1} >/dev/null
+
+input tap 360 300
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"net.gsantner.markor/"*) ;; *) echo ABORT_WRONG_FOREGROUND_TAP; rm -f {test_path} {tmp1}; exit 52;; esac
+
+input keyevent KEYCODE_MOVE_END
+input text {text_value}
+
+uiautomator dump {tmp2} >/dev/null
+grep -F 'package="net.gsantner.markor"' {tmp2} >/dev/null
+grep -F 'text="{expected_after}"' {tmp2} >/dev/null
+echo APPEND_VERIFIED
+
+{deletes}
+
+uiautomator dump {tmp3} >/dev/null
+grep -F 'package="net.gsantner.markor"' {tmp3} >/dev/null
+grep -F 'text="{expected_before}"' {tmp3} >/dev/null
+[ "$(cat {test_path})" = "{expected_before}" ]
+echo RESTORE_VERIFIED
+
+rm -f {test_path} {tmp1} {tmp2} {tmp3}
+echo CLEANUP_VERIFIED
+'''
+
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 60)),
+            )
+            result.update(
+                ok=(r.returncode == 0 and "APPEND_VERIFIED" in r.stdout and "RESTORE_VERIFIED" in r.stdout),
+                returncode=r.returncode,
+                stdout=r.stdout[-8000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "repo_status":
             r = git("status", "--short")
             result.update(ok=True, stdout=r.stdout, stderr=r.stderr)
@@ -238,7 +306,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
