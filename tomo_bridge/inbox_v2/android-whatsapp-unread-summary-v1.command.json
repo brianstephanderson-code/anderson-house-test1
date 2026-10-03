@@ -1,0 +1,5 @@
+{
+  "id": "android-whatsapp-unread-summary-v1",
+  "action": "android_whatsapp_read_unread_summary",
+  "timeout": 45
+}
