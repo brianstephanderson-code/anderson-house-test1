@@ -1,0 +1,7 @@
+{
+  "action": "android_guarded_whatsapp_self_send",
+  "bridge_version": "v2",
+  "error": "ValueError: action not allowed: android_guarded_whatsapp_self_send",
+  "id": "android-whatsapp-self-direct-send-v1",
+  "ok": false
+}
