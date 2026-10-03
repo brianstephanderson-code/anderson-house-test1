@@ -1,0 +1,7 @@
+{
+  "id": "whatsapp-tahnee-snapshot-20261003",
+  "action": "android_whatsapp_message_snapshot",
+  "target_title": "Tahnee",
+  "return_public_key_pem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwx9FKYmkrp+dRQLPac0w\nK77hT9voG7HyY3xT9AmiFpNNhnDIeT7UvNJ0z17kPOVAEOeqfTdM1eiSR4++hpvG\nKYJTWHtJaPLAJlwHIJPdPQ6VeCaKKMsyYKTHmKzmfokVVqlu8DHe3CGYKc/nOygr\npV9EpDBQkg0a/hLXUatlHvd/RgmbzTGig4PBOhed/A7fNXRJIJJp9QfpOjyWl9r7\npYWqWgZOqxurr/K7uYHwuWX/vhSSBbhLGG1s5Cc5qlxmonwuVGlIESe8xLK84tHi\nVYkuB5dVkUpaB4thnjJmMVKtpMQDZZ0W4xorXC7Qzn3YdHg/it/NMVhyoKHyW0ze\ngwIDAQAB\n-----END PUBLIC KEY-----",
+  "timeout": 60
+}
