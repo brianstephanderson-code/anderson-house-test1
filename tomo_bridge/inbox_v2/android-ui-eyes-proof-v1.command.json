@@ -1,0 +1,8 @@
+{
+  "id": "android-ui-eyes-proof-v1",
+  "action": "codex_exec",
+  "prompt": "Read-only Android UI inspection. Using ~/bin/rish, capture the current foreground UI hierarchy with uiautomator dump to a temporary file under /sdcard, read it, then remove only that temporary file. Do not tap, type, launch, navigate, or change any app/system state. Report: current foreground package if visible, visible text labels, clickable controls with their bounds, editable fields, and any accessibility content descriptions. Keep the report concise and do not include unrelated hidden/off-screen nodes.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": false,
+  "timeout": 180
+}
