@@ -829,6 +829,42 @@ echo CLEANUP_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_whatsapp_notification_summary":
+            package = "com.whatsapp"
+            shell = r"""
+set -e
+echo WHATSAPP_NOTIFICATION_SUMMARY_BEGIN
+
+dumpsys notification --noredact 2>/dev/null | awk '
+  /NotificationRecord\(/ {
+    if (inrec && hit) print rec
+    rec=$0 "\n"; inrec=1; hit=($0 ~ /pkg=com\.whatsapp/)
+    next
+  }
+  inrec {
+    rec=rec $0 "\n"
+    if ($0 ~ /pkg=com\.whatsapp/ || $0 ~ /opPkg=com\.whatsapp/ || $0 ~ /ApplicationInfo.*com\.whatsapp/) hit=1
+  }
+  END { if (inrec && hit) print rec }
+' | grep -E 'android\.title=|android\.text=|android\.messages=|sender=|text=|time=|type=|uri=|tickerText=' || true
+
+echo WHATSAPP_NOTIFICATION_SUMMARY_END
+echo NOTIFICATION_SUMMARY_VERIFIED
+"""
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO, text=True, capture_output=True,
+                timeout=int(cmd.get("timeout", 45)),
+            )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
+            result.update(
+                ok=(r.returncode == 0 and "NOTIFICATION_SUMMARY_VERIFIED" in proof_output),
+                returncode=r.returncode,
+                package=package,
+                stdout=r.stdout[-12000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "android_whatsapp_notification_inspect":
             package = "com.whatsapp"
             shell = r"""
@@ -1876,7 +1912,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_inspect, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
