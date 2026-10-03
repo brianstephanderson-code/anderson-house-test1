@@ -1,0 +1,8 @@
+{
+  "id": "android-ddg-eyes-inspect-v1",
+  "action": "codex_exec",
+  "allow_write": true,
+  "workdir": "~/downloads",
+  "timeout": 120,
+  "prompt": "Harmless UI inspection only. Use ~/bin/rish. Open DuckDuckGo with component com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher. Do not type, search, submit, tap controls, change settings, or navigate anywhere. After it is foreground, dump the current Android UI hierarchy to a temporary file. Report the first android.widget.EditText node exactly: its text, content-desc, hint/text if present, resource-id, bounds, enabled/focused state. Also report the visible package and current foreground activity. Delete the temporary UI dump before finishing."
+}
