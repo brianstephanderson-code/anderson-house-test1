@@ -795,26 +795,39 @@ sleep 1
 
 uiautomator dump {tmp3} >/dev/null
 # WhatsApp search may repeat the same name in Chats, Groups in common, and Messages.
-# Only accept the exact-name row inside the Chats section.
-chats_top="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/title"' | grep -F 'text="Chats"' | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,\\([0-9]*\\)\\]".*/\\2/p' | head -n 1)"
-next_top="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/title"' | grep -E 'text="(Groups in common|Messages)"' | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,\\([0-9]*\\)\\]".*/\\1/p' | head -n 1)"
-[ -n "$chats_top" ] || {{ echo ABORT_NO_CHATS_SECTION; exit 185; }}
-[ -n "$next_top" ] || next_top=1600
-
+# Use a tiny bounded scroll hand: inspect, swipe up, inspect again, max 6 passes.
 result_node=""
-while IFS= read -r n; do
-  [ -n "$n" ] || continue
-  y1="$(printf '%s' "$n" | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,[0-9]*\\]".*/\\1/p')"
-  [ -n "$y1" ] || continue
-  if [ "$y1" -ge "$chats_top" ] && [ "$y1" -lt "$next_top" ]; then
-    result_node="$result_node$n
+for pass in 1 2 3 4 5 6; do
+  uiautomator dump {tmp3} >/dev/null
+
+  chats_top="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/title"' | grep -F 'text="Chats"' | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,\\([0-9]*\\)\\]".*/\\2/p' | head -n 1)"
+  next_top="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/title"' | grep -E 'text="(Groups in common|Messages)"' | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,\\([0-9]*\\)\\]".*/\\1/p' | head -n 1)"
+  [ -n "$next_top" ] || next_top=1600
+
+  if [ -n "$chats_top" ]; then
+    result_node=""
+    while IFS= read -r n; do
+      [ -n "$n" ] || continue
+      y1="$(printf '%s' "$n" | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,[0-9]*\\]".*/\\1/p')"
+      [ -n "$y1" ] || continue
+      if [ "$y1" -ge "$chats_top" ] && [ "$y1" -lt "$next_top" ]; then
+        result_node="$result_node$n
 "
-  fi
-done <<'EOF'
+      fi
+    done <<'EOF'
 $(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F 'text="{target_title}"' || true)
 EOF
+    if [ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ]; then
+      break
+    fi
+  fi
 
-[ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_CHATS_RESULT_MATCH; exit 185; }}
+  # Scroll search results upward to reveal lower sections/rows.
+  input swipe 360 1260 360 620 350
+  sleep 1
+done
+
+[ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_CHATS_RESULT_MATCH_AFTER_SCROLL; exit 185; }}
 
 bounds="$(printf '%s' "$result_node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
 set -- $bounds
