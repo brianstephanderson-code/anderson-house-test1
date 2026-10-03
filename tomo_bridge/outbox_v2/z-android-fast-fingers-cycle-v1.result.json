@@ -1,0 +1,11 @@
+{
+  "action": "android_guarded_text_cycle",
+  "bridge_version": "v2",
+  "id": "z-android-fast-fingers-cycle-v1",
+  "ok": true,
+  "package": "net.gsantner.markor",
+  "returncode": 0,
+  "stderr": "ABORT_WRONG_FOREGROUND_BEFORE\n",
+  "stdout": "",
+  "text": "TOMO_TEST"
+}
