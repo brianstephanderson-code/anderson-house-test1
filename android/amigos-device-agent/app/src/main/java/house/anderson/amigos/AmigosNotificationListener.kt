@@ -17,6 +17,7 @@ class AmigosNotificationListener : NotificationListenerService() {
             text = text
         )
         EventStore.record(this, deviceEvent)
+        LocalBridgeSender.send(deviceEvent)
         DeviceEventBus.publish(deviceEvent)
     }
 }
