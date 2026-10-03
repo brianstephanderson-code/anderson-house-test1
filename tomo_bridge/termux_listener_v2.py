@@ -829,6 +829,46 @@ echo CLEANUP_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_whatsapp_read_unread_summary":
+            package = "com.whatsapp"
+            component = "com.whatsapp/.home.ui.HomeActivity"
+            tmp1 = "/data/local/tmp/tomo_wa_unread_home.xml"
+
+            shell = f"""
+set -e
+cleanup() {{ rm -f {tmp1}; }}
+trap cleanup EXIT
+
+am force-stop {package} >/dev/null 2>&1 || true
+sleep 0.5
+am start -n {component} >/dev/null
+sleep 1
+uiautomator dump {tmp1} >/dev/null
+
+echo UNREAD_SUMMARY_BEGIN
+grep -o '<node[^>]*>' {tmp1} | grep -E 'resource-id="com.whatsapp:id/(conversations_row_contact_name|conversations_row_message_count|single_msg_tv|conversations_row_date)"' || true
+echo UNREAD_SUMMARY_END
+echo UNREAD_SUMMARY_VERIFIED
+
+cleanup
+trap - EXIT
+echo CLEANUP_VERIFIED
+"""
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO, text=True, capture_output=True,
+                timeout=int(cmd.get("timeout", 45)),
+            )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
+            result.update(
+                ok=(r.returncode == 0 and "UNREAD_SUMMARY_VERIFIED" in proof_output and "CLEANUP_VERIFIED" in proof_output),
+                returncode=r.returncode,
+                package=package,
+                component=component,
+                stdout=r.stdout[-12000:],
+                stderr=r.stderr[-12000:],
+            )
+
         elif action == "android_guarded_whatsapp_scroll_draft_and_send":
             package = "com.whatsapp"
             component = "com.whatsapp/.home.ui.HomeActivity"
@@ -1813,7 +1853,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
