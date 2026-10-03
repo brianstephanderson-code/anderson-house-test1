@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-nick-draft-v1",
+  "action": "android_guarded_whatsapp_draft",
+  "target_title": "Nick",
+  "text": "HELLO FROM TOMO",
+  "timeout": 45
+}
