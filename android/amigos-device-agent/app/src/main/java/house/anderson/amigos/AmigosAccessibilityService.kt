@@ -15,6 +15,7 @@ class AmigosAccessibilityService : AccessibilityService() {
             text = event.text?.joinToString(" ")?.takeIf { it.isNotBlank() }
         )
         EventStore.record(this, deviceEvent)
+        LocalBridgeSender.send(deviceEvent)
         DeviceEventBus.publish(deviceEvent)
     }
 
