@@ -1,0 +1,11 @@
+{
+  "id": "z-android-fast-fingers-cycle-v1",
+  "action": "android_guarded_text_cycle",
+  "package": "net.gsantner.markor",
+  "text": "TOMO_TEST",
+  "expected_before": "BASELINE",
+  "expected_after": "BASELINETOMO_TEST",
+  "x": 360,
+  "y": 836,
+  "timeout": 60
+}
