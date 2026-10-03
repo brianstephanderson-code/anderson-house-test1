@@ -1,0 +1,8 @@
+{
+  "id": "android-whatsapp-self-inspect-v1",
+  "action": "codex_exec",
+  "allow_write": true,
+  "workdir": "~/downloads",
+  "timeout": 120,
+  "prompt": "Safe WhatsApp navigation inspection only. Use ~/bin/rish. First verify Shizuku with ~/bin/rish -c id; stop if unavailable. Open WhatsApp using component com.whatsapp/.Main. Inspect the visible UI hierarchy and locate the chat whose visible label is exactly '+64 20 449 8229 (You)'. If exactly one such visible chat is found, tap only that chat to open it. Then dump the UI hierarchy again and report: current package/activity, visible chat title, and the first android.widget.EditText node with resource-id, text/content-desc, bounds, enabled/focused state. Do not type any text, do not send anything, do not press call/video/attachment buttons, and do not change settings. Delete temporary UI dumps before finishing."
+}
