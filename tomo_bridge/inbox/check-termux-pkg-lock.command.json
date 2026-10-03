@@ -1,0 +1,6 @@
+{
+  "id": "check-termux-pkg-lock",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/check_termux_pkg_lock.py",
+  "timeout": 30
+}
