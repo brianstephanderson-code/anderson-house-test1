@@ -1,0 +1,14 @@
+{
+  "action": "android_guarded_whatsapp_replace_and_send",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.Main",
+  "expected_before": "HELLO FROM TOMO",
+  "id": "android-whatsapp-mum-replace-send-v2",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "ABORT_CHAT_MATCH\n",
+  "stdout": "",
+  "target_title": "Mum (Julianne)",
+  "text": "Hello"
+}
