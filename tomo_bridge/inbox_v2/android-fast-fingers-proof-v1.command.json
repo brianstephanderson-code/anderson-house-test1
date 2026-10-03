@@ -1,0 +1,8 @@
+{
+  "id": "android-fast-fingers-proof-v1",
+  "action": "codex_exec",
+  "prompt": "Prepare a disposable Markor test note only. Use ~/bin/rish for Android actions. Create /sdcard/Documents/TOMO_FINGERS_TEST.md containing exactly BASELINE if it does not already exist, then open that exact file in Markor via explicit VIEW intent. Do not type, tap the editor, delete, share, save, or navigate. Stop after the note is visibly open and report success.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 120
+}
