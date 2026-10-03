@@ -261,8 +261,9 @@ echo CLEANUP_VERIFIED
                 capture_output=True,
                 timeout=int(cmd.get("timeout", 60)),
             )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
             result.update(
-                ok=(r.returncode == 0 and "APPEND_VERIFIED" in r.stdout and "RESTORE_VERIFIED" in r.stdout and "CLEANUP_VERIFIED" in r.stdout),
+                ok=(r.returncode == 0 and "APPEND_VERIFIED" in proof_output and "RESTORE_VERIFIED" in proof_output and "CLEANUP_VERIFIED" in proof_output),
                 returncode=r.returncode,
                 stdout=r.stdout[-8000:],
                 stderr=r.stderr[-8000:],
