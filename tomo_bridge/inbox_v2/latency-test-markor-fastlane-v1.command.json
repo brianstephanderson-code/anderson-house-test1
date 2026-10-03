@@ -1,0 +1,7 @@
+{
+  "id": "latency-test-markor-fastlane-v1",
+  "action": "android_launch",
+  "package": "net.gsantner.markor",
+  "component": "net.gsantner.markor/.activity.MainActivity",
+  "timeout": 60
+}
