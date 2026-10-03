@@ -1,6 +1,0 @@
-{
-  "id": "warehouse-state-gate-20261001T2042",
-  "action": "run_repo_python",
-  "path": "research/test_warehouse_candidate_state.py",
-  "timeout": 120
-}

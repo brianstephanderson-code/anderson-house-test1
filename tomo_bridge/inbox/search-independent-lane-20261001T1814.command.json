@@ -1,6 +1,0 @@
-{
-  "id": "search-independent-lane-20261001T1814",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/candidate_fetch_order.py",
-  "timeout": 60
-}

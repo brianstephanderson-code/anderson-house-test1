@@ -1,7 +1,0 @@
-{
-  "id": "warehouse-verification-state-20261001T1841",
-  "action": "run_repo_python",
-  "path": "research/function_verification_state.py",
-  "args": [],
-  "timeout": 120
-}

@@ -1,6 +1,0 @@
-{
-  "id": "android-capability-survey-v1",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/android_capability_survey_v1.py",
-  "timeout": 180
-}
