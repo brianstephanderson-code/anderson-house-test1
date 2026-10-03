@@ -1,0 +1,8 @@
+{
+  "id": "prime-video-launch-v1",
+  "action": "codex_exec",
+  "prompt": "Launch Prime Video on this Android phone using ~/bin/rish and the exact component com.amazon.avod.thirdpartyclient/.LauncherActivity. Use a single Android activity-start command. Do not tap, type, navigate, or change any settings after launch. Report whether the launch command succeeded.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 180
+}
