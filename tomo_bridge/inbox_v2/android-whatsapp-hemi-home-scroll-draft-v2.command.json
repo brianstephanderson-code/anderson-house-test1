@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-hemi-home-scroll-draft-v2",
+  "action": "android_guarded_whatsapp_scroll_draft",
+  "target_title": "Hemi Anderson",
+  "text": "Hey Hem, Its dad here, this is a test thru chatgpt",
+  "timeout": 60
+}
