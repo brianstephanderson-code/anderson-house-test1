@@ -1,0 +1,10 @@
+{
+  "action": "android_whatsapp_notification_inspect",
+  "bridge_version": "v2",
+  "id": "android-whatsapp-notification-inspect-v2",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 1,
+  "stderr": "Server is not running\n",
+  "stdout": ""
+}
