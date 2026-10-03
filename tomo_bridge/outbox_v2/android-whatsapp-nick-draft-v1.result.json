@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_draft",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.Main",
+  "id": "android-whatsapp-nick-draft-v1",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "ABORT_CHAT_MATCH_COUNT_0\n",
+  "stdout": "",
+  "target_title": "Nick",
+  "text": "HELLO FROM TOMO"
+}
