@@ -1,0 +1,6 @@
+{
+  "id": "bridge-v2-snapshot-verify-20261003",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/verify_bridge_v2_snapshot.py",
+  "timeout": 60
+}
