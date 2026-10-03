@@ -1,8 +1,0 @@
-{
-  "id": "direct-codex-android-readonly-v1",
-  "action": "codex_exec",
-  "prompt": "Using ~/bin/rish, run these read-only checks and summarize them clearly: id; getprop ro.product.model; dumpsys battery | head -20. Do not change anything.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": false,
-  "timeout": 240
-}
