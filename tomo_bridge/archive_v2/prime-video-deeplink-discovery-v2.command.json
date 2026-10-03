@@ -1,0 +1,8 @@
+{
+  "id": "prime-video-deeplink-discovery-v2",
+  "action": "codex_exec",
+  "prompt": "Read-only Android inspection. Using ~/bin/rish, inspect package com.amazon.avod.thirdpartyclient for intent filters, supported VIEW actions, URI schemes, hosts, path patterns, and exported activities that could open a specific title directly in the Prime Video app. Use dumpsys package and cmd package queries as needed. Do not launch anything and do not change any state. Report the cleanest candidate app-native deep-link formats or intent components, with exact evidence from the package metadata.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": false,
+  "timeout": 240
+}
