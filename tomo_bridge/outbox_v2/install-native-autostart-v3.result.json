@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "install-native-autostart-v3",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "BOOT_FILE=/data/data/com.termux/files/home/.termux/boot/tomo_bridge.sh\nBOOT_V2_PRESENT=YES\nBOOT_NATIVE_INLET_PRESENT=YES\nNATIVE_INLET_NOW=GREEN\nSTARTER=NATIVE_EVENT_INLET_ALREADY_RUNNING\nAUTOSTART_V3=GREEN\n"
+}
