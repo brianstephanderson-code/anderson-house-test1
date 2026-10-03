@@ -1,0 +1,6 @@
+{
+  "id": "bridge-v2-snapshot-restart-20261003",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/restart_bridge_v2_snapshot.py",
+  "timeout": 30
+}
