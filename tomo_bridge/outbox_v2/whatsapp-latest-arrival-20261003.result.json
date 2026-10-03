@@ -1,0 +1,10 @@
+{
+  "action": "android_whatsapp_notification_summary",
+  "bridge_version": "v2",
+  "id": "whatsapp-latest-arrival-20261003",
+  "ok": true,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "      tickerText=null\nWHATSAPP_NOTIFICATION_SUMMARY_END\nNOTIFICATION_SUMMARY_VERIFIED\n",
+  "stdout": "WHATSAPP_NOTIFICATION_SUMMARY_BEGIN\n      tickerText=Message from Tahnee\n          android.title=String (Tahnee)\n          android.text=String (2 new messages)\n          android.title=String (Tahnee)\n          android.text=String (Making Hemis cake)\n          android.messages=Parcelable[] (2)\n            [0] Bundle[{extras=Bundle[{}], sender_person=android.app.Person@78de3dc3, sender=Tahnee, uri=content://com.whatsapp.provider.media/item/0faacd27-ebb9-4839-a3a8-4c057cb4fbe5, text=\ud83d\udcf7 Sent a photo, time=1791029314000, type=image/jpeg}]\n            [1] Bundle[{extras=Bundle[{}], sender_person=android.app.Person@cf8c75d8, sender=Tahnee, text=Making Hemis cake, time=1791029318000}]\n"
+}
