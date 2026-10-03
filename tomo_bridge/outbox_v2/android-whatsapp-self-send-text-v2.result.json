@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_self_send_text",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.Main",
+  "id": "android-whatsapp-self-send-text-v2",
+  "ok": true,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "SEND_TEXT_VERIFIED\nCLEANUP_VERIFIED\n",
+  "target_title": "+64 20 449 8229 (You)",
+  "text": "HELLO FROM TOMO"
+}
