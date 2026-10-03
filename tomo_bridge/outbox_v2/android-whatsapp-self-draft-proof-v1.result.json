@@ -1,0 +1,11 @@
+{
+  "action": "codex_exec",
+  "allow_write": true,
+  "bridge_version": "v2",
+  "id": "android-whatsapp-self-draft-proof-v1",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "OpenAI Codex v0.160.0\n--------\nworkdir: /data/data/com.termux/files/home/downloads\nmodel: gpt-6.1-sol\nprovider: openai\napproval: never\nsandbox: danger-full-access\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a100eb-b625-76b0-8560-54d2ceeb5a90\n--------\nuser\nSafe WhatsApp draft-only proof. Use ~/bin/rish. First verify Shizuku with ~/bin/rish -c id; stop if unavailable. Do not send any message under any circumstance. Verify the currently visible WhatsApp conversation title is exactly '+64 20 449 8229 (You)'. Verify the editable message field has resource-id exactly 'com.whatsapp:id/entry'. If either check fails, stop without typing. If both checks pass, tap only that message field, type exactly 'TOMO TEST', then dump the UI hierarchy and verify the same field visibly contains exactly 'TOMO TEST'. Stop immediately after verification. Do not press Enter, Search, Send, microphone, attachment, camera, call, video, back, or any other control. Leave 'TOMO TEST' as an unsent draft in the self-chat. Delete only temporary inspection files before finishing.\ncodex\nI\u2019ll verify Shizuku and the visible chat and message field before typing, then check the draft without touching any other control.\nexec\n/data/data/com.termux/files/usr/bin/bash -lc '~/bin/rish -c id' in /data/data/com.termux/files/home/downloads\n exited 1 in 2273ms:\nServer is not running\n\ncodex\nStopped: Shizuku is unavailable (`Server is not running`). No controls were touched, no text was typed, and no message was sent. No temporary files were created.\ntokens used\n4,363\n",
+  "stdout": "Stopped: Shizuku is unavailable (`Server is not running`). No controls were touched, no text was typed, and no message was sent. No temporary files were created.\n",
+  "workdir": "/data/data/com.termux/files/home/downloads"
+}
