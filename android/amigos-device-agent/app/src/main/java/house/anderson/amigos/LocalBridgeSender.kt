@@ -25,8 +25,10 @@ object LocalBridgeSender {
                     put("source", event.source)
                     put("packageName", event.packageName)
                     put("whenMs", event.whenMs)
-                    if (event.title != null) put("title", event.title)
-                    if (event.text != null) put("text", event.text)
+                    if (event.source == "notification") {
+                        if (event.title != null) put("title", event.title)
+                        if (event.text != null) put("text", event.text)
+                    }
                 }.toString()
 
                 val connection = (URL(ENDPOINT).openConnection() as HttpURLConnection).apply {
