@@ -744,7 +744,7 @@ echo CLEANUP_VERIFIED
 
         elif action == "android_guarded_whatsapp_scroll_draft":
             package = "com.whatsapp"
-            component = "com.whatsapp/.Main"
+            component = "com.whatsapp/.home.ui.HomeActivity"
             target_title = str(cmd.get("target_title", "")).strip()
             text_value = str(cmd.get("text", "")).strip()
 
