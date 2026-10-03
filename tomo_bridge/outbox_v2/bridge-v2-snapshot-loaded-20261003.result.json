@@ -1,0 +1,7 @@
+{
+  "action": "android_whatsapp_message_snapshot",
+  "bridge_version": "v2",
+  "error": "ValueError: target_title is required",
+  "id": "bridge-v2-snapshot-loaded-20261003",
+  "ok": false
+}
