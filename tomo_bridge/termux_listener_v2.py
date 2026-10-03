@@ -668,6 +668,80 @@ echo CLEANUP_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_whatsapp_search_inspect":
+            package = "com.whatsapp"
+            component = "com.whatsapp/.Main"
+            target_title = str(cmd.get("target_title", "")).strip()
+            if not target_title or len(target_title) > 120:
+                raise ValueError("target_title is required")
+
+            search_text = target_title.replace(" ", "%s")
+            tmp1 = "/data/local/tmp/tomo_wa_inspect_home.xml"
+            tmp2 = "/data/local/tmp/tomo_wa_inspect_box.xml"
+            tmp3 = "/data/local/tmp/tomo_wa_inspect_results.xml"
+
+            shell = f"""
+set -e
+cleanup() {{ rm -f {tmp1} {tmp2} {tmp3}; }}
+trap cleanup EXIT
+
+am start -n {component} >/dev/null
+sleep 1
+uiautomator dump {tmp1} >/dev/null
+
+search_node="$(grep -o '<node[^>]*>' {tmp1} | grep -F 'resource-id="com.whatsapp:id/search_bar_inner_layout"' || true)"
+[ "$(printf '%s\n' "$search_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_SEARCH_BAR_MATCH; exit 201; }}
+
+bounds="$(printf '%s' "$search_node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_SEARCH_BAR_BOUNDS; exit 202; }}
+input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
+sleep 1
+
+uiautomator dump {tmp2} >/dev/null
+search_entry="$(grep -o '<node[^>]*>' {tmp2} | grep -F 'class="android.widget.EditText"' | head -n 1 || true)"
+[ -n "$search_entry" ] || {{ echo ABORT_NO_SEARCH_EDITTEXT; exit 203; }}
+
+bounds="$(printf '%s' "$search_entry" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_SEARCH_ENTRY_BOUNDS; exit 204; }}
+input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
+input text "{search_text}"
+sleep 1
+
+uiautomator dump {tmp3} >/dev/null
+
+echo INSPECT_MATCHES_BEGIN
+grep -o '<node[^>]*>' {tmp3} | grep -F 'text="{target_title}"' || true
+echo INSPECT_MATCHES_END
+echo INSPECT_CONTEXT_BEGIN
+grep -F -C 3 'text="{target_title}"' {tmp3} || true
+echo INSPECT_CONTEXT_END
+echo INSPECT_VERIFIED
+
+cleanup
+trap - EXIT
+echo CLEANUP_VERIFIED
+"""
+
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 60)),
+            )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
+            result.update(
+                ok=(r.returncode == 0 and "INSPECT_VERIFIED" in proof_output and "CLEANUP_VERIFIED" in proof_output),
+                returncode=r.returncode,
+                package=package,
+                component=component,
+                target_title=target_title,
+                stdout=r.stdout[-12000:],
+                stderr=r.stderr[-12000:],
+            )
+
         elif action == "android_guarded_whatsapp_search_draft":
             package = "com.whatsapp"
             component = "com.whatsapp/.Main"
@@ -1361,7 +1435,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
