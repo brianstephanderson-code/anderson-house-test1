@@ -1,0 +1,11 @@
+{
+  "action": "android_launch",
+  "bridge_version": "v2",
+  "component": "com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher",
+  "id": "fastlane-duckduckgo-v2",
+  "ok": true,
+  "package": "com.duckduckgo.mobile.android",
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "Starting: Intent { cmp=com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher }\n"
+}
