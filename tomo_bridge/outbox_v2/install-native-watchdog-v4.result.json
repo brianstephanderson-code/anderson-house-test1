@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "install-native-watchdog-v4",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "BOOT_WATCHDOG_PRESENT=YES\nWATCHDOG_START=WATCHDOG_STARTED=1941\nWATCHDOG_V4=GREEN\n"
+}
