@@ -1,8 +1,0 @@
-{
-  "id": "android-app-inventory-v2",
-  "action": "codex_exec",
-  "prompt": "Read-only Android inspection: identify the installed package name and launcher activity, if any, for the Prime Video app. Do not launch anything and do not change any state. Report only what you find.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": false,
-  "timeout": 180
-}
