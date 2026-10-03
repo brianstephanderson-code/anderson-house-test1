@@ -6,7 +6,7 @@ REPO = Path.home() / "anderson-house-mailbox"
 INBOX = REPO / "tomo_bridge" / "inbox"
 OUTBOX = REPO / "tomo_bridge" / "outbox"
 DONE = REPO / "tomo_bridge" / "archive"
-POLL_SECONDS = 60
+POLL_SECONDS = 10
 
 ALLOWED_ROOTS = [
     (REPO / "tomo_bridge" / "upgrades").resolve(),
