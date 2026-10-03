@@ -834,18 +834,7 @@ echo CLEANUP_VERIFIED
             shell = r"""
 set -e
 echo WHATSAPP_NOTIFICATIONS_BEGIN
-dumpsys notification --noredact 2>/dev/null | awk '
-  /NotificationRecord\{/ {buf=$0 "\n"; inrec=1; hit=0; next}
-  inrec {
-    buf=buf $0 "\n"
-    if ($0 ~ /pkg=com\.whatsapp/ || $0 ~ /com\.whatsapp/) hit=1
-    if ($0 ~ /^  NotificationRecord\{/ ) {
-      if (hit) printf "%s", buf
-      buf=$0 "\n"; hit=($0 ~ /com\.whatsapp/)
-    }
-  }
-  END { if (inrec && hit) printf "%s", buf }
-' | grep -E 'pkg=com\.whatsapp|android\.title=|android\.text=|android\.bigText=|postTime=|key=|tickerText=|NotificationRecord' || true
+dumpsys notification --noredact 2>/dev/null | grep -E 'com\.whatsapp|android\.(title|text|bigText|messages)|postTime=|tickerText=|extras=|NotificationRecord' || true
 echo WHATSAPP_NOTIFICATIONS_END
 echo NOTIFICATION_INSPECT_VERIFIED
 """
