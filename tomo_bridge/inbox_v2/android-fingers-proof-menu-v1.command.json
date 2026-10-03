@@ -1,0 +1,8 @@
+{
+  "id": "android-fingers-proof-menu-v1",
+  "action": "codex_exec",
+  "prompt": "Controlled Android UI action test in the current foreground ChatGPT app. Use ~/bin/rish only. First inspect the current UI and confirm the Menu control. Tap the center of the Menu control once. Then dump the UI again and report what changed and which menu items are visible. After verification, press Android BACK once to close the menu and restore the prior screen, then dump once more to verify the original ChatGPT screen is restored. Do not type text, send anything, start voice, open a new chat, or activate any other control. Remove any temporary UI dump files when done.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 180
+}
