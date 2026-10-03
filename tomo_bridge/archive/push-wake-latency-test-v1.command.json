@@ -1,0 +1,8 @@
+{
+  "id": "push-wake-latency-test-v1",
+  "action": "codex_exec",
+  "prompt": "READ-ONLY TEST. Run date +%s and pwd, then report both exactly. Do not modify anything.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": false,
+  "timeout": 180
+}
