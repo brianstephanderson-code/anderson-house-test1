@@ -1,0 +1,8 @@
+{
+  "id": "zz-android-fast-fingers-cleanup-v1",
+  "action": "codex_exec",
+  "prompt": "Cleanup only. Using ~/bin/rish, verify /sdcard/Documents/TOMO_FINGERS_TEST.md exists and its content is exactly BASELINE. If and only if it is exactly BASELINE, delete that disposable file and verify it is gone. Do not touch any other file or app and do not perform UI actions.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 120
+}
