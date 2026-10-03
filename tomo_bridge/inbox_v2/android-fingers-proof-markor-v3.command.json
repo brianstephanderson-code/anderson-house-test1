@@ -1,0 +1,8 @@
+{
+  "id": "android-fingers-proof-markor-v3",
+  "action": "codex_exec",
+  "prompt": "Controlled Android fingers proof in Markor, no send/share. Use ~/bin/rish only. Launch Markor net.gsantner.markor/.activity.MainActivity and wait briefly. Dump the UI and inspect for an editable text area. If no editable text area is available without creating/opening a document, STOP and report blocked. If an editable area is present, tap its center, type exactly TOMO_TEST using Android input text, dump UI and verify the text is present in the editable field. Then delete exactly those 9 characters using keyevents, dump again and verify the field is restored to its prior text. Do not save, share, create a new file, navigate away, or modify any pre-existing text beyond appending and removing TOMO_TEST. If any unexpected dialog or permission prompt appears, STOP without interacting. Remove temporary dump files and report whether SEE->ACT->SEE->VERIFY->RESTORE succeeded.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 180
+}
