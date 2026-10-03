@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-mum-julianne-draft-v1",
+  "action": "android_guarded_whatsapp_draft",
+  "target_title": "Mum (Julianne)",
+  "text": "HELLO FROM TOMO",
+  "timeout": 45
+}
