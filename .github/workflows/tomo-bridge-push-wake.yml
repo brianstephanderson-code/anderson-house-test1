@@ -1,0 +1,24 @@
+name: Tomo Bridge Push Wake
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tomo_bridge/inbox/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tomo-bridge-push-wake
+  cancel-in-progress: true
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Wake Termux bridge
+        shell: bash
+        run: |
+          curl --fail --silent --show-error             --max-time 15             -H 'Title: Three Amigos wake'             -H 'Priority: 5'             -d 'github-inbox-change'             https://ntfy.sh/ah3a-wake-8f4e2b7c1a6d49ffb3e2c07d6a11b8e4
