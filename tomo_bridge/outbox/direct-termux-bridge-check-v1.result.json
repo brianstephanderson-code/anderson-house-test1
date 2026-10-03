@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "direct-termux-bridge-check-v1",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "{\n  \"android_release\": {\n    \"code\": 0,\n    \"err\": \"\",\n    \"ok\": true,\n    \"out\": \"11\"\n  },\n  \"android_sdk\": {\n    \"code\": 0,\n    \"err\": \"\",\n    \"ok\": true,\n    \"out\": \"30\"\n  },\n  \"codex\": null,\n  \"git\": \"/data/data/com.termux/files/usr/bin/git\",\n  \"model\": {\n    \"code\": 0,\n    \"err\": \"\",\n    \"ok\": true,\n    \"out\": \"moto g power (2021)\"\n  },\n  \"node\": \"/data/data/com.termux/files/usr/bin/node\",\n  \"npm\": \"/data/data/com.termux/files/usr/bin/npm\",\n  \"python\": \"/data/data/com.termux/files/usr/bin/python\",\n  \"rish\": null,\n  \"termux_open_url\": \"/data/data/com.termux/files/usr/bin/termux-open-url\",\n  \"uname\": {\n    \"code\": 0,\n    \"err\": \"\",\n    \"ok\": true,\n    \"out\": \"Linux localhost 4.19.157-perf+ #1 SMP PREEMPT Wed Feb 1 13:08:27 CST 2023 aarch64 Android\"\n  },\n  \"whoami\": {\n    \"code\": 0,\n    \"err\": \"\",\n    \"ok\": true,\n    \"out\": \"u0_a321\"\n  }\n}\n"
+}
