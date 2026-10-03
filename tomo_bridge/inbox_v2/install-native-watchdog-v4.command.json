@@ -1,0 +1,6 @@
+{
+  "id": "install-native-watchdog-v4",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/install_native_watchdog_v4.py",
+  "timeout": 60
+}
