@@ -1,0 +1,8 @@
+{
+  "id": "android-whatsapp-self-draft-proof-v2",
+  "action": "codex_exec",
+  "allow_write": true,
+  "workdir": "~/downloads",
+  "timeout": 120,
+  "prompt": "Safe WhatsApp draft-only proof. Use ~/bin/rish. First verify Shizuku with ~/bin/rish -c id; stop if unavailable. Do not send any message under any circumstance. Verify the currently visible WhatsApp conversation title is exactly '+64 20 449 8229 (You)'. Verify the editable message field has resource-id exactly 'com.whatsapp:id/entry'. If either check fails, stop without typing. If both checks pass, tap only that message field, type exactly 'TOMO TEST', then dump the UI hierarchy and verify the same field visibly contains exactly 'TOMO TEST'. Stop immediately after verification. Do not press Enter, Search, Send, microphone, attachment, camera, call, video, back, or any other control. Leave 'TOMO TEST' as an unsent draft in the self-chat. Delete only temporary inspection files before finishing."
+}
