@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json, os, subprocess, time, threading, urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 REPO = Path.home() / "anderson-house-mailbox"
@@ -9,6 +10,10 @@ DONE = REPO / "tomo_bridge" / "archive_v2"
 POLL_SECONDS = 5
 WAKE_TOPIC = "ah3a-wake-v2-4f11e8c2877b4d42a7f3a9e22b16c501"
 WAKE_URL = f"https://ntfy.sh/{WAKE_TOPIC}/json"
+LOCAL_EVENT_HOST = "127.0.0.1"
+LOCAL_EVENT_PORT = 8765
+PRIVATE_EVENT_DIR = Path.home() / ".tomo_private_events"
+PRIVATE_EVENT_LOG = PRIVATE_EVENT_DIR / "events.jsonl"
 
 ALLOWED_ROOTS = [
     (REPO / "tomo_bridge" / "upgrades").resolve(),
@@ -2053,6 +2058,72 @@ echo CLEANUP_VERIFIED
     if not published:
         print(f"result publish pending for {cmd_id}: {last_error}")
 
+class LocalEventHandler(BaseHTTPRequestHandler):
+    server_version = "ThreeAmigosLocalEvent/1.0"
+
+    def do_POST(self):
+        if self.path != "/event":
+            self.send_error(404)
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length <= 0 or length > 65536:
+                self.send_error(400)
+                return
+            raw = self.rfile.read(length)
+            event = json.loads(raw.decode("utf-8"))
+            if not isinstance(event, dict):
+                raise ValueError("event must be an object")
+
+            source = str(event.get("source", ""))[:32]
+            package_name = str(event.get("packageName", ""))[:256]
+            if source not in {"accessibility", "notification"} or not package_name:
+                raise ValueError("invalid source/package")
+
+            PRIVATE_EVENT_DIR.mkdir(parents=True, exist_ok=True)
+            os.chmod(PRIVATE_EVENT_DIR, 0o700)
+            record = {
+                "receivedMs": int(time.time() * 1000),
+                "source": source,
+                "packageName": package_name,
+                "title": event.get("title"),
+                "text": event.get("text"),
+                "whenMs": event.get("whenMs"),
+            }
+            with PRIVATE_EVENT_LOG.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(record, ensure_ascii=False) + "\\n")
+            try:
+                os.chmod(PRIVATE_EVENT_LOG, 0o600)
+            except OSError:
+                pass
+
+            body = b'{"ok":true}'
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception as e:
+            body = json.dumps({"ok": False, "error": type(e).__name__}).encode("utf-8")
+            self.send_response(400)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+    def log_message(self, fmt, *args):
+        return
+
+
+def local_event_loop():
+    PRIVATE_EVENT_DIR.mkdir(parents=True, exist_ok=True)
+    os.chmod(PRIVATE_EVENT_DIR, 0o700)
+    server = ThreadingHTTPServer((LOCAL_EVENT_HOST, LOCAL_EVENT_PORT), LocalEventHandler)
+    print(f"Local Android event inlet: http://{LOCAL_EVENT_HOST}:{LOCAL_EVENT_PORT}/event")
+    print(f"Private event log: {PRIVATE_EVENT_LOG}")
+    server.serve_forever()
+
+
 def push_wake_loop(wake_event):
     while True:
         try:
@@ -2077,9 +2148,11 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
+    print(f"Local event inlet: http://{LOCAL_EVENT_HOST}:{LOCAL_EVENT_PORT}/event")
     print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_message_snapshot, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
+    threading.Thread(target=local_event_loop, daemon=True).start()
     while True:
         try:
             git("pull", "--ff-only", "origin", "main", check=False)
