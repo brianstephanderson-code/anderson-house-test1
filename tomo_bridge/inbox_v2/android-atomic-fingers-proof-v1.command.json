@@ -1,0 +1,9 @@
+{
+  "id": "android-atomic-fingers-proof-v1",
+  "action": "android_guarded_markor_cycle",
+  "text": "TOMO_TEST",
+  "expected_before": "BASELINE",
+  "expected_after": "BASELINETOMO_TEST",
+  "test_path": "/sdcard/Documents/TOMO_FINGERS_TEST.md",
+  "timeout": 60
+}
