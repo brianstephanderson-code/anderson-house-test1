@@ -262,7 +262,7 @@ echo CLEANUP_VERIFIED
                 timeout=int(cmd.get("timeout", 60)),
             )
             result.update(
-                ok=(r.returncode == 0 and "APPEND_VERIFIED" in r.stdout and "RESTORE_VERIFIED" in r.stdout),
+                ok=(r.returncode == 0 and "APPEND_VERIFIED" in r.stdout and "RESTORE_VERIFIED" in r.stdout and "CLEANUP_VERIFIED" in r.stdout),
                 returncode=r.returncode,
                 stdout=r.stdout[-8000:],
                 stderr=r.stderr[-8000:],
@@ -280,7 +280,26 @@ echo CLEANUP_VERIFIED
     archive_command(path)
     git("add", "-A", "tomo_bridge/inbox_v2", "tomo_bridge/outbox_v2", "tomo_bridge/archive_v2", check=False)
     git("commit", "-m", f"Termux v2 result: {cmd_id}", check=False)
-    git("push", "origin", "main", check=False)
+
+    # The repo is shared with cloud workers, so main can advance while a phone job
+    # is running. Publish the result robustly instead of silently losing a rejected push.
+    published = False
+    last_error = ""
+    for attempt in range(3):
+        push = git("push", "origin", "main", check=False)
+        if push.returncode == 0:
+            published = True
+            break
+        last_error = (push.stderr or push.stdout or "").strip()
+        git("fetch", "origin", "main", check=False)
+        rebase = git("rebase", "origin/main", check=False)
+        if rebase.returncode != 0:
+            git("rebase", "--abort", check=False)
+            last_error = (rebase.stderr or rebase.stdout or last_error).strip()
+            break
+
+    if not published:
+        print(f"result publish pending for {cmd_id}: {last_error}")
 
 def push_wake_loop(wake_event):
     while True:
