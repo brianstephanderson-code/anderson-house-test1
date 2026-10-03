@@ -1,0 +1,8 @@
+{
+  "id": "launchable-apps-inventory-v1",
+  "action": "codex_exec",
+  "prompt": "Read-only Android inventory. Using ~/bin/rish, list every launchable app for user 0 by querying activities for android.intent.action.MAIN plus android.intent.category.LAUNCHER. Return a clean alphabetical list with app label if you can resolve it reliably, package name, and launcher component. Do not launch anything and do not change any state. If labels are difficult to resolve, return package and component only rather than guessing.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": false,
+  "timeout": 240
+}
