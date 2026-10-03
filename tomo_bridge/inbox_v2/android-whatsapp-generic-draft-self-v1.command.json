@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-generic-draft-self-v1",
+  "action": "android_guarded_whatsapp_draft",
+  "target_title": "+64 20 449 8229 (You)",
+  "text": "HELLO FROM TOMO",
+  "timeout": 45
+}
