@@ -912,7 +912,7 @@ echo NOTIFICATION_INSPECT_VERIFIED
 
             # The title is shell-quoted defensively because it comes from the command.
             import shlex
-            q_title = shlex.quote(target_title)
+            q_title_attr = shlex.quote(f'text="{target_title}"')
             shell = f"""
 set -e
 cleanup() {{ rm -f {tmp_xml}; }}
@@ -926,7 +926,7 @@ sleep 1
 result_node=""
 for pass in 1 2 3 4 5 6 7 8 9 10 11 12; do
   uiautomator dump {tmp_xml} >/dev/null
-  result_node="$(grep -o '<node[^>]*>' {tmp_xml} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F "text=\\"{target_title}\\"" || true)"
+  result_node="$(grep -o '<node[^>]*>' {tmp_xml} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F {q_title_attr} || true)"
   count="$(printf '%s\\n' "$result_node" | sed '/^$/d' | wc -l)"
   if [ "$count" -eq 1 ]; then
     break
@@ -944,7 +944,7 @@ input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
 sleep 1
 
 uiautomator dump {tmp_xml} >/dev/null
-grep -o '<node[^>]*>' {tmp_xml} | grep -F 'resource-id="com.whatsapp:id/conversation_contact_name"' | grep -F "text=\\"{target_title}\\"" >/dev/null || {{ echo ABORT_WRONG_CHAT >&2; exit 273; }}
+grep -o '<node[^>]*>' {tmp_xml} | grep -F 'resource-id="com.whatsapp:id/conversation_contact_name"' | grep -F {q_title_attr} >/dev/null || {{ echo ABORT_WRONG_CHAT >&2; exit 273; }}
 
 cat {tmp_xml}
 cleanup
