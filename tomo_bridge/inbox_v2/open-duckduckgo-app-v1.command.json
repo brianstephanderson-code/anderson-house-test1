@@ -1,0 +1,8 @@
+{
+  "id": "open-duckduckgo-app-v1",
+  "action": "codex_exec",
+  "prompt": "Open the installed DuckDuckGo app on this Android phone using ~/bin/rish. Start the exact launcher component com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher. Do not type, search, navigate, or change settings afterward. Report whether the activity start succeeded.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 180
+}
