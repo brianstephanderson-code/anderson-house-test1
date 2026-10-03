@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-tahnee-freshstart-scroll-draft-v1",
+  "action": "android_guarded_whatsapp_scroll_draft",
+  "target_title": "Tahnee",
+  "text": "TOMO TEST",
+  "timeout": 60
+}
