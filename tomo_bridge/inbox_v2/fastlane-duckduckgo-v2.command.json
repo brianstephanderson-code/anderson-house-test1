@@ -1,0 +1,7 @@
+{
+  "id": "fastlane-duckduckgo-v2",
+  "action": "android_launch",
+  "package": "com.duckduckgo.mobile.android",
+  "component": "com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher",
+  "timeout": 60
+}
