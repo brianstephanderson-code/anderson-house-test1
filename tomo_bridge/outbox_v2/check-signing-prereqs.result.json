@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "check-signing-prereqs",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "GH_PRESENT=YES\nKEYTOOL_PRESENT=NO\nGH_AUTH_OK=NO\n"
+}
