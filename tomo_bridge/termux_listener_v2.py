@@ -127,6 +127,79 @@ def process(path):
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_guarded_text_cycle":
+            package = str(cmd.get("package", "")).strip()
+            text_value = str(cmd.get("text", "")).strip()
+            expected_before = str(cmd.get("expected_before", "")).strip()
+            expected_after = str(cmd.get("expected_after", "")).strip()
+            x = int(cmd.get("x"))
+            y = int(cmd.get("y"))
+
+            if not package or not expected_before or not expected_after:
+                raise ValueError("android_guarded_text_cycle requires package, expected_before, expected_after")
+            if not text_value or len(text_value) > 64 or not all(ch.isalnum() or ch in "._-" for ch in text_value):
+                raise ValueError("text must be 1-64 safe ASCII characters")
+            if not (0 <= x <= 5000 and 0 <= y <= 5000):
+                raise ValueError("tap coordinates out of range")
+
+            tmp1 = "/sdcard/tomo_guard_before.xml"
+            tmp2 = "/sdcard/tomo_guard_after.xml"
+            tmp3 = "/sdcard/tomo_guard_restore.xml"
+            deletes = " ".join(["input keyevent KEYCODE_DEL;" for _ in text_value])
+
+            shell = f'''
+set -e
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_BEFORE; exit 41;; esac
+
+uiautomator dump {tmp1} >/dev/null
+grep -F 'package="{package}"' {tmp1} >/dev/null
+grep -F 'text="{expected_before}"' {tmp1} >/dev/null
+
+input tap {x} {y}
+
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_AFTER_TAP; exit 42;; esac
+
+input keyevent KEYCODE_MOVE_END
+input text {text_value}
+
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_AFTER_TYPE; exit 43;; esac
+
+uiautomator dump {tmp2} >/dev/null
+grep -F 'package="{package}"' {tmp2} >/dev/null
+grep -F 'text="{expected_after}"' {tmp2} >/dev/null
+echo APPEND_VERIFIED
+
+{deletes}
+
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_AFTER_DELETE; exit 44;; esac
+
+uiautomator dump {tmp3} >/dev/null
+grep -F 'package="{package}"' {tmp3} >/dev/null
+grep -F 'text="{expected_before}"' {tmp3} >/dev/null
+echo RESTORE_VERIFIED
+rm -f {tmp1} {tmp2} {tmp3}
+'''
+
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 60)),
+            )
+            result.update(
+                ok=(r.returncode == 0),
+                returncode=r.returncode,
+                package=package,
+                text=text_value,
+                stdout=r.stdout[-8000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "repo_status":
             r = git("status", "--short")
             result.update(ok=True, stdout=r.stdout, stderr=r.stderr)
@@ -165,7 +238,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
