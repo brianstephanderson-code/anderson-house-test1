@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "bridge-process-diagnostic-20261003",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "u0_a321   2206 20534  0  1970 pts/1    00:00:00 python tomo_bridge/termux_listener_v2.py\nu0_a321   5525     1  0  1970 ?        00:00:00 python /data/data/com.termux/files/home/anderson-house-mailbox/tomo_bridge/termux_listener_v2.py\n"
+}
