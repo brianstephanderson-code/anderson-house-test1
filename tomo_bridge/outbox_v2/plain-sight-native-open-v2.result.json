@@ -1,0 +1,11 @@
+{
+  "action": "codex_exec",
+  "allow_write": true,
+  "bridge_version": "v2",
+  "id": "plain-sight-native-open-v2",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "OpenAI Codex v0.160.0\n--------\nworkdir: /data/data/com.termux/files/home/downloads\nmodel: gpt-6.1-sol\nprovider: openai\napproval: never\nsandbox: danger-full-access\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0fff8-0a41-7a61-8d71-0167592a201d\n--------\nuser\nOpen the Prime Video detail page for the title ID 0NLO0TU5CRDWWOQ4WYX9D7YOFK directly in the installed Prime Video app. Use ~/bin/rish and a single Android VIEW intent with the URI aiv://app.primevideo.com/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK, explicitly targeting package com.amazon.avod.thirdpartyclient. Do not start playback, purchase anything, tap, type, or navigate after launch. Report whether the activity start succeeded.\ncodex\nI\u2019ll launch the detail page with the specified VIEW intent and check the activity-start result.\nexec\n/data/data/com.termux/files/usr/bin/bash -lc \"~/bin/rish -c 'am start -W -a android.intent.action.VIEW -d aiv://app.primevideo.com/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK -p com.amazon.avod.thirdpartyclient'\" in /data/data/com.termux/files/home/downloads\n succeeded in 4021ms:\nStarting: Intent { act=android.intent.action.VIEW dat=aiv://app.primevideo.com/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK pkg=com.amazon.avod.thirdpartyclient }\nStatus: ok\nLaunchState: WARM\nActivity: com.amazon.avod.thirdpartyclient/com.amazon.avod.app.MainActivity\nTotalTime: 1160\nWaitTime: 1201\nComplete\n\ncodex\nThe activity start succeeded (`Status: ok`) in `com.amazon.avod.thirdpartyclient`. No further actions were taken after launch.\ntokens used\n3,253\n",
+  "stdout": "The activity start succeeded (`Status: ok`) in `com.amazon.avod.thirdpartyclient`. No further actions were taken after launch.\n",
+  "workdir": "/data/data/com.termux/files/home/downloads"
+}
