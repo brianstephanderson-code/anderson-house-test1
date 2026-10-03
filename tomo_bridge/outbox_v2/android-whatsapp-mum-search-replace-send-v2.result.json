@@ -1,0 +1,14 @@
+{
+  "action": "android_guarded_whatsapp_search_replace_and_send",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.Main",
+  "expected_before": "HELLO FROM TOMO",
+  "id": "android-whatsapp-mum-search-replace-send-v2",
+  "ok": true,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "SEARCH_REPLACE_SEND_VERIFIED\nCLEANUP_VERIFIED\n",
+  "stdout": "",
+  "target_title": "Mum (Julianne)",
+  "text": "Hello"
+}
