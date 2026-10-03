@@ -1,0 +1,8 @@
+{
+  "id": "android-whatsapp-self-open-draft-proof-v3",
+  "action": "codex_exec",
+  "allow_write": true,
+  "workdir": "~/downloads",
+  "timeout": 120,
+  "prompt": "Safe WhatsApp self-chat draft-only proof. Use ~/bin/rish. First verify Shizuku with ~/bin/rish -c id; stop if unavailable. Do not send any message under any circumstance. Open WhatsApp using component com.whatsapp/.Main. Dump the visible UI hierarchy and find exactly one chat row whose visible text is exactly '+64 20 449 8229 (You)'. If not exactly one match, stop without tapping anything else. Tap only that exact chat row to open it. Dump UI again and verify the visible conversation title is exactly '+64 20 449 8229 (You)'. Verify an android.widget.EditText exists with resource-id exactly 'com.whatsapp:id/entry'. If either verification fails, stop without typing. If both pass, tap only that EditText, type exactly 'TOMO TEST', dump UI again, and verify that exact EditText visibly contains exactly 'TOMO TEST'. Then stop immediately. Do not press Enter, Search, Send, microphone, attachment, camera, call, video, back, or any other control. Leave 'TOMO TEST' as an unsent draft in the self-chat. Delete only temporary inspection files before finishing."
+}
