@@ -1,0 +1,5 @@
+{
+  "id": "android-whatsapp-notification-inspect-v4",
+  "action": "android_whatsapp_notification_inspect",
+  "timeout": 45
+}
