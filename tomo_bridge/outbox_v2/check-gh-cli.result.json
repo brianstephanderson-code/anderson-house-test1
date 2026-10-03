@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "check-gh-cli",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "GH=YES\nGH_AUTH=NO\n"
+}
