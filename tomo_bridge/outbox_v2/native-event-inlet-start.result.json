@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "native-event-inlet-start",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "NATIVE_EVENT_INLET_STARTED\n"
+}
