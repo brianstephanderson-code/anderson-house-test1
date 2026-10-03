@@ -668,6 +668,104 @@ echo CLEANUP_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_guarded_whatsapp_replace_and_send":
+            package = "com.whatsapp"
+            component = "com.whatsapp/.Main"
+            target_title = str(cmd.get("target_title", "")).strip()
+            expected_before = str(cmd.get("expected_before", "")).strip()
+            text_value = str(cmd.get("text", "")).strip()
+
+            if not target_title or len(target_title) > 120:
+                raise ValueError("target_title is required")
+            if not expected_before or len(expected_before) > 256:
+                raise ValueError("expected_before is required")
+            if not text_value or len(text_value) > 256:
+                raise ValueError("text must be 1-256 characters")
+            if any(ord(ch) < 32 for ch in expected_before + text_value):
+                raise ValueError("text contains control characters")
+
+            encoded_text = text_value.replace(" ", "%s")
+            deletes = " ".join(["input keyevent KEYCODE_DEL;" for _ in expected_before])
+            tmp1 = "/data/local/tmp/tomo_wa_replace_send_list.xml"
+            tmp2 = "/data/local/tmp/tomo_wa_replace_send_chat.xml"
+            tmp3 = "/data/local/tmp/tomo_wa_replace_send_draft.xml"
+            tmp4 = "/data/local/tmp/tomo_wa_replace_send_after.xml"
+
+            shell = f"""
+set -e
+cleanup() {{ rm -f {tmp1} {tmp2} {tmp3} {tmp4}; }}
+trap cleanup EXIT
+
+am start -n {component} >/dev/null
+sleep 1
+uiautomator dump {tmp1} >/dev/null
+
+node="$(grep -o '<node[^>]*>' {tmp1} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F 'text="{target_title}"' || true)"
+[ "$(printf '%s\n' "$node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_CHAT_MATCH; exit 151; }}
+
+bounds="$(printf '%s' "$node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_CHAT_BAD_BOUNDS; exit 152; }}
+input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
+sleep 1
+
+uiautomator dump {tmp2} >/dev/null
+grep -o '<node[^>]*>' {tmp2} | grep -F 'resource-id="com.whatsapp:id/conversation_contact_name"' | grep -F 'text="{target_title}"' >/dev/null || {{ echo ABORT_WRONG_CHAT; exit 153; }}
+
+entry="$(grep -o '<node[^>]*>' {tmp2} | grep -F 'class="android.widget.EditText"' | grep -F 'resource-id="com.whatsapp:id/entry"' | grep -F 'text="{expected_before}"' || true)"
+[ "$(printf '%s\n' "$entry" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_EXPECTED_DRAFT_NOT_FOUND; exit 154; }}
+
+bounds="$(printf '%s' "$entry" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_ENTRY_BAD_BOUNDS; exit 155; }}
+input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
+input keyevent KEYCODE_MOVE_END
+{deletes}
+input text "{encoded_text}"
+
+uiautomator dump {tmp3} >/dev/null
+new_entry="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'class="android.widget.EditText"' | grep -F 'resource-id="com.whatsapp:id/entry"' | grep -F 'text="{text_value}"' || true)"
+[ "$(printf '%s\n' "$new_entry" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_REPLACEMENT_NOT_VERIFIED; exit 156; }}
+
+send_node="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/send"' || true)"
+[ "$(printf '%s\n' "$send_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_SEND_BUTTON_MATCH; exit 157; }}
+
+bounds="$(printf '%s' "$send_node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_SEND_BAD_BOUNDS; exit 158; }}
+input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
+sleep 1
+
+uiautomator dump {tmp4} >/dev/null
+grep -F 'resource-id="com.whatsapp:id/entry"' {tmp4} | grep -F 'text="Message"' >/dev/null || {{ echo ABORT_ENTRY_NOT_CLEARED; exit 159; }}
+grep -F 'text="{text_value}"' {tmp4} >/dev/null || {{ echo ABORT_SENT_TEXT_NOT_VISIBLE; exit 160; }}
+echo REPLACE_SEND_VERIFIED
+
+cleanup
+trap - EXIT
+echo CLEANUP_VERIFIED
+"""
+
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 45)),
+            )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
+            result.update(
+                ok=(r.returncode == 0 and "REPLACE_SEND_VERIFIED" in proof_output and "CLEANUP_VERIFIED" in proof_output),
+                returncode=r.returncode,
+                package=package,
+                component=component,
+                target_title=target_title,
+                expected_before=expected_before,
+                text=text_value,
+                stdout=r.stdout[-8000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "android_guarded_whatsapp_send_text":
             package = "com.whatsapp"
             component = "com.whatsapp/.Main"
@@ -1035,7 +1133,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
