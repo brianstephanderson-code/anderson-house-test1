@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-self-send-text-v1",
+  "action": "android_guarded_whatsapp_self_send_text",
+  "target_title": "+64 20 449 8229 (You)",
+  "text": "HELLO FROM TOMO",
+  "timeout": 45
+}
