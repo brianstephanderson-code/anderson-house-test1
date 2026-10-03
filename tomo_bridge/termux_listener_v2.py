@@ -103,6 +103,30 @@ def process(path):
                           workdir=str(workdir), allow_write=allow_write,
                           stdout=r.stdout[-30000:], stderr=r.stderr[-30000:])
 
+        elif action == "android_launch":
+            package = str(cmd.get("package", "")).strip()
+            component = str(cmd.get("component", "")).strip()
+            if not package or not component:
+                raise ValueError("android_launch requires package and component")
+            if not component.startswith(package + "/"):
+                raise ValueError("component must belong to package")
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c",
+                 f"am start -n {component}"],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 60)),
+            )
+            result.update(
+                ok=(r.returncode == 0),
+                returncode=r.returncode,
+                package=package,
+                component=component,
+                stdout=r.stdout[-8000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "repo_status":
             r = git("status", "--short")
             result.update(ok=True, stdout=r.stdout, stderr=r.stderr)
@@ -141,7 +165,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
