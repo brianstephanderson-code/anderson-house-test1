@@ -1,0 +1,6 @@
+{
+  "id": "check-gh-cli",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/check_gh_cli.py",
+  "timeout": 30
+}
