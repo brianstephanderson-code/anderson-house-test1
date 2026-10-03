@@ -1,0 +1,11 @@
+{
+  "action": "codex_exec",
+  "allow_write": true,
+  "bridge_version": "v2",
+  "id": "open-duckduckgo-app-v1",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "OpenAI Codex v0.160.0\n--------\nworkdir: /data/data/com.termux/files/home/downloads\nmodel: gpt-6.1-sol\nprovider: openai\napproval: never\nsandbox: danger-full-access\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a1000a-c1cf-73f3-9b26-ed6f11e3b728\n--------\nuser\nOpen the installed DuckDuckGo app on this Android phone using ~/bin/rish. Start the exact launcher component com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher. Do not type, search, navigate, or change settings afterward. Report whether the activity start succeeded.\ncodex\nI\u2019ll start the exact DuckDuckGo launcher component through `~/bin/rish` and check the result.\nexec\n/data/data/com.termux/files/usr/bin/bash -lc \"~/bin/rish -c 'am start -W -n com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher'\" in /data/data/com.termux/files/home/downloads\n succeeded in 5032ms:\nStarting: Intent { cmp=com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher }\nStatus: ok\nLaunchState: COLD\nActivity: com.duckduckgo.mobile.android/com.duckduckgo.app.browser.BrowserActivity\nTotalTime: 3819\nWaitTime: 3844\nComplete\n\ncodex\nActivity start succeeded (`Status: ok`). Started the exact launcher component via `~/bin/rish`; no further actions were taken.\ntokens used\n2,428\n",
+  "stdout": "Activity start succeeded (`Status: ok`). Started the exact launcher component via `~/bin/rish`; no further actions were taken.\n",
+  "workdir": "/data/data/com.termux/files/home/downloads"
+}
