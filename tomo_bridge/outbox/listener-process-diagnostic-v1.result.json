@@ -1,0 +1,8 @@
+{
+  "action": "run_repo_python",
+  "id": "listener-process-diagnostic-v1",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "{\n  \"listener_exists\": true,\n  \"listener_sha256\": \"dc9be877ba5b1e23b6176998dea6e754597ee301a32c71d7958e3b36f680062f\",\n  \"has_codex_exec_branch\": true,\n  \"processes\": []\n}\n"
+}
