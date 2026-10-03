@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-tahnee-freshstart-draft-send-v1",
+  "action": "android_guarded_whatsapp_scroll_draft_and_send",
+  "target_title": "Tahnee",
+  "text": "TOMO TEST",
+  "timeout": 60
+}
