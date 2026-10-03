@@ -1,0 +1,10 @@
+{
+  "id": "android-ddg-submit-proof-v1",
+  "action": "android_guarded_find_edittext_submit",
+  "package": "com.duckduckgo.mobile.android",
+  "component": "com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher",
+  "text": "TOMO TEST",
+  "expected_before": "Search or enter address",
+  "submit_key": "KEYCODE_ENTER",
+  "timeout": 60
+}
