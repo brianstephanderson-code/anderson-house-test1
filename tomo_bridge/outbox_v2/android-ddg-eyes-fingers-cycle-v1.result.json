@@ -1,0 +1,12 @@
+{
+  "action": "android_guarded_find_edittext_cycle",
+  "bridge_version": "v2",
+  "component": "com.duckduckgo.mobile.android/com.duckduckgo.app.launch.Launcher",
+  "id": "android-ddg-eyes-fingers-cycle-v1",
+  "ok": false,
+  "package": "com.duckduckgo.mobile.android",
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "ABORT_WRONG_FOREGROUND_OPEN\n",
+  "text": "TOMO_TEST"
+}
