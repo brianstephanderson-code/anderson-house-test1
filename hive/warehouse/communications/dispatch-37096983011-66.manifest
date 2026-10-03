@@ -1,0 +1,9 @@
+MESSAGE_ID=dispatch-37096983011-66
+KIND=ORDER
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/dispatch-37096983011-66.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/dispatch-37096983011-66/dispatch-37096983011-66.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/dispatch-37096983011-66/dispatch-37096983011-66.cloudflare.uplink
+CORRELATION_ID=dispatch-37096983011-66
+CLOSED_UTC=2026-10-03T04:38:13Z
