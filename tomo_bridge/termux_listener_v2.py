@@ -6,7 +6,7 @@ REPO = Path.home() / "anderson-house-mailbox"
 INBOX = REPO / "tomo_bridge" / "inbox_v2"
 OUTBOX = REPO / "tomo_bridge" / "outbox_v2"
 DONE = REPO / "tomo_bridge" / "archive_v2"
-POLL_SECONDS = 60
+POLL_SECONDS = 5
 WAKE_TOPIC = "ah3a-wake-v2-4f11e8c2877b4d42a7f3a9e22b16c501"
 WAKE_URL = f"https://ntfy.sh/{WAKE_TOPIC}/json"
 
