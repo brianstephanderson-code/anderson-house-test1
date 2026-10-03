@@ -1,0 +1,6 @@
+{
+  "action": "codex_exec",
+  "error": "ValueError: action not allowed: codex_exec",
+  "id": "prime-video-open-in-plain-sight-v1",
+  "ok": false
+}
