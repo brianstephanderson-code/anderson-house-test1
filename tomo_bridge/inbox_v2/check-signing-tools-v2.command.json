@@ -1,0 +1,6 @@
+{
+  "id": "check-signing-tools-v2",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/check_signing_tools.py",
+  "timeout": 30
+}
