@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_scroll_draft",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.home.ui.HomeActivity",
+  "id": "android-whatsapp-hemi-freshstart-scroll-draft-v2",
+  "ok": true,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "SCROLL_DRAFT_VERIFIED\n",
+  "stdout": "EXISTING_DRAFT_ALREADY_MATCHES\nCLEANUP_VERIFIED\n",
+  "target_title": "Hemi Anderson",
+  "text": "Hey Hem, Its dad here, this is a test thru chatgpt"
+}
