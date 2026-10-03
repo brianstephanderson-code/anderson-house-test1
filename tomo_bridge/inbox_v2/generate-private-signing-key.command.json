@@ -1,0 +1,6 @@
+{
+  "id": "generate-private-signing-key",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/generate_private_signing_key.py",
+  "timeout": 180
+}
