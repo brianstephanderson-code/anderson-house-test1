@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "check-signing-tools-v2",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "KEYTOOL=YES\nBASE64=YES\nOPENSSL=NO\n"
+}
