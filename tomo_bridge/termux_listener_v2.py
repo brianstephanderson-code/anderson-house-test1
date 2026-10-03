@@ -303,39 +303,34 @@ rm -f {tmp1} {tmp2} {tmp3}
 am start -n {component} >/dev/null
 sleep 1
 
-focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
-case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_OPEN; exit 71;; esac
-
+# Treat the visible accessibility tree as the authoritative foreground gate.
+# Some Android builds report stale mCurrentFocus/mResumedActivity during app transitions.
 uiautomator dump {tmp1} >/dev/null
-grep -F 'package="{package}"' {tmp1} >/dev/null
-grep -F 'text="{expected_before}"' {tmp1} >/dev/null
+grep -F 'package="{package}"' {tmp1} >/dev/null || { echo ABORT_WRONG_VISIBLE_PACKAGE_OPEN; exit 71; }
+grep -F 'text="{expected_before}"' {tmp1} >/dev/null || { echo ABORT_EXPECTED_TEXT_NOT_FOUND; exit 72; }
 
 node="$(grep -o '<node[^>]*class="android.widget.EditText"[^>]*>' {tmp1} | head -n 1)"
-[ -n "$node" ] || {{ echo ABORT_NO_EDITTEXT; exit 72; }}
+[ -n "$node" ] || { echo ABORT_NO_EDITTEXT; exit 73; }
 bounds="$(printf '%s' "$node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
 set -- $bounds
-[ "$#" -eq 4 ] || {{ echo ABORT_BAD_BOUNDS; exit 73; }}
+[ "$#" -eq 4 ] || { echo ABORT_BAD_BOUNDS; exit 74; }
 x=$(( ($1 + $3) / 2 ))
 y=$(( ($2 + $4) / 2 ))
 
 input tap "$x" "$y"
-
-focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
-case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_AFTER_TAP; exit 74;; esac
-
 input keyevent KEYCODE_MOVE_END
 input text {text_value}
 
 uiautomator dump {tmp2} >/dev/null
-grep -F 'package="{package}"' {tmp2} >/dev/null
-grep -F 'text="{expected_after}"' {tmp2} >/dev/null
+grep -F 'package="{package}"' {tmp2} >/dev/null || { echo ABORT_WRONG_VISIBLE_PACKAGE_AFTER_TYPE; exit 75; }
+grep -F 'text="{expected_after}"' {tmp2} >/dev/null || { echo ABORT_EXPECTED_TYPED_TEXT_NOT_FOUND; exit 76; }
 echo APPEND_VERIFIED
 
 {deletes}
 
 uiautomator dump {tmp3} >/dev/null
-grep -F 'package="{package}"' {tmp3} >/dev/null
-grep -F 'text="{expected_before}"' {tmp3} >/dev/null
+grep -F 'package="{package}"' {tmp3} >/dev/null || { echo ABORT_WRONG_VISIBLE_PACKAGE_AFTER_DELETE; exit 77; }
+grep -F 'text="{expected_before}"' {tmp3} >/dev/null || { echo ABORT_EXPECTED_RESTORE_TEXT_NOT_FOUND; exit 78; }
 echo RESTORE_VERIFIED
 
 rm -f {tmp1} {tmp2} {tmp3}
