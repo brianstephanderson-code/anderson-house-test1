@@ -1,0 +1,6 @@
+{
+  "id": "install-native-autostart-v3",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/install_native_autostart_v3.py",
+  "timeout": 60
+}
