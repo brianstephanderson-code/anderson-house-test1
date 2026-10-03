@@ -1,0 +1,8 @@
+{
+  "id": "android-whatsapp-self-open-draft-proof-v4",
+  "action": "codex_exec",
+  "allow_write": true,
+  "workdir": "~/downloads",
+  "timeout": 120,
+  "prompt": "Safe WhatsApp self-chat draft-only proof. Use ~/bin/rish. Do not send any message under any circumstance. First verify Shizuku with ~/bin/rish -c id; stop if unavailable. Open WhatsApp with com.whatsapp/.Main and wait 1 second. Dump UI to /data/local/tmp/wa_v4_list.xml. Do NOT parse the whole XML with ElementTree. Use grep/sed only on individual node tags. Find exactly one node with resource-id=\"com.whatsapp:id/conversations_row_contact_name\" AND text=\"+64 20 449 8229 (You)\". Ignore any node where that value appears only in content-desc. If exact visible-text match count is not 1, stop without tapping. Extract that exact node's bounds, tap the center of those bounds, wait 1 second. Dump UI to /data/local/tmp/wa_v4_chat.xml. Verify exactly one node with resource-id=\"com.whatsapp:id/conversation_contact_name\" AND text=\"+64 20 449 8229 (You)\". Verify exactly one android.widget.EditText with resource-id=\"com.whatsapp:id/entry\". If either verification fails, stop without typing. Extract the entry node bounds, tap its center, input text exactly \"TOMO TEST\". Dump UI to /data/local/tmp/wa_v4_after.xml. Verify the same entry node resource-id=\"com.whatsapp:id/entry\" has text=\"TOMO TEST\". If verified, print DRAFT_VERIFIED and stop immediately. Do not press Enter, Search, Send, microphone, attachment, camera, call, video, back, or any other control. Leave TOMO TEST as an unsent draft. Delete only the three temporary XML files before finishing."
+}
