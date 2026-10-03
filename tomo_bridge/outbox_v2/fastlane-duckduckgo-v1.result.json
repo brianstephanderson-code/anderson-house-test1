@@ -1,0 +1,7 @@
+{
+  "action": "android_launch",
+  "bridge_version": "v2",
+  "error": "ValueError: action not allowed: android_launch",
+  "id": "fastlane-duckduckgo-v1",
+  "ok": false
+}
