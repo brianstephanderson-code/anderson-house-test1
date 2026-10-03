@@ -1,0 +1,6 @@
+{
+  "id": "bridge-process-diagnostic-20261003",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/list_bridge_processes.py",
+  "timeout": 30
+}
