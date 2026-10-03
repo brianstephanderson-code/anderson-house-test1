@@ -1,0 +1,6 @@
+{
+  "action": "codex_exec",
+  "error": "ValueError: action not allowed: codex_exec",
+  "id": "prime-video-deeplink-discovery-v1",
+  "ok": false
+}
