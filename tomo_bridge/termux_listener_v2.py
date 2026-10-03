@@ -769,18 +769,28 @@ am start -n {component} >/dev/null
 sleep 1
 
 result_node=""
-for pass in 1 2 3 4 5 6 7 8; do
+
+# First normalize to the top of Chats so we never guess which direction the target lies.
+# Finger swipe DOWN moves the list toward older screen position / top of list.
+for reset_pass in 1 2 3 4 5 6 7 8 9 10; do
+  input swipe 360 650 360 1280 280
+  sleep 0.35
+done
+
+# Then scan deterministically from top toward lower chats.
+for pass in 1 2 3 4 5 6 7 8 9 10 11 12; do
   uiautomator dump {tmp1} >/dev/null
   result_node="$(grep -o '<node[^>]*>' {tmp1} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F 'text="{target_title}"' || true)"
   count="$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)"
   if [ "$count" -eq 1 ]; then
     break
   fi
+  # Finger swipe UP reveals chats farther down the list.
   input swipe 360 1280 360 650 350
-  sleep 1
+  sleep 0.7
 done
 
-[ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_MAIN_LIST_MATCH_AFTER_SCROLL; exit 211; }}
+[ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_MAIN_LIST_MATCH_AFTER_FULL_SCAN; exit 211; }}
 
 bounds="$(printf '%s' "$result_node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
 set -- $bounds
