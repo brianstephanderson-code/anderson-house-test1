@@ -1,0 +1,7 @@
+{
+  "action": "android_guarded_whatsapp_self_draft",
+  "bridge_version": "v2",
+  "error": "ValueError: action not allowed: android_guarded_whatsapp_self_draft",
+  "id": "android-whatsapp-self-direct-draft-v1",
+  "ok": false
+}
