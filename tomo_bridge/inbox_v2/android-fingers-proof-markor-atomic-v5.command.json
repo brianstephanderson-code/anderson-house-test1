@@ -1,0 +1,8 @@
+{
+  "id": "android-fingers-proof-markor-atomic-v5",
+  "action": "codex_exec",
+  "prompt": "Controlled Android fingers proof in disposable Markor note with atomic foreground/package gating. Use ~/bin/rish only for Android actions. Safety: touch no existing user file; do not share/send/change settings; stop on unexpected dialog. Steps: (1) create /sdcard/Documents/TOMO_FINGERS_TEST.md containing exactly BASELINE. (2) Open only that exact file in Markor via explicit VIEW intent. (3) Dump UI; verify package net.gsantner.markor, exact text BASELINE, and an enabled editable field. (4) Tap the verified Markor editor. (5) In ONE rish shell transaction immediately before typing, verify current foreground package is net.gsantner.markor using dumpsys window/activity; if not, echo ABORT_WRONG_FOREGROUND and do not type. If yes, issue KEYCODE_MOVE_END then input text TOMO_TEST. (6) Dump UI and verify package is still Markor and editor text is exactly BASELINETOMO_TEST. If verification fails or another package appears, stop UI actions immediately. (7) If verified, in one gated Markor-only transaction delete exactly the 9 appended characters with 9 DEL keyevents. (8) Dump and verify exact BASELINE. (9) Verify disk file is exactly BASELINE. (10) Delete disposable note and all temp dumps; verify deletion. Do not press BACK, do not open Google Search, and do not interact with any other app. Report each gate and whether SEE->ACT->SEE->VERIFY->RESTORE succeeded.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 240
+}
