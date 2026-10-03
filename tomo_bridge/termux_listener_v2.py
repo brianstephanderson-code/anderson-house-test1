@@ -278,6 +278,88 @@ echo CLEANUP_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_guarded_find_edittext_cycle":
+            package = str(cmd.get("package", "")).strip()
+            component = str(cmd.get("component", "")).strip()
+            text_value = str(cmd.get("text", "")).strip()
+            expected_before = str(cmd.get("expected_before", "")).strip()
+            expected_after = str(cmd.get("expected_after", "")).strip()
+
+            if not package or not component or not component.startswith(package + "/"):
+                raise ValueError("android_guarded_find_edittext_cycle requires a valid package/component pair")
+            if not expected_before or not expected_after:
+                raise ValueError("expected_before and expected_after are required")
+            if not text_value or len(text_value) > 64 or not all(ch.isalnum() or ch in "._-" for ch in text_value):
+                raise ValueError("text must be 1-64 safe ASCII characters")
+
+            tmp1 = "/sdcard/tomo_find_before.xml"
+            tmp2 = "/sdcard/tomo_find_after.xml"
+            tmp3 = "/sdcard/tomo_find_restore.xml"
+            deletes = " ".join(["input keyevent KEYCODE_DEL;" for _ in text_value])
+
+            shell = f"""
+set -e
+rm -f {tmp1} {tmp2} {tmp3}
+am start -n {component} >/dev/null
+sleep 1
+
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_OPEN; exit 71;; esac
+
+uiautomator dump {tmp1} >/dev/null
+grep -F 'package="{package}"' {tmp1} >/dev/null
+grep -F 'text="{expected_before}"' {tmp1} >/dev/null
+
+node="$(grep -o '<node[^>]*class="android.widget.EditText"[^>]*>' {tmp1} | head -n 1)"
+[ -n "$node" ] || {{ echo ABORT_NO_EDITTEXT; exit 72; }}
+bounds="$(printf '%s' "$node" | sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_BAD_BOUNDS; exit 73; }}
+x=$(( ($1 + $3) / 2 ))
+y=$(( ($2 + $4) / 2 ))
+
+input tap "$x" "$y"
+
+focus="$(dumpsys window | grep mCurrentFocus | head -n 1)"
+case "$focus" in *"{package}/"*) ;; *) echo ABORT_WRONG_FOREGROUND_AFTER_TAP; exit 74;; esac
+
+input keyevent KEYCODE_MOVE_END
+input text {text_value}
+
+uiautomator dump {tmp2} >/dev/null
+grep -F 'package="{package}"' {tmp2} >/dev/null
+grep -F 'text="{expected_after}"' {tmp2} >/dev/null
+echo APPEND_VERIFIED
+
+{deletes}
+
+uiautomator dump {tmp3} >/dev/null
+grep -F 'package="{package}"' {tmp3} >/dev/null
+grep -F 'text="{expected_before}"' {tmp3} >/dev/null
+echo RESTORE_VERIFIED
+
+rm -f {tmp1} {tmp2} {tmp3}
+echo CLEANUP_VERIFIED
+"""
+
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 60)),
+            )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
+            result.update(
+                ok=(r.returncode == 0 and "APPEND_VERIFIED" in proof_output and "RESTORE_VERIFIED" in proof_output and "CLEANUP_VERIFIED" in proof_output),
+                returncode=r.returncode,
+                package=package,
+                component=component,
+                text=text_value,
+                stdout=r.stdout[-8000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "android_guarded_markor_cycle":
             text_value = str(cmd.get("text", "")).strip()
             expected_before = str(cmd.get("expected_before", "")).strip()
@@ -404,7 +486,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
