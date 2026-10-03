@@ -1,8 +1,0 @@
-{
-  "id": "plain-sight-native-open-https-v4",
-  "action": "codex_exec",
-  "prompt": "Test a different Prime Video native detail route for title ID 0NLO0TU5CRDWWOQ4WYX9D7YOFK. Use ~/bin/rish and a single Android activity-start command that explicitly targets com.amazon.avod.thirdpartyclient/com.amazon.avod.detailpage.ui.core.DetailPageActivity with action android.intent.action.VIEW and data https://www.primevideo.com/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK . Do not tap, type, retry, dismiss dialogs, start playback, purchase anything, or navigate afterward. Wait 20 seconds without further input, then report whether the activity-start command succeeded and any immediate shell-level error.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": true,
-  "timeout": 180
-}

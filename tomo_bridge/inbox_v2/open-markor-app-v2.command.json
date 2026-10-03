@@ -1,8 +1,0 @@
-{
-  "id": "open-markor-app-v1",
-  "action": "codex_exec",
-  "prompt": "Open the installed Markor app on this Android phone using ~/bin/rish. First resolve the launcher activity for the installed Markor package, then start that exact launcher activity. Do not open any specific file, type, edit, delete, or change settings afterward. Report the package/component used and whether the activity start succeeded.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": true,
-  "timeout": 180
-}

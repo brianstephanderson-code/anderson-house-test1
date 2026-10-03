@@ -1,8 +1,0 @@
-{
-  "id": "open-whatsapp-marco-r-v1",
-  "action": "codex_exec",
-  "prompt": "Open the WhatsApp chat for the contact whose display name is Marco.r (accept obvious spacing/punctuation variants like Marco R if needed) without sending anything. Use ~/bin/rish. First do a read-only lookup in Android Contacts for a unique matching contact and obtain its phone number. If exactly one plausible match is found, normalize the number to international digits and launch WhatsApp directly to that chat using an Android VIEW intent targeted to the installed WhatsApp package. Do not type, send, call, start media, or change any settings. If there is no unique match, do not open any chat and report that ambiguity instead. Do not include the phone number in the final report unless necessary for debugging; report only the matched display name and whether the chat opened.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": true,
-  "timeout": 180
-}

@@ -1,8 +1,0 @@
-{
-  "id": "open-whatsapp-v1",
-  "action": "codex_exec",
-  "prompt": "Open the installed WhatsApp app on this Android phone using ~/bin/rish. First resolve the launcher activity for the installed WhatsApp package, then start that exact launcher activity. Do not tap, type, send messages, open chats, or change settings afterward. Report the package/component used and whether the activity start succeeded.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": true,
-  "timeout": 180
-}

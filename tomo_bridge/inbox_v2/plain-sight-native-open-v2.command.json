@@ -1,8 +1,0 @@
-{
-  "id": "plain-sight-native-open-v2",
-  "action": "codex_exec",
-  "prompt": "Open the Prime Video detail page for the title ID 0NLO0TU5CRDWWOQ4WYX9D7YOFK directly in the installed Prime Video app. Use ~/bin/rish and a single Android VIEW intent with the URI aiv://app.primevideo.com/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK, explicitly targeting package com.amazon.avod.thirdpartyclient. Do not start playback, purchase anything, tap, type, or navigate after launch. Report whether the activity start succeeded.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": true,
-  "timeout": 180
-}
