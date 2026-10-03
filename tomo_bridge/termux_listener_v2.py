@@ -312,7 +312,7 @@ grep -F 'text="{expected_before}"' {tmp1} >/dev/null
 
 node="$(grep -o '<node[^>]*class="android.widget.EditText"[^>]*>' {tmp1} | head -n 1)"
 [ -n "$node" ] || {{ echo ABORT_NO_EDITTEXT; exit 72; }}
-bounds="$(printf '%s' "$node" | sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p')"
+bounds="$(printf '%s' "$node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
 set -- $bounds
 [ "$#" -eq 4 ] || {{ echo ABORT_BAD_BOUNDS; exit 73; }}
 x=$(( ($1 + $3) / 2 ))
