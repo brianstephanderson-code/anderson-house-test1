@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_draft",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.Main",
+  "id": "android-whatsapp-mum-julianne-draft-v1",
+  "ok": true,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "CLEANUP_VERIFIED\n",
+  "stdout": "DRAFT_VERIFIED\n",
+  "target_title": "Mum (Julianne)",
+  "text": "HELLO FROM TOMO"
+}
