@@ -1,6 +1,0 @@
-{
-  "id": "safe-local-storage-cleanup-v1",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/safe_local_storage_cleanup_v1.py",
-  "timeout": 300
-}
