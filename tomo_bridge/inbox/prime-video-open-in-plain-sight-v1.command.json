@@ -1,8 +1,0 @@
-{
-  "id": "prime-video-open-in-plain-sight-v1",
-  "action": "codex_exec",
-  "prompt": "Open the Prime Video detail page for the 2008 TV series In Plain Sight starring Mary McCormack. Use ~/bin/rish to send one Android VIEW intent to this exact URL: https://www.primevideo.com/-/es/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK . Do not start playback, purchase anything, tap, type, or navigate after opening. Report whether Android accepted the intent and which app/component handled it if shown.",
-  "workdir": "/data/data/com.termux/files/home/downloads",
-  "allow_write": true,
-  "timeout": 180
-}

@@ -1,6 +1,10 @@
 {
   "action": "codex_exec",
-  "error": "ValueError: action not allowed: codex_exec",
+  "allow_write": true,
   "id": "prime-video-open-in-plain-sight-v1",
-  "ok": false
+  "ok": true,
+  "returncode": 0,
+  "stderr": "OpenAI Codex v0.160.0\n--------\nworkdir: /data/data/com.termux/files/home/downloads\nmodel: gpt-6.1-sol\nprovider: openai\napproval: never\nsandbox: danger-full-access\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ffec-49f0-7040-948e-b7763f670e8b\n--------\nuser\nOpen the Prime Video detail page for the 2008 TV series In Plain Sight starring Mary McCormack. Use ~/bin/rish to send one Android VIEW intent to this exact URL: https://www.primevideo.com/-/es/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK . Do not start playback, purchase anything, tap, type, or navigate after opening. Report whether Android accepted the intent and which app/component handled it if shown.\ncodex\nI\u2019ll send the single Android VIEW intent through `~/bin/rish` and report the result.\nexec\n/data/data/com.termux/files/usr/bin/bash -lc \"~/bin/rish -c 'am start -W -a android.intent.action.VIEW -d \\\"https://www.primevideo.com/-/es/detail/0NLO0TU5CRDWWOQ4WYX9D7YOFK\\\"'\" in /data/data/com.termux/files/home/downloads\n succeeded in 5567ms:\nStarting: Intent { act=android.intent.action.VIEW dat=https://www.primevideo.com/... }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: UNKNOWN (0)\nTotalTime: 0\nWaitTime: 1923\nComplete\n\ncodex\nAndroid accepted the VIEW intent (`Status: ok`) and brought the existing task to the foreground. No app/component was shown in the output. No further actions were taken.\ntokens used\n3,190\n",
+  "stdout": "Android accepted the VIEW intent (`Status: ok`) and brought the existing task to the foreground. No app/component was shown in the output. No further actions were taken.\n",
+  "workdir": "/data/data/com.termux/files/home/downloads"
 }
