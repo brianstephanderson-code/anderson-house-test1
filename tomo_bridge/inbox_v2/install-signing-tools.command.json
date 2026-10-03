@@ -1,0 +1,6 @@
+{
+  "id": "install-signing-tools",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/install_signing_tools.py",
+  "timeout": 900
+}
