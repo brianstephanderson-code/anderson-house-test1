@@ -1,0 +1,8 @@
+{
+  "id": "android-fingers-proof-markor-disposable-v4",
+  "action": "codex_exec",
+  "prompt": "Complete a controlled Android UI fingers proof using a disposable Markor note. Use ~/bin/rish only for Android actions. Safety rules: touch no existing user file; do not share; do not send; do not change settings; stop on any unexpected permission/dialog. Steps: (1) create a disposable file at /sdcard/Documents/TOMO_FINGERS_TEST.md containing exactly BASELINE using Android shell; (2) launch Markor and open only that exact disposable file, using an explicit VIEW intent or another direct file-open route that does not browse/tap any existing file; (3) dump UI and verify the editor shows BASELINE and an editable text area; (4) place the cursor at the end of the disposable note, type exactly TOMO_TEST through Android input; (5) dump UI and verify the disposable note now contains exactly BASELINETOMO_TEST; (6) delete exactly those 9 appended characters through Android key events; (7) dump UI and verify the note is back to exactly BASELINE; (8) allow Markor to settle briefly, then verify the file content on disk is exactly BASELINE; (9) close Markor back to the prior app if practical without navigating other content; (10) delete /sdcard/Documents/TOMO_FINGERS_TEST.md and verify it no longer exists. Remove all temporary UI dump files. Report each step and whether SEE->ACT->SEE->VERIFY->RESTORE succeeded. If opening the exact disposable file cannot be done without interacting with existing user files, STOP and report blocked.",
+  "workdir": "/data/data/com.termux/files/home/downloads",
+  "allow_write": true,
+  "timeout": 240
+}
