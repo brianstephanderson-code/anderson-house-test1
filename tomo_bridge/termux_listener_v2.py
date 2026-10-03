@@ -801,13 +801,18 @@ entry="$(grep -o '<node[^>]*>' {tmp2} | grep -F 'class="android.widget.EditText"
 [ "$(printf '%s\n' "$entry" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_ENTRY_MATCH; exit 214; }}
 
 existing="$(printf '%s' "$entry" | sed -n 's/.* text="\\([^"]*\\)".*/\\1/p')"
-[ -z "$existing" ] || [ "$existing" = "Message" ] || {{ echo ABORT_EXISTING_DRAFT; exit 215; }}
 
-bounds="$(printf '%s' "$entry" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
-set -- $bounds
-[ "$#" -eq 4 ] || {{ echo ABORT_ENTRY_BOUNDS; exit 216; }}
-input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
-input text "{encoded_text}"
+if [ "$existing" = "{text_value}" ]; then
+  echo EXISTING_DRAFT_ALREADY_MATCHES
+else
+  [ -z "$existing" ] || [ "$existing" = "Message" ] || {{ echo ABORT_DIFFERENT_EXISTING_DRAFT; exit 215; }}
+
+  bounds="$(printf '%s' "$entry" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+  set -- $bounds
+  [ "$#" -eq 4 ] || {{ echo ABORT_ENTRY_BOUNDS; exit 216; }}
+  input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
+  input text "{encoded_text}"
+fi
 
 uiautomator dump {tmp3} >/dev/null
 new_entry="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'class="android.widget.EditText"' | grep -F 'resource-id="com.whatsapp:id/entry"' | grep -F 'text="{text_value}"' || true)"
