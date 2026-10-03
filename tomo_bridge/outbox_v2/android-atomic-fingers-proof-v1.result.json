@@ -1,0 +1,9 @@
+{
+  "action": "android_guarded_markor_cycle",
+  "bridge_version": "v2",
+  "id": "android-atomic-fingers-proof-v1",
+  "ok": false,
+  "returncode": 0,
+  "stderr": "APPEND_VERIFIED\nRESTORE_VERIFIED\nCLEANUP_VERIFIED\n",
+  "stdout": ""
+}
