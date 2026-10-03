@@ -1,6 +1,10 @@
 {
   "action": "codex_exec",
-  "error": "ValueError: action not allowed: codex_exec",
+  "allow_write": false,
   "id": "push-wake-latency-test-v1",
-  "ok": false
+  "ok": true,
+  "returncode": 0,
+  "stderr": "OpenAI Codex v0.160.0\n--------\nworkdir: /data/data/com.termux/files/home/downloads\nmodel: gpt-6.1-sol\nprovider: openai\napproval: never\nsandbox: danger-full-access\nreasoning effort: none\nreasoning summaries: none\nsession id: 01a0ffd5-fb6a-7992-ae3d-6e113b8ad81b\n--------\nuser\nREAD-ONLY JOB. Do not create, edit, delete, move, rename, install, or change files, apps, settings, services, network state, or system state. Only inspect/read and report.\n\nREAD-ONLY TEST. Run date +%s and pwd, then report both exactly. Do not modify anything.\ncodex\nI\u2019ll run the two read-only commands and report their output exactly.\nexec\n/data/data/com.termux/files/usr/bin/bash -lc 'date +%s\npwd' in /data/data/com.termux/files/home/downloads\n succeeded in 7ms:\n1790998614\n/data/data/com.termux/files/home/downloads\n\ncodex\n```text\n1790998614\n/data/data/com.termux/files/home/downloads\n```\ntokens used\n5,479\n",
+  "stdout": "```text\n1790998614\n/data/data/com.termux/files/home/downloads\n```\n",
+  "workdir": "/data/data/com.termux/files/home/downloads"
 }
