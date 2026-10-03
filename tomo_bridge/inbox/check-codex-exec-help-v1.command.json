@@ -1,6 +1,0 @@
-{
-  "id": "check-codex-exec-help-v1",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/check_codex_exec_help.py",
-  "timeout": 120
-}

@@ -1,6 +1,0 @@
-{
-  "id": "downloads-inventory-v1",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/downloads_inventory_v1.py",
-  "timeout": 300
-}
