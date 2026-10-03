@@ -10,13 +10,13 @@ class AmigosNotificationListener : NotificationListenerService() {
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
 
-        DeviceEventBus.publish(
-            DeviceEvent(
-                source = "notification",
-                packageName = sbn.packageName,
-                title = title,
-                text = text
-            )
+        val deviceEvent = DeviceEvent(
+            source = "notification",
+            packageName = sbn.packageName,
+            title = title,
+            text = text
         )
+        EventStore.record(this, deviceEvent)
+        DeviceEventBus.publish(deviceEvent)
     }
 }
