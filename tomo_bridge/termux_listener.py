@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-import json, os, subprocess, time
+import json, os, subprocess, time, threading, urllib.request
 from pathlib import Path
 
 REPO = Path.home() / "anderson-house-mailbox"
 INBOX = REPO / "tomo_bridge" / "inbox"
 OUTBOX = REPO / "tomo_bridge" / "outbox"
 DONE = REPO / "tomo_bridge" / "archive"
-POLL_SECONDS = 10
+POLL_SECONDS = 60
+WAKE_TOPIC = "ah3a-wake-8f4e2b7c1a6d49ffb3e2c07d6a11b8e4"
+WAKE_URL = f"https://ntfy.sh/{WAKE_TOPIC}/json"
 
 ALLOWED_ROOTS = [
     (REPO / "tomo_bridge" / "upgrades").resolve(),
@@ -159,6 +161,25 @@ def process(path):
     git("commit", "-m", f"Termux result: {cmd_id}", check=False)
     git("push", "origin", "main", check=False)
 
+def push_wake_loop(wake_event):
+    while True:
+        try:
+            req = urllib.request.Request(
+                WAKE_URL,
+                headers={"User-Agent": "Three-Amigos-Termux-Bridge/1.0"},
+            )
+            with urllib.request.urlopen(req, timeout=90) as response:
+                for raw in response:
+                    try:
+                        msg = json.loads(raw.decode("utf-8", "replace"))
+                    except Exception:
+                        continue
+                    if msg.get("event") == "message":
+                        wake_event.set()
+        except Exception as e:
+            print("push wake reconnect:", e)
+            time.sleep(3)
+
 def main():
     INBOX.mkdir(parents=True, exist_ok=True)
     OUTBOX.mkdir(parents=True, exist_ok=True)
@@ -166,8 +187,12 @@ def main():
 
     print("TOMO BRIDGE — TERMUX LISTENER")
     print(f"Repo: {REPO}")
-    print(f"Polling every {POLL_SECONDS}s")
+    print(f"Push wake: {WAKE_TOPIC}")
+    print(f"Fallback poll every {POLL_SECONDS}s")
     print("Actions: git_sync, run_repo_python, codex_exec, repo_status")
+
+    wake_event = threading.Event()
+    threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
 
     while True:
         try:
@@ -176,7 +201,8 @@ def main():
                 process(path)
         except Exception as e:
             print("listener error:", e)
-        time.sleep(POLL_SECONDS)
+        wake_event.wait(timeout=POLL_SECONDS)
+        wake_event.clear()
 
 if __name__ == "__main__":
     main()
