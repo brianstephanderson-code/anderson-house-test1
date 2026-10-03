@@ -1,0 +1,6 @@
+{
+  "id": "check-signing-prereqs",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/check_signing_prereqs.py",
+  "timeout": 30
+}
