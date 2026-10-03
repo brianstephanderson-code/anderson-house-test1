@@ -14,6 +14,9 @@ ALLOWED_ROOTS = [
     (REPO / "search-universe").resolve(),
 ]
 
+CODEX_TERMUX = "codex-termux"
+PNPM_BIN = Path.home() / ".local" / "share" / "pnpm" / "bin"
+
 def git(*args, check=True):
     return subprocess.run(
         ["git", *args],
@@ -32,6 +35,28 @@ def safe_python_path(raw):
     if not p.exists():
         raise FileNotFoundError(str(p))
     return p
+
+def safe_workdir(raw):
+    if not raw:
+        return REPO
+    p = Path(raw).expanduser()
+    if not p.is_absolute():
+        p = (REPO / p)
+    p = p.resolve()
+    allowed = [
+        REPO.resolve(),
+        (Path.home() / "downloads").resolve(),
+    ]
+    if not any(str(p).startswith(str(root) + os.sep) or p == root for root in allowed):
+        raise ValueError("workdir outside allow-list")
+    if not p.exists() or not p.is_dir():
+        raise FileNotFoundError(str(p))
+    return p
+
+def codex_env():
+    env = os.environ.copy()
+    env["PATH"] = str(PNPM_BIN) + os.pathsep + env.get("PATH", "")
+    return env
 
 def write_result(cmd_id, result):
     OUTBOX.mkdir(parents=True, exist_ok=True)
@@ -73,6 +98,50 @@ def process(path):
                 stderr=r.stderr[-20000:],
             )
 
+        elif action == "codex_exec":
+            prompt = str(cmd.get("prompt", "")).strip()
+            if not prompt:
+                raise ValueError("codex_exec requires a non-empty prompt")
+            if len(prompt) > 20000:
+                raise ValueError("prompt too long")
+
+            workdir = safe_workdir(cmd.get("workdir"))
+            allow_write = bool(cmd.get("allow_write", False))
+            if not allow_write:
+                prompt = (
+                    "READ-ONLY JOB. Do not create, edit, delete, move, rename, install, "
+                    "or change files, apps, settings, services, network state, or system state. "
+                    "Only inspect/read and report.\n\n" + prompt
+                )
+
+            args = [
+                CODEX_TERMUX,
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s", "danger-full-access",
+                "-c", 'approval_policy="never"',
+                "-C", str(workdir),
+                prompt,
+            ]
+
+            r = subprocess.run(
+                args,
+                cwd=workdir,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 900)),
+                env=codex_env(),
+            )
+            result.update(
+                ok=(r.returncode == 0),
+                returncode=r.returncode,
+                workdir=str(workdir),
+                allow_write=allow_write,
+                stdout=r.stdout[-30000:],
+                stderr=r.stderr[-30000:],
+            )
+
         elif action == "repo_status":
             r = git("status", "--short")
             result.update(ok=True, stdout=r.stdout, stderr=r.stderr)
@@ -98,6 +167,7 @@ def main():
     print("TOMO BRIDGE — TERMUX LISTENER")
     print(f"Repo: {REPO}")
     print(f"Polling every {POLL_SECONDS}s")
+    print("Actions: git_sync, run_repo_python, codex_exec, repo_status")
 
     while True:
         try:
