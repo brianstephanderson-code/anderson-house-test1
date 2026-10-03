@@ -426,6 +426,87 @@ echo CLEANUP_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_guarded_whatsapp_self_draft":
+            package = "com.whatsapp"
+            component = "com.whatsapp/.Main"
+            target_title = str(cmd.get("target_title", "")).strip()
+            text_value = str(cmd.get("text", "")).strip()
+
+            if target_title != "+64 20 449 8229 (You)":
+                raise ValueError("android_guarded_whatsapp_self_draft is restricted to the verified self-chat")
+            if text_value != "TOMO TEST":
+                raise ValueError("android_guarded_whatsapp_self_draft currently allows only TOMO TEST")
+
+            tmp1 = "/data/local/tmp/tomo_wa_self_list.xml"
+            tmp2 = "/data/local/tmp/tomo_wa_self_chat.xml"
+            tmp3 = "/data/local/tmp/tomo_wa_self_after.xml"
+
+            shell = f"""
+set -e
+cleanup() {{ rm -f {tmp1} {tmp2} {tmp3}; }}
+trap cleanup EXIT
+
+am start -n {component} >/dev/null
+sleep 1
+uiautomator dump {tmp1} >/dev/null
+
+node="$(grep -o '<node[^>]*>' {tmp1} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F 'text="{target_title}"' || true)"
+count="$(printf '%s\n' "$node" | sed '/^$/d' | wc -l)"
+[ "$count" -eq 1 ] || {{ echo ABORT_SELF_CHAT_MATCH_COUNT_"$count"; exit 91; }}
+
+bounds="$(printf '%s' "$node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_SELF_CHAT_BAD_BOUNDS; exit 92; }}
+x=$(( ($1 + $3) / 2 ))
+y=$(( ($2 + $4) / 2 ))
+input tap "$x" "$y"
+sleep 1
+
+uiautomator dump {tmp2} >/dev/null
+title_node="$(grep -o '<node[^>]*>' {tmp2} | grep -F 'resource-id="com.whatsapp:id/conversation_contact_name"' | grep -F 'text="{target_title}"' || true)"
+[ "$(printf '%s\n' "$title_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_WRONG_SELF_CHAT_TITLE; exit 93; }}
+
+entry="$(grep -o '<node[^>]*>' {tmp2} | grep -F 'class="android.widget.EditText"' | grep -F 'resource-id="com.whatsapp:id/entry"' || true)"
+[ "$(printf '%s\n' "$entry" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_ENTRY_MATCH_COUNT; exit 94; }}
+
+bounds="$(printf '%s' "$entry" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_ENTRY_BAD_BOUNDS; exit 95; }}
+x=$(( ($1 + $3) / 2 ))
+y=$(( ($2 + $4) / 2 ))
+input tap "$x" "$y"
+input keyevent KEYCODE_MOVE_END
+input text "{text_value}"
+
+uiautomator dump {tmp3} >/dev/null
+after="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'class="android.widget.EditText"' | grep -F 'resource-id="com.whatsapp:id/entry"' | grep -F 'text="{text_value}"' || true)"
+[ "$(printf '%s\n' "$after" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_DRAFT_NOT_VERIFIED; exit 96; }}
+echo DRAFT_VERIFIED
+
+cleanup
+trap - EXIT
+echo CLEANUP_VERIFIED
+"""
+
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 45)),
+            )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
+            result.update(
+                ok=(r.returncode == 0 and "DRAFT_VERIFIED" in proof_output and "CLEANUP_VERIFIED" in proof_output),
+                returncode=r.returncode,
+                package=package,
+                component=component,
+                target_title=target_title,
+                text=text_value,
+                stdout=r.stdout[-8000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "android_guarded_markor_cycle":
             text_value = str(cmd.get("text", "")).strip()
             expected_before = str(cmd.get("expected_before", "")).strip()
@@ -552,7 +633,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
