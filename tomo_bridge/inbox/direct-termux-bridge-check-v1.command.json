@@ -1,0 +1,7 @@
+{
+  "id": "direct-termux-bridge-check-v1",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/check_direct_termux_bridge.py",
+  "args": [],
+  "timeout": 120
+}
