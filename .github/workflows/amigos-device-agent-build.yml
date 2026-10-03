@@ -16,6 +16,11 @@ jobs:
     defaults:
       run:
         working-directory: android/amigos-device-agent
+    env:
+      AMIGOS_KEYSTORE_B64: ${{ secrets.AMIGOS_KEYSTORE_B64 }}
+      AMIGOS_STORE_PASSWORD: ${{ secrets.AMIGOS_STORE_PASSWORD }}
+      AMIGOS_KEY_PASSWORD: ${{ secrets.AMIGOS_KEY_PASSWORD }}
+      AMIGOS_KEY_ALIAS: ${{ secrets.AMIGOS_KEY_ALIAS }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,23 +34,18 @@ jobs:
           gradle-version: "8.9"
 
       - name: Restore stable signing keystore
-        if: ${{ secrets.AMIGOS_KEYSTORE_B64 != '' }}
-        env:
-          AMIGOS_KEYSTORE_B64: ${{ secrets.AMIGOS_KEYSTORE_B64 }}
+        if: ${{ env.AMIGOS_KEYSTORE_B64 != '' }}
         run: |
           printf '%s' "$AMIGOS_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/amigos-signing.p12"
 
       - name: Build stably signed APK
-        if: ${{ secrets.AMIGOS_KEYSTORE_B64 != '' }}
+        if: ${{ env.AMIGOS_KEYSTORE_B64 != '' }}
         env:
-          AMIGOS_STORE_PASSWORD: ${{ secrets.AMIGOS_STORE_PASSWORD }}
-          AMIGOS_KEY_PASSWORD: ${{ secrets.AMIGOS_KEY_PASSWORD }}
-          AMIGOS_KEY_ALIAS: ${{ secrets.AMIGOS_KEY_ALIAS }}
           AMIGOS_KEYSTORE_PATH: ${{ runner.temp }}/amigos-signing.p12
         run: gradle --no-daemon assembleRelease
 
       - name: Build temporary debug APK
-        if: ${{ secrets.AMIGOS_KEYSTORE_B64 == '' }}
+        if: ${{ env.AMIGOS_KEYSTORE_B64 == '' }}
         run: gradle --no-daemon assembleDebug
 
       - name: Stage APK
