@@ -1,0 +1,12 @@
+{
+  "action": "android_guarded_whatsapp_current_chat_send",
+  "bridge_version": "v2",
+  "id": "android-whatsapp-tahnee-current-send-v1",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "ABORT_WRONG_CHAT\n",
+  "stdout": "",
+  "target_title": "Tahnee",
+  "text": "TOMO TEST"
+}
