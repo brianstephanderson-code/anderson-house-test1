@@ -1,0 +1,8 @@
+{
+  "id": "android-whatsapp-self-repair-draft-v1",
+  "action": "android_guarded_whatsapp_self_repair_draft",
+  "target_title": "+64 20 449 8229 (You)",
+  "expected_before": "HELLO FROM too",
+  "text": "HELLO FROM TOMO",
+  "timeout": 45
+}
