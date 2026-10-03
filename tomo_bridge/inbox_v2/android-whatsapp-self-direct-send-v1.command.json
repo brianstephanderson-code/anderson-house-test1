@@ -1,0 +1,7 @@
+{
+  "id": "android-whatsapp-self-direct-send-v1",
+  "action": "android_guarded_whatsapp_self_send",
+  "target_title": "+64 20 449 8229 (You)",
+  "text": "TOMO TEST",
+  "timeout": 45
+}
