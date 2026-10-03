@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_send_text",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.Main",
+  "id": "whatsapp-reply-tahnee-20261003-1",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "",
+  "target_title": "Tahnee",
+  "text": "ahhh beautiful .....wait a minute.... he's 26!!..... Whaaat the..."
+}
