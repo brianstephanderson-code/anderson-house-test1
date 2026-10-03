@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "local-inlet-health-v2",
+  "ok": false,
+  "returncode": 2,
+  "stderr": "",
+  "stdout": "LOCAL_INLET_LOG_MISSING\n"
+}
