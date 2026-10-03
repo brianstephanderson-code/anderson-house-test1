@@ -1,0 +1,7 @@
+{
+  "action": "android_guarded_whatsapp_search_replace_and_send",
+  "bridge_version": "v2",
+  "error": "ValueError: action not allowed: android_guarded_whatsapp_search_replace_and_send",
+  "id": "android-whatsapp-mum-search-replace-send-v1",
+  "ok": false
+}
