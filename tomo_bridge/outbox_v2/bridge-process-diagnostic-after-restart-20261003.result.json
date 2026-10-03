@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "bridge-process-diagnostic-after-restart-20261003",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "u0_a321   8077  8075 19  1970 pts/1    00:00:00 python tomo_bridge/termux_listener_v2.py\n"
+}
