@@ -1,0 +1,6 @@
+{
+  "id": "native-event-inlet-start",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/start_native_event_inlet.py",
+  "timeout": 30
+}
