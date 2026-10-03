@@ -1,0 +1,8 @@
+{
+  "id": "android-whatsapp-mum-replace-send-v1",
+  "action": "android_guarded_whatsapp_replace_and_send",
+  "target_title": "Mum (Julianne)",
+  "expected_before": "HELLO FROM TOMO",
+  "text": "Hello",
+  "timeout": 45
+}
