@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "install-signing-tools-v2",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "INSTALL_RETURN=0\nChecking availability of current mirror:\n[*] https://packages-cf.termux.dev/apt/termux-main: ok\nReading package lists...\nBuilding dependency tree...\nReading state information...\nopenssl is already the newest version (1:3.6.5).\n0 upgraded, 0 newly installed, 0 to remove and 134 not upgraded.\n\n\nWARNING: apt does not have a stable CLI interface. Use with caution in scripts.\n\n\n"
+}

@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "generate-private-signing-key",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "SIGNING_KEY_CREATED\nPRIVATE_DIR=/data/data/com.termux/files/home/.tomo_signing\nKEYSTORE_PRESENT=YES\nPASSWORD_PRINTED=NO\n"
+}
