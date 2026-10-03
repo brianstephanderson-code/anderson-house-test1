@@ -1,0 +1,6 @@
+{
+  "action": "codex_exec",
+  "error": "ValueError: action not allowed: codex_exec",
+  "id": "android-app-inventory-v1",
+  "ok": false
+}
