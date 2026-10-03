@@ -1,6 +1,0 @@
-{
-  "id": "listener-process-diagnostic-v1",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/listener_process_diagnostic_v1.py",
-  "timeout": 120
-}
