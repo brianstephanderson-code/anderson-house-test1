@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_scroll_draft_and_send",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.home.ui.HomeActivity",
+  "id": "whatsapp-reply-tahnee-20261003-2",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 1,
+  "stderr": "Server is not running\n",
+  "stdout": "",
+  "target_title": "Tahnee",
+  "text": "ahhh beautiful .....wait a minute.... he's 26!!..... Whaaat the..."
+}
