@@ -1,6 +1,0 @@
-{
-  "id": "codex-exec-smoke-v1",
-  "action": "run_repo_python",
-  "path": "tomo_bridge/upgrades/codex_exec_smoke_v1.py",
-  "timeout": 240
-}
