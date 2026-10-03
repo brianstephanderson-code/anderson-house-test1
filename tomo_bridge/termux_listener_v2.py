@@ -765,19 +765,15 @@ set -e
 cleanup() {{ rm -f {tmp1} {tmp2} {tmp3}; }}
 trap cleanup EXIT
 
+am force-stop {package} >/dev/null 2>&1 || true
+sleep 0.5
 am start -n {component} >/dev/null
 sleep 1
 
 result_node=""
 
-# First normalize to the top of Chats so we never guess which direction the target lies.
-# Finger swipe DOWN moves the list toward older screen position / top of list.
-for reset_pass in 1 2 3 4 5 6 7 8 9 10; do
-  input swipe 360 650 360 1280 280
-  sleep 0.35
-done
-
-# Then scan deterministically from top toward lower chats.
+# A force-stopped fresh WhatsApp launch returns to the top of Chats on this device.
+# Scan deterministically downward from that known starting point.
 for pass in 1 2 3 4 5 6 7 8 9 10 11 12; do
   uiautomator dump {tmp1} >/dev/null
   result_node="$(grep -o '<node[^>]*>' {tmp1} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F 'text="{target_title}"' || true)"
