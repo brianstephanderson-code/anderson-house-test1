@@ -794,8 +794,27 @@ input text "{search_text}"
 sleep 1
 
 uiautomator dump {tmp3} >/dev/null
-result_node="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'text="{target_title}"' || true)"
-[ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_SEARCH_RESULT_MATCH; exit 185; }}
+# WhatsApp search may repeat the same name in Chats, Groups in common, and Messages.
+# Only accept the exact-name row inside the Chats section.
+chats_top="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/title"' | grep -F 'text="Chats"' | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,\\([0-9]*\\)\\]".*/\\2/p' | head -n 1)"
+next_top="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/title"' | grep -E 'text="(Groups in common|Messages)"' | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,\\([0-9]*\\)\\]".*/\\1/p' | head -n 1)"
+[ -n "$chats_top" ] || {{ echo ABORT_NO_CHATS_SECTION; exit 185; }}
+[ -n "$next_top" ] || next_top=1600
+
+result_node=""
+while IFS= read -r n; do
+  [ -n "$n" ] || continue
+  y1="$(printf '%s' "$n" | sed -n 's/.*bounds="\\[[0-9]*,\\([0-9]*\\)\\]\\[[0-9]*,[0-9]*\\]".*/\\1/p')"
+  [ -n "$y1" ] || continue
+  if [ "$y1" -ge "$chats_top" ] && [ "$y1" -lt "$next_top" ]; then
+    result_node="$result_node$n
+"
+  fi
+done <<'EOF'
+$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F 'text="{target_title}"' || true)
+EOF
+
+[ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_CHATS_RESULT_MATCH; exit 185; }}
 
 bounds="$(printf '%s' "$result_node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
 set -- $bounds
