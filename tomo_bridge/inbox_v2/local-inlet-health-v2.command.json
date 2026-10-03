@@ -1,0 +1,6 @@
+{
+  "id": "local-inlet-health-v2",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/check_local_inlet_health.py",
+  "timeout": 30
+}
