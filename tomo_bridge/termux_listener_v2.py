@@ -888,6 +888,171 @@ echo NOTIFICATION_INSPECT_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_whatsapp_message_snapshot":
+            package = "com.whatsapp"
+            component = "com.whatsapp/.home.ui.HomeActivity"
+            target_title = str(cmd.get("target_title", "")).strip()
+            public_key_pem = str(cmd.get("return_public_key_pem", "")).strip()
+
+            if not target_title or len(target_title) > 120:
+                raise ValueError("target_title is required")
+            if any(ord(ch) < 32 for ch in target_title):
+                raise ValueError("target_title contains control characters")
+
+            safe_id = "".join(ch for ch in str(cmd_id) if ch.isalnum() or ch in "._-")[:96] or "snapshot"
+            private_dir = Path.home() / ".tomo_private_snapshots"
+            private_dir.mkdir(parents=True, exist_ok=True)
+            os.chmod(private_dir, 0o700)
+
+            tmp_xml = "/data/local/tmp/tomo_wa_message_snapshot.xml"
+            local_xml = private_dir / f"{safe_id}.xml"
+            local_png = private_dir / f"{safe_id}.png"
+            local_tar = private_dir / f"{safe_id}.tar"
+            local_pub = private_dir / f"{safe_id}.pub.pem"
+
+            # The title is shell-quoted defensively because it comes from the command.
+            import shlex
+            q_title = shlex.quote(target_title)
+            shell = f"""
+set -e
+cleanup() {{ rm -f {tmp_xml}; }}
+trap cleanup EXIT
+
+am force-stop {package} >/dev/null 2>&1 || true
+sleep 0.5
+am start -n {component} >/dev/null
+sleep 1
+
+result_node=""
+for pass in 1 2 3 4 5 6 7 8 9 10 11 12; do
+  uiautomator dump {tmp_xml} >/dev/null
+  result_node="$(grep -o '<node[^>]*>' {tmp_xml} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F "text=\\"{target_title}\\"" || true)"
+  count="$(printf '%s\\n' "$result_node" | sed '/^$/d' | wc -l)"
+  if [ "$count" -eq 1 ]; then
+    break
+  fi
+  input swipe 360 1280 360 650 350
+  sleep 0.7
+done
+
+[ "$(printf '%s\\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_MAIN_LIST_MATCH_AFTER_FULL_SCAN >&2; exit 271; }}
+
+bounds="$(printf '%s' "$result_node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_MAIN_LIST_BOUNDS >&2; exit 272; }}
+input tap "$(( ($1 + $3) / 2 ))" "$(( ($2 + $4) / 2 ))"
+sleep 1
+
+uiautomator dump {tmp_xml} >/dev/null
+grep -o '<node[^>]*>' {tmp_xml} | grep -F 'resource-id="com.whatsapp:id/conversation_contact_name"' | grep -F "text=\\"{target_title}\\"" >/dev/null || {{ echo ABORT_WRONG_CHAT >&2; exit 273; }}
+
+cat {tmp_xml}
+cleanup
+trap - EXIT
+"""
+            nav = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO, text=True, capture_output=True,
+                timeout=int(cmd.get("timeout", 60)),
+            )
+            if nav.returncode != 0:
+                result.update(
+                    ok=False,
+                    returncode=nav.returncode,
+                    package=package,
+                    component=component,
+                    target_title=target_title,
+                    stderr=nav.stderr[-4000:],
+                )
+            else:
+                local_xml.write_text(nav.stdout, encoding="utf-8")
+
+                shot = subprocess.run(
+                    [str(Path.home() / "bin" / "rish"), "-c", "screencap -p"],
+                    cwd=REPO, capture_output=True,
+                    timeout=int(cmd.get("timeout", 60)),
+                )
+                if shot.returncode != 0 or not shot.stdout.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+                    raise RuntimeError("screencap failed or did not return PNG data")
+                local_png.write_bytes(shot.stdout)
+
+                tar = subprocess.run(
+                    ["tar", "-cf", str(local_tar), local_xml.name, local_png.name],
+                    cwd=private_dir, text=True, capture_output=True,
+                    timeout=30,
+                )
+                if tar.returncode != 0:
+                    raise RuntimeError("snapshot bundle creation failed: " + tar.stderr[-1000:])
+
+                # Never put plaintext WhatsApp evidence in the GitHub outbox.
+                # With a caller-supplied RSA public key, publish only encrypted evidence.
+                if public_key_pem:
+                    local_pub.write_text(public_key_pem + ("\\n" if not public_key_pem.endswith("\\n") else ""), encoding="utf-8")
+                    os.chmod(local_pub, 0o600)
+
+                    keyrun = subprocess.run(
+                        ["openssl", "rand", "-hex", "32"],
+                        text=True, capture_output=True, timeout=15,
+                    )
+                    if keyrun.returncode != 0:
+                        raise RuntimeError("openssl random key generation failed")
+                    bundle_key = keyrun.stdout.strip()
+
+                    enc_bundle = OUTBOX / f"{safe_id}.snapshot.tar.enc"
+                    enc_key = OUTBOX / f"{safe_id}.snapshot.key.enc"
+                    OUTBOX.mkdir(parents=True, exist_ok=True)
+
+                    enc = subprocess.run(
+                        ["openssl", "enc", "-aes-256-cbc", "-pbkdf2", "-salt",
+                         "-pass", f"pass:{bundle_key}",
+                         "-in", str(local_tar), "-out", str(enc_bundle)],
+                        text=True, capture_output=True, timeout=60,
+                    )
+                    if enc.returncode != 0:
+                        raise RuntimeError("snapshot encryption failed: " + enc.stderr[-1000:])
+
+                    keyenc = subprocess.run(
+                        ["openssl", "pkeyutl", "-encrypt", "-pubin",
+                         "-inkey", str(local_pub),
+                         "-pkeyopt", "rsa_padding_mode:oaep",
+                         "-in", "/dev/stdin", "-out", str(enc_key)],
+                        input=bundle_key, text=True, capture_output=True, timeout=30,
+                    )
+                    if keyenc.returncode != 0:
+                        raise RuntimeError("snapshot key encryption failed: " + keyenc.stderr[-1000:])
+
+                    result.update(
+                        ok=True,
+                        returncode=0,
+                        package=package,
+                        component=component,
+                        target_title=target_title,
+                        evidence="encrypted_visible_whatsapp_snapshot",
+                        encrypted_bundle=str(enc_bundle.relative_to(REPO)),
+                        encrypted_key=str(enc_key.relative_to(REPO)),
+                        plaintext_published=False,
+                    )
+
+                    for p in (local_xml, local_png, local_tar, local_pub):
+                        try:
+                            p.unlink()
+                        except FileNotFoundError:
+                            pass
+                else:
+                    result.update(
+                        ok=True,
+                        returncode=0,
+                        package=package,
+                        component=component,
+                        target_title=target_title,
+                        evidence="local_visible_whatsapp_snapshot",
+                        local_snapshot_dir=str(private_dir),
+                        local_xml=str(local_xml),
+                        local_png=str(local_png),
+                        plaintext_published=False,
+                        note="Private evidence kept on phone because no return_public_key_pem was supplied.",
+                    )
+
         elif action == "android_whatsapp_read_unread_summary":
             package = "com.whatsapp"
             component = "com.whatsapp/.home.ui.HomeActivity"
@@ -1912,7 +2077,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_message_snapshot, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
