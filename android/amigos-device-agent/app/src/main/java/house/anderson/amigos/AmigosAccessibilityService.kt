@@ -9,13 +9,13 @@ class AmigosAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         val pkg = event.packageName?.toString() ?: return
-        DeviceEventBus.publish(
-            DeviceEvent(
-                source = "accessibility",
-                packageName = pkg,
-                text = event.text?.joinToString(" ")?.takeIf { it.isNotBlank() }
-            )
+        val deviceEvent = DeviceEvent(
+            source = "accessibility",
+            packageName = pkg,
+            text = event.text?.joinToString(" ")?.takeIf { it.isNotBlank() }
         )
+        EventStore.record(this, deviceEvent)
+        DeviceEventBus.publish(deviceEvent)
     }
 
     override fun onInterrupt() = Unit
