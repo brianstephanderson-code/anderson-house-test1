@@ -720,7 +720,7 @@ input text "{search_text}"
 sleep 1
 
 uiautomator dump {tmp3} >/dev/null
-result_node="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'resource-id="com.whatsapp:id/conversations_row_contact_name"' | grep -F 'text="{target_title}"' || true)"
+result_node="$(grep -o '<node[^>]*>' {tmp3} | grep -F 'text="{target_title}"' || true)"
 [ "$(printf '%s\n' "$result_node" | sed '/^$/d' | wc -l)" -eq 1 ] || {{ echo ABORT_SEARCH_RESULT_MATCH; exit 185; }}
 
 bounds="$(printf '%s' "$result_node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
