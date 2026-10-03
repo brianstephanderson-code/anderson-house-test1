@@ -113,7 +113,7 @@ def process(path):
 
     write_result(cmd_id, result)
     archive_command(path)
-    git("add", "tomo_bridge/outbox_v2", "tomo_bridge/archive_v2", check=False)
+    git("add", "-A", "tomo_bridge/inbox_v2", "tomo_bridge/outbox_v2", "tomo_bridge/archive_v2", check=False)
     git("commit", "-m", f"Termux v2 result: {cmd_id}", check=False)
     git("push", "origin", "main", check=False)
 
