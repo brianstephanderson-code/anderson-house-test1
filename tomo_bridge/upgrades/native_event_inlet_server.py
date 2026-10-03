@@ -7,6 +7,7 @@ HOST="127.0.0.1"
 PORT=8765
 DIR=Path.home()/".tomo_private_events"
 LOG=DIR/"events.jsonl"
+MAX_LOG_BYTES=5*1024*1024
 
 class H(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -32,6 +33,11 @@ class H(BaseHTTPRequestHandler):
                 "text":event.get("text"),
                 "whenMs":event.get("whenMs"),
             }
+            if LOG.exists() and LOG.stat().st_size >= MAX_LOG_BYTES:
+                old=DIR/"events.previous.jsonl"
+                try: old.unlink()
+                except FileNotFoundError: pass
+                LOG.replace(old)
             with LOG.open("a",encoding="utf-8") as f:
                 f.write(json.dumps(rec,ensure_ascii=False)+"\n")
             try: os.chmod(LOG,0o600)
