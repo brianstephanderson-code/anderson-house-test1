@@ -1,0 +1,6 @@
+{
+  "id": "android-whatsapp-hemi-search-inspect-v1",
+  "action": "android_whatsapp_search_inspect",
+  "target_title": "Hemi Anderson",
+  "timeout": 60
+}
