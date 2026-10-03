@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_search_draft",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.Main",
+  "id": "android-whatsapp-hemi-search-draft-v1",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "ABORT_SEARCH_RESULT_MATCH\n",
+  "target_title": "Hemi Anderson",
+  "text": "Hey Hem, Its dad here, this is a test thru chatgpt"
+}
