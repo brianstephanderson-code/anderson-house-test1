@@ -1,0 +1,10 @@
+{
+  "action": "android_whatsapp_notification_inspect",
+  "bridge_version": "v2",
+  "id": "android-whatsapp-notification-inspect-v1",
+  "ok": true,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "WHATSAPP_NOTIFICATIONS_BEGIN\nWHATSAPP_NOTIFICATIONS_END\nNOTIFICATION_INSPECT_VERIFIED\n",
+  "stdout": ""
+}
