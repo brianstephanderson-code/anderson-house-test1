@@ -355,6 +355,77 @@ echo CLEANUP_VERIFIED
                 stderr=r.stderr[-8000:],
             )
 
+        elif action == "android_guarded_find_edittext_submit":
+            package = str(cmd.get("package", "")).strip()
+            component = str(cmd.get("component", "")).strip()
+            text_value = str(cmd.get("text", "")).strip()
+            expected_before = str(cmd.get("expected_before", "")).strip()
+            submit_key = str(cmd.get("submit_key", "KEYCODE_ENTER")).strip()
+
+            if not package or not component or not component.startswith(package + "/"):
+                raise ValueError("android_guarded_find_edittext_submit requires a valid package/component pair")
+            if not expected_before:
+                raise ValueError("expected_before is required")
+            if not text_value or len(text_value) > 128 or not all(ch.isalnum() or ch in " ._-" for ch in text_value):
+                raise ValueError("text must be 1-128 safe ASCII characters")
+            if submit_key not in {"KEYCODE_ENTER", "KEYCODE_SEARCH"}:
+                raise ValueError("unsupported submit key")
+
+            tmp1 = "/sdcard/tomo_submit_before.xml"
+            tmp2 = "/sdcard/tomo_submit_after.xml"
+
+            shell = f"""
+set -e
+rm -f {tmp1} {tmp2}
+am start -n {component} >/dev/null
+sleep 1
+
+uiautomator dump {tmp1} >/dev/null
+grep -F 'package="{package}"' {tmp1} >/dev/null || {{ echo ABORT_WRONG_VISIBLE_PACKAGE_OPEN; exit 81; }}
+grep -F 'text="{expected_before}"' {tmp1} >/dev/null || {{ echo ABORT_EXPECTED_TEXT_NOT_FOUND; exit 82; }}
+
+node="$(grep -o '<node[^>]*class="android.widget.EditText"[^>]*>' {tmp1} | head -n 1)"
+[ -n "$node" ] || {{ echo ABORT_NO_EDITTEXT; exit 83; }}
+bounds="$(printf '%s' "$node" | sed -n 's/.*bounds="\\[\\([0-9]*\\),\\([0-9]*\\)\\]\\[\\([0-9]*\\),\\([0-9]*\\)\\]".*/\\1 \\2 \\3 \\4/p')"
+set -- $bounds
+[ "$#" -eq 4 ] || {{ echo ABORT_BAD_BOUNDS; exit 84; }}
+x=$(( ($1 + $3) / 2 ))
+y=$(( ($2 + $4) / 2 ))
+
+input tap "$x" "$y"
+input keyevent KEYCODE_MOVE_END
+input text "{text_value}"
+input keyevent {submit_key}
+sleep 2
+
+uiautomator dump {tmp2} >/dev/null
+grep -F 'package="{package}"' {tmp2} >/dev/null || {{ echo ABORT_WRONG_VISIBLE_PACKAGE_AFTER_SUBMIT; exit 85; }}
+grep -F '{text_value}' {tmp2} >/dev/null || {{ echo ABORT_SUBMITTED_TEXT_NOT_VISIBLE; exit 86; }}
+echo SUBMIT_VERIFIED
+
+rm -f {tmp1} {tmp2}
+echo CLEANUP_VERIFIED
+"""
+
+            r = subprocess.run(
+                [str(Path.home() / "bin" / "rish"), "-c", shell],
+                cwd=REPO,
+                text=True,
+                capture_output=True,
+                timeout=int(cmd.get("timeout", 60)),
+            )
+            proof_output = (r.stdout or "") + "\n" + (r.stderr or "")
+            result.update(
+                ok=(r.returncode == 0 and "SUBMIT_VERIFIED" in proof_output and "CLEANUP_VERIFIED" in proof_output),
+                returncode=r.returncode,
+                package=package,
+                component=component,
+                text=text_value,
+                submit_key=submit_key,
+                stdout=r.stdout[-8000:],
+                stderr=r.stderr[-8000:],
+            )
+
         elif action == "android_guarded_markor_cycle":
             text_value = str(cmd.get("text", "")).strip()
             expected_before = str(cmd.get("expected_before", "")).strip()
@@ -481,7 +552,7 @@ def main():
     print(f"Repo: {REPO}")
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     while True:
