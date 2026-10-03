@@ -1,0 +1,13 @@
+{
+  "action": "android_guarded_whatsapp_scroll_send",
+  "bridge_version": "v2",
+  "component": "com.whatsapp/.home.ui.HomeActivity",
+  "id": "android-whatsapp-tahnee-freshstart-scroll-send-v1",
+  "ok": false,
+  "package": "com.whatsapp",
+  "returncode": 0,
+  "stderr": "ABORT_DRAFT_TEXT_NOT_VERIFIED\n",
+  "stdout": "",
+  "target_title": "Tahnee",
+  "text": "TOMO TEST"
+}
