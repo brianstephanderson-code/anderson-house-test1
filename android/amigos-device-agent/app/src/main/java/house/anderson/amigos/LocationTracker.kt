@@ -84,6 +84,8 @@ object LocationTracker : LocationListener {
             put("provider", l.provider ?: "unknown")
         }.toString()
 
+        NavigationOverlay.update(context)
+
         LocalBridgeSender.send(
             DeviceEvent(
                 source = "location",
