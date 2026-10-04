@@ -74,6 +74,7 @@ object NavigationStateStore {
         return "NAVIGATION PROOF\n" +
             "Navigation updates: $count\n" +
             "Navigation app: $pkg\n" +
-            "Latest instruction: $instruction"
+            "Latest instruction: $instruction\n" +
+            "Companion: " + LocationTracker.privateSummary(context)
     }
 }
