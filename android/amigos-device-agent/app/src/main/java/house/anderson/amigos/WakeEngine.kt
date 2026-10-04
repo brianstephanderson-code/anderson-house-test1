@@ -16,7 +16,9 @@ class WakeEngine(private val assets: AssetManager) {
         private const val JOINER = "kws/joiner-epoch-13-avg-2-chunk-16-left-64.int8.onnx"
         private const val TOKENS = "kws/tokens.txt"
         private const val EMPTY_KEYWORDS = "kws/empty_keywords.txt"
-        private const val HEY_TOMO = "HH EY1 T OW1 M OW0 @HEY_TOMO"
+        private const val HEY_TOMO = """HH EY1 T OW1 M OW0 :1.8 #0.25 @HEY_TOMO
+HH EY1 T AH0 M OW1 :1.8 #0.25 @HEY_TOMO_ALT
+HH EY1 T AA1 M OW0 :1.8 #0.25 @HEY_TOMO_AUS"""
     }
 
     private var spotter: KeywordSpotter? = null
@@ -47,8 +49,8 @@ class WakeEngine(private val assets: AssetManager) {
                 modelConfig = model
                 maxActivePaths = 4
                 keywordsFile = EMPTY_KEYWORDS
-                keywordsScore = 1.5f
-                keywordsThreshold = 0.40f
+                keywordsScore = 1.8f
+                keywordsThreshold = 0.25f
                 numTrailingBlanks = 1
             }
             spotter = KeywordSpotter(assets, cfg)
