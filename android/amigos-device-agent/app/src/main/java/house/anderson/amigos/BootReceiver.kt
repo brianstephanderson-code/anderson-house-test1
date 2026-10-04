@@ -4,42 +4,62 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
+import android.provider.Settings
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        val prefs = context.getSharedPreferences("open_sesame_boot", Context.MODE_PRIVATE)
-        prefs.edit()
-            .putLong("last_boot_seen_ms", System.currentTimeMillis())
-            .putLong("boot_seen_count", prefs.getLong("boot_seen_count", 0L) + 1L)
-            .apply()
+        val action = intent?.action ?: return
+        if (action != Intent.ACTION_BOOT_COMPLETED &&
+            action != Intent.ACTION_LOCKED_BOOT_COMPLETED) return
+
+        BootProof.recordBootSeen(context, action)
 
         if (!WakeService.isArmed(context)) return
         if (context.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) return
+        if (!Settings.canDrawOverlays(context)) return
 
         try {
-            val service = Intent(context, WakeService::class.java).setAction(WakeService.ACTION_START)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(service)
-            else context.startService(service)
-
-            prefs.edit()
-                .putLong("last_boot_start_ms", System.currentTimeMillis())
-                .putLong("boot_start_count", prefs.getLong("boot_start_count", 0L) + 1L)
-                .apply()
+            context.startActivity(
+                Intent(context, BootShimActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+            BootProof.recordShimStart(context)
         } catch (_: Throwable) {
-            prefs.edit()
-                .putLong("boot_start_error_count", prefs.getLong("boot_start_error_count", 0L) + 1L)
-                .apply()
+            BootProof.recordShimError(context)
         }
     }
 }
 
 object BootProof {
+    private const val PREFS = "open_sesame_boot"
+
+    private fun p(context: Context) =
+        context.createDeviceProtectedStorageContext()
+            .getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    fun recordBootSeen(context: Context, action: String) {
+        val p = p(context)
+        p.edit()
+            .putLong("boot_seen_count", p.getLong("boot_seen_count", 0L) + 1L)
+            .putString("last_boot_action", action)
+            .apply()
+    }
+
+    fun recordShimStart(context: Context) {
+        val p = p(context)
+        p.edit().putLong("shim_start_count", p.getLong("shim_start_count", 0L) + 1L).apply()
+    }
+
+    fun recordShimError(context: Context) {
+        val p = p(context)
+        p.edit().putLong("shim_error_count", p.getLong("shim_error_count", 0L) + 1L).apply()
+    }
+
     fun snapshot(context: Context): String {
-        val p = context.getSharedPreferences("open_sesame_boot", Context.MODE_PRIVATE)
+        val p = p(context)
         return "Start at boot armed: " + WakeService.isArmed(context) + "\n" +
             "Boot broadcasts seen: " + p.getLong("boot_seen_count", 0L) + "\n" +
-            "Boot listener starts: " + p.getLong("boot_start_count", 0L) + "\n" +
-            "Boot start errors: " + p.getLong("boot_start_error_count", 0L)
+            "Boot shim starts: " + p.getLong("shim_start_count", 0L) + "\n" +
+            "Boot shim errors: " + p.getLong("shim_error_count", 0L)
     }
 }
