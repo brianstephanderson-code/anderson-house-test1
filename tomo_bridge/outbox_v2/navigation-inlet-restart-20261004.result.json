@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "navigation-inlet-restart-20261004",
+  "ok": false,
+  "returncode": 1,
+  "stderr": "",
+  "stdout": "NATIVE_EVENT_INLET_RESTART_FAILED\n"
+}
