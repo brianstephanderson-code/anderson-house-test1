@@ -6,7 +6,8 @@ from pathlib import Path
 HOST="127.0.0.1"
 PORT=8765
 DIR=Path.home()/".tomo_private_events"
-LOG=DIR/"events.jsonl"\nNAV_STATE=DIR/"navigation_state.json"
+LOG=DIR/"events.jsonl"
+NAV_STATE=DIR/"navigation_state.json"
 MAX_LOG_BYTES=5*1024*1024
 
 class H(BaseHTTPRequestHandler):
