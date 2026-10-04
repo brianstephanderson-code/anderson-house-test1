@@ -6,7 +6,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.content.pm.PackageManager\nimport android.content.pm.ServiceInfo\nimport android.os.Build
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
