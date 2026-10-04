@@ -19,5 +19,18 @@ class AmigosNotificationListener : NotificationListenerService() {
         EventStore.record(this, deviceEvent)
         LocalBridgeSender.send(deviceEvent)
         DeviceEventBus.publish(deviceEvent)
+
+        if (NavigationStateStore.isNavigationPackage(sbn.packageName)) {
+            val nav = NavigationStateStore.fromNotification(sbn)
+            NavigationStateStore.record(this, nav)
+            val navEvent = DeviceEvent(
+                source = "navigation",
+                packageName = sbn.packageName,
+                title = "navigation_state",
+                text = nav.compact()
+            )
+            LocalBridgeSender.send(navEvent)
+            DeviceEventBus.publish(navEvent)
+        }
     }
 }
