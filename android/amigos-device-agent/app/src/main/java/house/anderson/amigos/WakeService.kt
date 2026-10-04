@@ -6,7 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager\nimport android.content.pm.ServiceInfo\nimport android.os.Build
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
@@ -75,7 +75,8 @@ class WakeService : Service() {
         setArmed(true)
         WakeRuntime.reset()
         ensureChannel()
-        startForeground(NOTIFICATION_ID, buildNotification())
+        startForegroundForCapabilities()
+        AppContextHolder.context = applicationContext
         startListening()
         return START_STICKY
     }
@@ -84,6 +85,19 @@ class WakeService : Service() {
         createDeviceProtectedStorageContext()
             .getSharedPreferences(PREFS, MODE_PRIVATE)
             .edit().putBoolean(KEY_ARMED, value).apply()
+    }
+
+    private fun startForegroundForCapabilities() {
+        val notification = buildNotification()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            var types = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            if (LocationTracker.hasPermission(this)) {
+                types = types or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            }
+            startForeground(NOTIFICATION_ID, notification, types)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun ensureChannel() {
