@@ -18,7 +18,8 @@ class WakeEngine(private val assets: AssetManager) {
         private const val EMPTY_KEYWORDS = "kws/empty_keywords.txt"
         private const val HEY_TOMO = """HH EY1 T OW1 M OW0 :1.8 #0.25 @HEY_TOMO
 HH EY1 T AH0 M OW1 :1.8 #0.25 @HEY_TOMO_ALT
-HH EY1 T AA1 M OW0 :1.8 #0.25 @HEY_TOMO_AUS"""
+HH EY1 T AA1 M OW0 :1.8 #0.25 @HEY_TOMO_AUS
+OW1 P AH0 N S EH1 S AH0 M IY0 :1.8 #0.25 @OPEN_SESAME"""
     }
 
     private var spotter: KeywordSpotter? = null
