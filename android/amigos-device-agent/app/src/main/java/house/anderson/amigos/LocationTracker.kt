@@ -124,7 +124,7 @@ object LocationTracker : LocationListener {
             "GPS permission: " + hasPermission(context) + "\n" +
             "GPS tracking: " + isTracking() + "\n" +
             "GPS fixes: " + s.fixCount + "\n" +
-            "Accuracy: " + if (s.accuracyM >= 0) s.accuracyM.roundToInt() + " m" else "unknown" + "\n" +
+            "Accuracy: " + (if (s.accuracyM >= 0) s.accuracyM.roundToInt().toString() + " m" else "unknown") + "\n" +
             "Speed: " + speedMph + " mph\n" +
             "Heading: " + heading + "\n" +
             "Provider: " + s.provider
