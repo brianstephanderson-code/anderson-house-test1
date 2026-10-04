@@ -88,7 +88,7 @@ jobs:
             'https://ah-word-count.brian-steph-anderson.workers.dev')"
           echo "$BODY" > /tmp/read-text-links.json
           echo "READ_TEXT_LINKS_BODY=$BODY"
-          node -e 'const fs=require("fs"); const b=JSON.parse(fs.readFileSync("/tmp/read-text-links.json","utf8")); if(!b.ok||b.function!=="READ_TEXT_LINKS"||!b.provenance||typeof b.text!=="string"||b.text.length<100||b.text.length>6000||!Array.isArray(b.links)||b.links.length<1||b.links.length>25||b.link_count!==b.links.length||b.links.some(x=>!/^https?:\/\//.test(x.url))||/<script|<style|<img|<form/i.test(b.text)) process.exit(1); console.log("READ_TEXT_LINKS_OK chars="+b.chars+" links="+b.link_count+" url="+b.url); console.log("TEXT_SAMPLE "+b.text.slice(0,300)); console.log("LINK_SAMPLE "+b.links.slice(0,5).map(x=>x.url).join(" | "));'
+          node -e 'const fs=require("fs"); const b=JSON.parse(fs.readFileSync("/tmp/read-text-links.json","utf8")); if(!b.ok||b.function!=="READ_TEXT_LINKS"||!b.provenance||typeof b.text!=="string"||b.text.length<100||b.text.length>6000||!Array.isArray(b.links)||b.links.length>25||b.link_count!==b.links.length||b.links.some(x=>!/^https?:\/\//.test(x.url))||/<script|<style|<img|<form/i.test(b.text)) process.exit(1); console.log("READ_TEXT_LINKS_OK chars="+b.chars+" links="+b.link_count+" url="+b.url); console.log("TEXT_SAMPLE "+b.text.slice(0,300)); console.log("LINK_SAMPLE "+(b.links.length?b.links.slice(0,5).map(x=>x.url).join(" | "):"NONE (valid zero-link page)"));'
 
       - name: Live SEARCH_WEB_PUBLIC proof
         if: ${{ always() }}
