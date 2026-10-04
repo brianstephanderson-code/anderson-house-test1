@@ -1,0 +1,6 @@
+{
+  "id": "native-bridge-health-20261003",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/check_native_bridge_health.py",
+  "timeout": 120
+}
