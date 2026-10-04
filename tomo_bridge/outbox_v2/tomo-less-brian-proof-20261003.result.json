@@ -1,0 +1,8 @@
+{
+  "action": "repo_status",
+  "bridge_version": "v2",
+  "id": "tomo-less-brian-proof-20261003",
+  "ok": true,
+  "stderr": "",
+  "stdout": "?? .s20_mailbox.lock\n?? warehouse/__pycache__/\n?? work/\n?? workers/__pycache__/\n"
+}
