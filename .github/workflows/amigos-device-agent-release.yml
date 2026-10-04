@@ -2,6 +2,11 @@ name: Release Three Amigos Device Agent
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "android/amigos-device-agent/**"
+      - ".github/workflows/amigos-device-agent-release.yml"
 
 permissions:
   contents: read
@@ -17,7 +22,7 @@ jobs:
       AMIGOS_KEY_ALIAS: ${{ secrets.AMIGOS_KEY_ALIAS }}
       AMIGOS_KEY_PASSWORD: ${{ secrets.AMIGOS_KEY_PASSWORD }}
       AMIGOS_VERSION_CODE: ${{ github.run_number }}
-      AMIGOS_VERSION_NAME: 1.0.${{ github.run_number }}
+      AMIGOS_VERSION_NAME: 1.1.${{ github.run_number }}
 
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +50,10 @@ jobs:
           printf '%s' "${{ secrets.AMIGOS_KEYSTORE_B64 }}" | base64 --decode > "$RUNNER_TEMP/amigos-release.jks"
           chmod 600 "$RUNNER_TEMP/amigos-release.jks"
           echo "AMIGOS_KEYSTORE_PATH=$RUNNER_TEMP/amigos-release.jks" >> "$GITHUB_ENV"
+
+      - name: Fetch pinned Hey Tomo runtime
+        shell: bash
+        run: bash tools/fetch_wake_deps.sh
 
       - name: Build signed release APK
         run: gradle --no-daemon :app:assembleRelease
