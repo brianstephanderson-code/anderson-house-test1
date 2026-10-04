@@ -38,7 +38,7 @@ class MainActivity : Activity() {
         }
 
         layout.addView(TextView(this).apply {
-            text = "Three Amigos Device Agent\n\nEnable the Android switches once, allow wake launch, then arm Hey Tomo."
+            text = "Three Amigos Device Agent\n\nEnable the Android switches once, allow wake launch, then arm Open Sesame."
             textSize = 20f
         })
 
@@ -53,7 +53,7 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
-            text = "3. Allow Hey Tomo to open Voice"
+            text = "3. Allow Open Sesame to open Voice"
             setOnClickListener {
                 startActivity(
                     Intent(
@@ -65,12 +65,12 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
-            text = "4. Start Hey Tomo"
+            text = "4. Start Open Sesame"
             setOnClickListener { ensureReadyAndStart() }
         })
 
         layout.addView(Button(this).apply {
-            text = "Stop Hey Tomo"
+            text = "Stop Open Sesame"
             setOnClickListener {
                 startService(Intent(this@MainActivity, WakeService::class.java).setAction(WakeService.ACTION_STOP))
                 refreshProof()
@@ -146,6 +146,7 @@ class MainActivity : Activity() {
             EventStore.snapshot(this) +
             "\n\n" +
             WakeWordStore.snapshot(this) +
-            "\nWake launch allowed: " + Settings.canDrawOverlays(this)
+            "\nWake launch allowed: " + Settings.canDrawOverlays(this) +
+            "\n\n" + BootProof.snapshot(this)
     }
 }
