@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "navigation-inlet-diagnose-20261004",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "INLET_PORT_UP=False\nINLET_PROCESS=no\nINLET_LOG_TAIL_BEGIN\n                           ^\nSyntaxError: unexpected character after line continuation character\n                           ^\nSyntaxError: unexpected character after line continuation character\nINLET_LOG_TAIL_END\n"
+}
