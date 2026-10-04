@@ -16,10 +16,7 @@ class WakeEngine(private val assets: AssetManager) {
         private const val JOINER = "kws/joiner-epoch-13-avg-2-chunk-16-left-64.int8.onnx"
         private const val TOKENS = "kws/tokens.txt"
         private const val EMPTY_KEYWORDS = "kws/empty_keywords.txt"
-        private const val HEY_TOMO = """HH EY1 T OW1 M OW0 :1.8 #0.25 @HEY_TOMO
-HH EY1 T AH0 M OW1 :1.8 #0.25 @HEY_TOMO_ALT
-HH EY1 T AA1 M OW0 :1.8 #0.25 @HEY_TOMO_AUS
-OW1 P AH0 N S EH1 S AH0 M IY0 :1.8 #0.25 @OPEN_SESAME"""
+        private const val WAKE_PHRASES = """OW1 P AH0 N S EH1 S AH0 M IY0 :1.8 #0.25 @OPEN_SESAME"""
     }
 
     private var spotter: KeywordSpotter? = null
@@ -57,7 +54,7 @@ OW1 P AH0 N S EH1 S AH0 M IY0 :1.8 #0.25 @OPEN_SESAME"""
             spotter = KeywordSpotter(assets, cfg)
         }
         stream?.release()
-        stream = spotter!!.createStream(HEY_TOMO)
+        stream = spotter!!.createStream(WAKE_PHRASES)
         check(stream!!.ptr != 0L) { "Wake-word stream could not be created" }
     }
 
