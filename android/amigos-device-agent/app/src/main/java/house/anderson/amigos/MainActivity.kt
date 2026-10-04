@@ -11,6 +11,9 @@ import android.provider.Settings
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.ScrollView
+import android.os.Handler
+import android.os.Looper
 
 class MainActivity : Activity() {
     companion object {
@@ -18,6 +21,13 @@ class MainActivity : Activity() {
     }
 
     private lateinit var proofText: TextView
+    private val ui = Handler(Looper.getMainLooper())
+    private val ticker = object : Runnable {
+        override fun run() {
+            if (::proofText.isInitialized) refreshProof()
+            ui.postDelayed(this, 1000L)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,13 +88,21 @@ class MainActivity : Activity() {
             setOnClickListener { refreshProof() }
         })
 
-        setContentView(layout)
+        val scroll = ScrollView(this).apply { addView(layout) }
+        setContentView(scroll)
         refreshProof()
     }
 
     override fun onResume() {
         super.onResume()
         if (::proofText.isInitialized) refreshProof()
+        ui.removeCallbacks(ticker)
+        ui.post(ticker)
+    }
+
+    override fun onPause() {
+        ui.removeCallbacks(ticker)
+        super.onPause()
     }
 
     private fun ensureReadyAndStart() {
