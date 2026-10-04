@@ -25,7 +25,7 @@ object LocalBridgeSender {
                     put("source", event.source)
                     put("packageName", event.packageName)
                     put("whenMs", event.whenMs)
-                    if (event.source == "notification") {
+                    if (event.source == "notification" || event.source == "navigation") {
                         if (event.title != null) put("title", event.title)
                         if (event.text != null) put("text", event.text)
                     }
