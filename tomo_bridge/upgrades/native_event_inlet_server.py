@@ -6,7 +6,7 @@ from pathlib import Path
 HOST="127.0.0.1"
 PORT=8765
 DIR=Path.home()/".tomo_private_events"
-LOG=DIR/"events.jsonl"
+LOG=DIR/"events.jsonl"\nNAV_STATE=DIR/"navigation_state.json"
 MAX_LOG_BYTES=5*1024*1024
 
 class H(BaseHTTPRequestHandler):
@@ -20,7 +20,7 @@ class H(BaseHTTPRequestHandler):
             event=json.loads(self.rfile.read(n).decode("utf-8"))
             source=str(event.get("source",""))[:32]
             package=str(event.get("packageName",""))[:256]
-            if source not in {"accessibility","notification"} or not package:
+            if source not in {"accessibility","notification","navigation","location"} or not package:
                 raise ValueError("invalid source/package")
             DIR.mkdir(parents=True,exist_ok=True)
             try: os.chmod(DIR,0o700)
@@ -33,6 +33,20 @@ class H(BaseHTTPRequestHandler):
                 "text":event.get("text"),
                 "whenMs":event.get("whenMs"),
             }
+            if source in {"navigation","location"}:
+                state={}
+                if NAV_STATE.exists():
+                    try: state=json.loads(NAV_STATE.read_text(encoding="utf-8"))
+                    except Exception: state={}
+                state[source]=rec
+                tmp=NAV_STATE.with_suffix(".tmp")
+                tmp.write_text(json.dumps(state,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+                try: os.chmod(tmp,0o600)
+                except OSError: pass
+                tmp.replace(NAV_STATE)
+                try: os.chmod(NAV_STATE,0o600)
+                except OSError: pass
+
             if LOG.exists() and LOG.stat().st_size >= MAX_LOG_BYTES:
                 old=DIR/"events.previous.jsonl"
                 try: old.unlink()
