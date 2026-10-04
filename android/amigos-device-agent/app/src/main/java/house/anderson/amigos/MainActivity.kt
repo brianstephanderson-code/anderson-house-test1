@@ -17,7 +17,8 @@ import android.os.Looper
 
 class MainActivity : Activity() {
     companion object {
-        private const val REQ_MIC = 301\n        private const val REQ_LOCATION = 302
+        private const val REQ_MIC = 301
+        private const val REQ_LOCATION = 302
     }
 
     private lateinit var proofText: TextView
