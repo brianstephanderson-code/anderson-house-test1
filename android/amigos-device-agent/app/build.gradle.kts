@@ -11,6 +11,7 @@ android {
         applicationId = "house.anderson.amigos"
         minSdk = 30
         targetSdk = 35
+        ndk { abiFilters += "arm64-v8a" }
         versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "1").toInt()
         versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "0.1.0"
     }
@@ -34,6 +35,10 @@ android {
         }
     }
 
+    androidResources {
+        noCompress += listOf("onnx", "txt")
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -42,4 +47,9 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+
+dependencies {
+    implementation(files("libs/sherpa-onnx-1.13.4-classes.jar"))
 }
