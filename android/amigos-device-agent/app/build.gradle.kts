@@ -33,7 +33,6 @@ android {
             isMinifyEnabled = false
         }
     }
-    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
