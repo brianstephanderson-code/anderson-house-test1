@@ -1,0 +1,6 @@
+{
+  "id": "navigation-inlet-restart2-20261004",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/restart_native_event_inlet.py",
+  "timeout": 60
+}
