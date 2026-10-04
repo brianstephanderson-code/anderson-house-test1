@@ -40,8 +40,12 @@ class WakeService : Service() {
         private const val PREFS = "hey_tomo"
         private const val KEY_ARMED = "armed"
 
+        private fun prefs(context: android.content.Context) =
+            context.createDeviceProtectedStorageContext()
+                .getSharedPreferences(PREFS, MODE_PRIVATE)
+
         fun isArmed(context: android.content.Context): Boolean =
-            context.getSharedPreferences(PREFS, MODE_PRIVATE).getBoolean(KEY_ARMED, false)
+            prefs(context).getBoolean(KEY_ARMED, false)
     }
 
     private val serviceAlive = AtomicBoolean(false)
@@ -77,7 +81,9 @@ class WakeService : Service() {
     }
 
     private fun setArmed(value: Boolean) {
-        getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(KEY_ARMED, value).apply()
+        createDeviceProtectedStorageContext()
+            .getSharedPreferences(PREFS, MODE_PRIVATE)
+            .edit().putBoolean(KEY_ARMED, value).apply()
     }
 
     private fun ensureChannel() {
@@ -286,7 +292,7 @@ object WakeWordStore {
 
     fun snapshot(context: android.content.Context): String {
         val p = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
-        return "Hey Tomo armed: " + WakeService.isArmed(context) + "\n" +
+        return "Open Sesame armed: " + WakeService.isArmed(context) + "\n" +
             "Wake detections: " + p.getLong("wake_count", 0L) + "\n" +
             "Wake errors: " + p.getLong("error_count", 0L) + "\n" +
             "Engine ready: " + WakeRuntime.engineReady + "\n" +
