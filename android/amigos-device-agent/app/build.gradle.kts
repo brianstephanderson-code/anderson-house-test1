@@ -33,28 +33,6 @@ android {
             isMinifyEnabled = false
         }
     }
-
-    signingConfigs {
-        create("stableRelease") {
-            val ksPath = System.getenv("AMIGOS_KEYSTORE_PATH")
-            if (!ksPath.isNullOrBlank()) {
-                storeFile = file(ksPath)
-                storePassword = System.getenv("AMIGOS_STORE_PASSWORD")
-                keyAlias = System.getenv("AMIGOS_KEY_ALIAS")
-                keyPassword = System.getenv("AMIGOS_KEY_PASSWORD")
-                storeType = "PKCS12"
-            }
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-            val ksPath = System.getenv("AMIGOS_KEYSTORE_PATH")
-            if (!ksPath.isNullOrBlank()) {
-                signingConfig = signingConfigs.getByName("stableRelease")
-            }
-        }
     }
 
     compileOptions {
