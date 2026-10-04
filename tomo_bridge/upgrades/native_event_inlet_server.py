@@ -10,6 +10,28 @@ LOG=DIR/"events.jsonl"\nNAV_STATE=DIR/"navigation_state.json"
 MAX_LOG_BYTES=5*1024*1024
 
 class H(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path != "/navigation-state":
+            self.send_error(404); return
+        try:
+            state = {}
+            if NAV_STATE.exists():
+                state = json.loads(NAV_STATE.read_text(encoding="utf-8"))
+            body = json.dumps({"ok": True, "state": state}, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type","application/json")
+            self.send_header("Cache-Control","no-store")
+            self.send_header("Content-Length",str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception as e:
+            body=json.dumps({"ok":False,"error":type(e).__name__}).encode()
+            self.send_response(500)
+            self.send_header("Content-Type","application/json")
+            self.send_header("Content-Length",str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
     def do_POST(self):
         if self.path!="/event":
             self.send_error(404); return
