@@ -17,7 +17,7 @@ import android.os.Looper
 
 class MainActivity : Activity() {
     companion object {
-        private const val REQ_MIC = 301
+        private const val REQ_MIC = 301\n        private const val REQ_LOCATION = 302
     }
 
     private lateinit var proofText: TextView
@@ -67,6 +67,24 @@ class MainActivity : Activity() {
         layout.addView(Button(this).apply {
             text = "4. Start Open Sesame"
             setOnClickListener { ensureReadyAndStart() }
+        })
+
+        layout.addView(Button(this).apply {
+            text = "5. Enable GPS for navigation"
+            setOnClickListener {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ),
+                        REQ_LOCATION
+                    )
+                } else {
+                    startWakeService()
+                    refreshProof()
+                }
+            }
         })
 
         layout.addView(Button(this).apply {
@@ -138,6 +156,10 @@ class MainActivity : Activity() {
         if (requestCode == REQ_MIC && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
             startWakeService()
         }
+        if (requestCode == REQ_LOCATION && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
+            startWakeService()
+            refreshProof()
+        }
     }
 
     private fun refreshProof() {
@@ -148,6 +170,7 @@ class MainActivity : Activity() {
             WakeWordStore.snapshot(this) +
             "\nWake launch allowed: " + Settings.canDrawOverlays(this) +
             "\n\n" + BootProof.snapshot(this) +
-            "\n\n" + NavigationStateStore.snapshot(this)
+            "\n\n" + NavigationStateStore.snapshot(this) +
+            "\n\n" + LocationTracker.snapshot(this)
     }
 }
