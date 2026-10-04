@@ -1,0 +1,8 @@
+{
+  "action": "git_sync",
+  "bridge_version": "v2",
+  "id": "navigation-backend-sync3-20261004",
+  "ok": true,
+  "stderr": "From github.com:brianstephanderson-code/anderson-house-test1\n * branch                main       -> FETCH_HEAD\n   21e001fe4..9fb659e9d  main       -> origin/main\n",
+  "stdout": "Updating 21e001fe4..9fb659e9d\nFast-forward\n .../inbox_v2/navigation-inlet-restart2-20261004.command.json        | 6 ++++++\n 1 file changed, 6 insertions(+)\n create mode 100644 tomo_bridge/inbox_v2/navigation-inlet-restart2-20261004.command.json\n"
+}
