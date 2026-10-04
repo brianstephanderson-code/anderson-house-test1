@@ -15,6 +15,20 @@ import android.os.IBinder
 import android.os.Process
 import java.util.concurrent.atomic.AtomicBoolean
 
+object WakeRuntime {
+    @Volatile var captureActive: Boolean = false
+    @Volatile var framesRead: Long = 0L
+    @Volatile var lastRms: Int = 0
+    @Volatile var engineReady: Boolean = false
+
+    fun reset() {
+        captureActive = false
+        framesRead = 0L
+        lastRms = 0
+        engineReady = false
+    }
+}
+
 class WakeService : Service() {
     companion object {
         const val ACTION_START = "house.anderson.amigos.WAKE_START"
@@ -53,6 +67,7 @@ class WakeService : Service() {
         }
 
         setArmed(true)
+        WakeRuntime.reset()
         ensureChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
         startListening()
@@ -113,6 +128,7 @@ class WakeService : Service() {
                 val localEngine = WakeEngine(assets)
                 localEngine.start()
                 engine = localEngine
+                WakeRuntime.engineReady = true
 
                 val sampleRate = 16000
                 val min = AudioRecord.getMinBufferSize(
@@ -130,13 +146,21 @@ class WakeService : Service() {
                 )
                 recorder = localRecorder
                 localRecorder.startRecording()
+                WakeRuntime.captureActive = true
 
                 val shorts = ShortArray(1600)
                 while (serviceAlive.get() && captureRunning.get()) {
                     val n = localRecorder.read(shorts, 0, shorts.size)
                     if (n <= 0) continue
+                    WakeRuntime.framesRead += 1L
+                    var sum = 0.0
                     val floats = FloatArray(n)
-                    for (i in 0 until n) floats[i] = shorts[i] / 32768.0f
+                    for (i in 0 until n) {
+                        val v = shorts[i].toDouble()
+                        sum += v * v
+                        floats[i] = shorts[i] / 32768.0f
+                    }
+                    WakeRuntime.lastRms = kotlin.math.sqrt(sum / n).toInt()
                     if (localEngine.accept(floats, sampleRate)) {
                         detected = true
                         captureRunning.set(false)
@@ -164,8 +188,10 @@ class WakeService : Service() {
         try { recorder?.stop() } catch (_: Throwable) {}
         try { recorder?.release() } catch (_: Throwable) {}
         recorder = null
+        WakeRuntime.captureActive = false
         engine?.close()
         engine = null
+        WakeRuntime.engineReady = false
         captureRunning.set(false)
     }
 
@@ -259,6 +285,10 @@ object WakeWordStore {
         val p = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
         return "Hey Tomo armed: " + WakeService.isArmed(context) + "\n" +
             "Wake detections: " + p.getLong("wake_count", 0L) + "\n" +
-            "Wake errors: " + p.getLong("error_count", 0L)
+            "Wake errors: " + p.getLong("error_count", 0L) + "\n" +
+            "Engine ready: " + WakeRuntime.engineReady + "\n" +
+            "Mic capture active: " + WakeRuntime.captureActive + "\n" +
+            "Audio frames: " + WakeRuntime.framesRead + "\n" +
+            "Mic level: " + WakeRuntime.lastRms
     }
 }
