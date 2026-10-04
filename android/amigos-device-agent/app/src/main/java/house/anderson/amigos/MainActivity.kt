@@ -1,7 +1,10 @@
 package house.anderson.amigos
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
@@ -9,6 +12,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 class MainActivity : Activity() {
+    companion object {
+        private const val REQ_MIC = 301
+    }
+
     private lateinit var proofText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +27,7 @@ class MainActivity : Activity() {
         }
 
         layout.addView(TextView(this).apply {
-            text = "Three Amigos Device Agent\n\nEnable both switches once. No Shizuku required."
+            text = "Three Amigos Device Agent\n\nEnable the Android switches once, then arm Hey Tomo."
             textSize = 20f
         })
 
@@ -32,6 +39,19 @@ class MainActivity : Activity() {
         layout.addView(Button(this).apply {
             text = "2. Enable Notification Access"
             setOnClickListener { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+        })
+
+        layout.addView(Button(this).apply {
+            text = "3. Start Hey Tomo"
+            setOnClickListener { ensureMicAndStart() }
+        })
+
+        layout.addView(Button(this).apply {
+            text = "Stop Hey Tomo"
+            setOnClickListener {
+                startService(Intent(this@MainActivity, WakeService::class.java).setAction(WakeService.ACTION_STOP))
+                refreshProof()
+            }
         })
 
         proofText = TextView(this).apply {
@@ -54,7 +74,32 @@ class MainActivity : Activity() {
         if (::proofText.isInitialized) refreshProof()
     }
 
+    private fun ensureMicAndStart() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQ_MIC)
+            return
+        }
+        startWakeService()
+    }
+
+    private fun startWakeService() {
+        val i = Intent(this, WakeService::class.java).setAction(WakeService.ACTION_START)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(i) else startService(i)
+        proofText.postDelayed({ refreshProof() }, 1000L)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_MIC && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            startWakeService()
+        }
+    }
+
     private fun refreshProof() {
-        proofText.text = "LIVE PROOF\n\n" + EventStore.snapshot(this)
+        proofText.text = "LIVE PROOF\n\n" + EventStore.snapshot(this) + "\n\n" + WakeWordStore.snapshot(this)
     }
 }
