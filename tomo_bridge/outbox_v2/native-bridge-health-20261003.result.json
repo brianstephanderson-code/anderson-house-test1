@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "native-bridge-health-20261003",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "{\"event_log_exists\": true, \"event_log_lines\": 10877, \"green\": true, \"localhost_8765\": true, \"native_inlet\": true, \"v2_listener\": true, \"watchdog\": true}\n"
+}
