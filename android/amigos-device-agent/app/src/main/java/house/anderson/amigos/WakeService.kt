@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.IBinder
@@ -27,10 +28,17 @@ class WakeService : Service() {
             context.getSharedPreferences(PREFS, MODE_PRIVATE).getBoolean(KEY_ARMED, false)
     }
 
-    private val running = AtomicBoolean(false)
-    private var thread: Thread? = null
+    private val serviceAlive = AtomicBoolean(false)
+    private val captureRunning = AtomicBoolean(false)
+    private val handoffRunning = AtomicBoolean(false)
+    private var captureThread: Thread? = null
     private var recorder: AudioRecord? = null
     private var engine: WakeEngine? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        serviceAlive.set(true)
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
@@ -47,7 +55,7 @@ class WakeService : Service() {
         setArmed(true)
         ensureChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
-        if (!running.get()) startListening()
+        startListening()
         return START_STICKY
     }
 
@@ -92,10 +100,15 @@ class WakeService : Service() {
             .build()
     }
 
+    @Synchronized
     private fun startListening() {
-        running.set(true)
-        thread = Thread({
+        if (!serviceAlive.get() || !WakeService.isArmed(this)) return
+        if (captureRunning.get() || handoffRunning.get()) return
+
+        captureRunning.set(true)
+        captureThread = Thread({
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
+            var detected = false
             try {
                 val localEngine = WakeEngine(assets)
                 localEngine.start()
@@ -119,49 +132,112 @@ class WakeService : Service() {
                 localRecorder.startRecording()
 
                 val shorts = ShortArray(1600)
-                while (running.get()) {
+                while (serviceAlive.get() && captureRunning.get()) {
                     val n = localRecorder.read(shorts, 0, shorts.size)
                     if (n <= 0) continue
                     val floats = FloatArray(n)
                     for (i in 0 until n) floats[i] = shorts[i] / 32768.0f
-                    if (localEngine.accept(floats, sampleRate)) onWakeDetected()
+                    if (localEngine.accept(floats, sampleRate)) {
+                        detected = true
+                        captureRunning.set(false)
+                        break
+                    }
                 }
             } catch (_: Throwable) {
-                val event = DeviceEvent(
-                    source = "wake_error",
-                    packageName = packageName
-                )
+                val event = DeviceEvent(source = "wake_error", packageName = packageName)
                 LocalBridgeSender.send(event)
                 WakeWordStore.record(this, detected = false, error = true)
             } finally {
-                try { recorder?.stop() } catch (_: Throwable) {}
-                try { recorder?.release() } catch (_: Throwable) {}
-                recorder = null
-                engine?.close()
-                engine = null
-                running.set(false)
+                releaseCapture()
+            }
+
+            if (detected && serviceAlive.get()) handleWakeHandoff()
+            else if (serviceAlive.get() && WakeService.isArmed(this) && !handoffRunning.get()) {
+                Thread.sleep(500L)
+                startListening()
             }
         }, "hey-tomo-kws").apply { start() }
     }
 
-    private fun onWakeDetected() {
+    @Synchronized
+    private fun releaseCapture() {
+        try { recorder?.stop() } catch (_: Throwable) {}
+        try { recorder?.release() } catch (_: Throwable) {}
+        recorder = null
+        engine?.close()
+        engine = null
+        captureRunning.set(false)
+    }
+
+    private fun handleWakeHandoff() {
+        if (!handoffRunning.compareAndSet(false, true)) return
+
         WakeWordStore.record(this, detected = true, error = false)
-        val event = DeviceEvent(
-            source = "wake_word",
-            packageName = packageName
-        )
+        val event = DeviceEvent(source = "wake_word", packageName = packageName)
         LocalBridgeSender.send(event)
         DeviceEventBus.publish(event)
 
+        // Important: our microphone is fully released before ChatGPT Voice starts.
+        try { Thread.sleep(300L) } catch (_: InterruptedException) {}
         GptVoiceLauncher.launch(this)
-        try { Thread.sleep(2500L) } catch (_: InterruptedException) {}
+
+        Thread({
+            try {
+                val audio = getSystemService(AudioManager::class.java)
+                val start = System.currentTimeMillis()
+                var voiceSeen = false
+                var quietSince = 0L
+
+                // Wait for ChatGPT voice to become active, then wait until it really ends.
+                while (serviceAlive.get() && WakeService.isArmed(this)) {
+                    val now = System.currentTimeMillis()
+                    val active = isCommunicationCaptureActive(audio)
+
+                    if (active) {
+                        voiceSeen = true
+                        quietSince = 0L
+                    } else if (voiceSeen) {
+                        if (quietSince == 0L) quietSince = now
+                        if (now - quietSince >= 1500L) break
+                    } else if (now - start >= 12000L) {
+                        // Launch failed or voice never took the mic: restore Hey Tomo.
+                        break
+                    }
+
+                    try { Thread.sleep(250L) } catch (_: InterruptedException) { break }
+                }
+            } finally {
+                handoffRunning.set(false)
+                if (serviceAlive.get() && WakeService.isArmed(this)) startListening()
+            }
+        }, "hey-tomo-reacquire").start()
+    }
+
+    private fun isCommunicationCaptureActive(audio: AudioManager): Boolean {
+        val mode = audio.mode
+        val commMode = mode == AudioManager.MODE_IN_COMMUNICATION || mode == AudioManager.MODE_IN_CALL
+        if (!commMode) return false
+
+        return try {
+            audio.activeRecordingConfigurations.any { cfg ->
+                val src = cfg.clientAudioSource
+                val commSource =
+                    src == MediaRecorder.AudioSource.VOICE_COMMUNICATION ||
+                    src == MediaRecorder.AudioSource.VOICE_CALL
+                commSource && !cfg.isClientSilenced
+            }
+        } catch (_: Throwable) {
+            commMode
+        }
     }
 
     override fun onDestroy() {
-        running.set(false)
-        try { recorder?.stop() } catch (_: Throwable) {}
-        thread?.interrupt()
-        thread = null
+        serviceAlive.set(false)
+        handoffRunning.set(false)
+        captureRunning.set(false)
+        releaseCapture()
+        captureThread?.interrupt()
+        captureThread = null
         super.onDestroy()
     }
 
@@ -181,8 +257,8 @@ object WakeWordStore {
 
     fun snapshot(context: android.content.Context): String {
         val p = context.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
-        return "Hey Tomo armed: " + WakeService.isArmed(context) + "\\n" +
-            "Wake detections: " + p.getLong("wake_count", 0L) + "\\n" +
+        return "Hey Tomo armed: " + WakeService.isArmed(context) + "\n" +
+            "Wake detections: " + p.getLong("wake_count", 0L) + "\n" +
             "Wake errors: " + p.getLong("error_count", 0L)
     }
 }
