@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -27,7 +28,7 @@ class MainActivity : Activity() {
         }
 
         layout.addView(TextView(this).apply {
-            text = "Three Amigos Device Agent\n\nEnable the Android switches once, then arm Hey Tomo."
+            text = "Three Amigos Device Agent\n\nEnable the Android switches once, allow wake launch, then arm Hey Tomo."
             textSize = 20f
         })
 
@@ -42,8 +43,20 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
-            text = "3. Start Hey Tomo"
-            setOnClickListener { ensureMicAndStart() }
+            text = "3. Allow Hey Tomo to open Voice"
+            setOnClickListener {
+                startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            }
+        })
+
+        layout.addView(Button(this).apply {
+            text = "4. Start Hey Tomo"
+            setOnClickListener { ensureReadyAndStart() }
         })
 
         layout.addView(Button(this).apply {
@@ -74,7 +87,17 @@ class MainActivity : Activity() {
         if (::proofText.isInitialized) refreshProof()
     }
 
-    private fun ensureMicAndStart() {
+    private fun ensureReadyAndStart() {
+        if (!Settings.canDrawOverlays(this)) {
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+            )
+            return
+        }
+
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQ_MIC)
             return
@@ -100,6 +123,11 @@ class MainActivity : Activity() {
     }
 
     private fun refreshProof() {
-        proofText.text = "LIVE PROOF\n\n" + EventStore.snapshot(this) + "\n\n" + WakeWordStore.snapshot(this)
+        proofText.text =
+            "LIVE PROOF\n\n" +
+            EventStore.snapshot(this) +
+            "\n\n" +
+            WakeWordStore.snapshot(this) +
+            "\nWake launch allowed: " + Settings.canDrawOverlays(this)
     }
 }
