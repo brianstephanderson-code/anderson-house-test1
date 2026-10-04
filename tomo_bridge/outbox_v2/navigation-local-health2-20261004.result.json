@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "navigation-local-health2-20261004",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "LOCAL_INLET_LINE_COUNT=15500\nLOCAL_INLET_OK\n"
+}
