@@ -33,6 +33,7 @@ class AmigosNotificationListener : NotificationListenerService() {
             LocationTracker.start(this)
             val nav = NavigationStateStore.fromNotification(sbn)
             NavigationStateStore.record(this, nav)
+            NavigationOverlay.updateInstruction(this, nav.bestInstruction())
             val navEvent = DeviceEvent(
                 source = "navigation",
                 packageName = sbn.packageName,
@@ -49,6 +50,7 @@ class AmigosNotificationListener : NotificationListenerService() {
         activeNavigationKeys -= sbn.key
         if (activeNavigationKeys.isEmpty()) {
             LocationTracker.stop()
+            NavigationOverlay.hide(this)
         }
     }
 }
