@@ -85,10 +85,10 @@ class WakeService : Service() {
         manager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
-                "Hey Tomo listener",
+                "Open Sesame listener",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Local wake-word listener for Hey Tomo"
+                description = "Local wake-word listener for Open Sesame"
                 setShowBadge(false)
             }
         )
@@ -106,8 +106,8 @@ class WakeService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         return Notification.Builder(this, CHANNEL_ID)
-            .setContentTitle("Hey Tomo is listening")
-            .setContentText("Wake phrase: Hey Tomo")
+            .setContentTitle("Open Sesame is listening")
+            .setContentText("Wake phrase: Open Sesame")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setOngoing(true)
             .setContentIntent(open)
