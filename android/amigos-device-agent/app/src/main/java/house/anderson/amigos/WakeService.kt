@@ -19,12 +19,14 @@ object WakeRuntime {
     @Volatile var captureActive: Boolean = false
     @Volatile var framesRead: Long = 0L
     @Volatile var lastRms: Int = 0
+    @Volatile var peakRms: Int = 0
     @Volatile var engineReady: Boolean = false
 
     fun reset() {
         captureActive = false
         framesRead = 0L
         lastRms = 0
+        peakRms = 0
         engineReady = false
     }
 }
@@ -161,6 +163,7 @@ class WakeService : Service() {
                         floats[i] = shorts[i] / 32768.0f
                     }
                     WakeRuntime.lastRms = kotlin.math.sqrt(sum / n).toInt()
+                    if (WakeRuntime.lastRms > WakeRuntime.peakRms) WakeRuntime.peakRms = WakeRuntime.lastRms
                     if (localEngine.accept(floats, sampleRate)) {
                         detected = true
                         captureRunning.set(false)
@@ -289,6 +292,7 @@ object WakeWordStore {
             "Engine ready: " + WakeRuntime.engineReady + "\n" +
             "Mic capture active: " + WakeRuntime.captureActive + "\n" +
             "Audio frames: " + WakeRuntime.framesRead + "\n" +
-            "Mic level: " + WakeRuntime.lastRms
+            "Mic level now: " + WakeRuntime.lastRms + "\n" +
+            "Mic peak since start: " + WakeRuntime.peakRms
     }
 }
