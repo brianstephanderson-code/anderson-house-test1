@@ -13,6 +13,8 @@ class AmigosAccessibilityService : AccessibilityService() {
         @Volatile private var lastQuietAt = 0L
     }
 
+    private val textRadio by lazy { TextRadioAutomation(this) }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         val pkg = event.packageName?.toString() ?: return
@@ -26,6 +28,8 @@ class AmigosAccessibilityService : AccessibilityService() {
         EventStore.record(this, deviceEvent)
         LocalBridgeSender.send(deviceEvent)
         DeviceEventBus.publish(deviceEvent)
+
+        textRadio.onAccessibilityEvent(pkg)
 
         if (pkg == CHATGPT_PACKAGE && containsGoQuiet(text)) {
             goQuiet()
@@ -48,18 +52,11 @@ class AmigosAccessibilityService : AccessibilityService() {
         LocalBridgeSender.send(event)
         DeviceEventBus.publish(event)
 
-        // Leave the Three Amigos wake service armed. Moving Home ends the visible
-        // ChatGPT voice surface on supported builds; WakeService detects release of
-        // ChatGPT's communication mic and automatically reacquires Open Sesame.
         performGlobalAction(GLOBAL_ACTION_HOME)
 
-        // Nudge WakeService without disarming it. Its handoff/reacquire loop owns
-        // the microphone transition, so Open Sesame remains the wake path.
         try {
-            startService(Intent(this, WakeService::class.java).setAction(WakeService.ACTION_START))
-        } catch (_: Throwable) {
-            // WakeService is already sticky in the normal path; no destructive fallback.
-        }
+            startService(Intent(this, WakeService::class.java).setAction(WakeService.ACTION_REARM))
+        } catch (_: Throwable) {}
     }
 
     override fun onInterrupt() = Unit

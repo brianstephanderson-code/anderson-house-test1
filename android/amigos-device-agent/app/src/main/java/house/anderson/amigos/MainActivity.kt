@@ -39,7 +39,7 @@ class MainActivity : Activity() {
         }
 
         layout.addView(TextView(this).apply {
-            text = "Three Amigos Device Agent\n\nEnable the Android switches once, allow wake launch, then arm Open Sesame."
+            text = "Three Amigos Device Agent\n\nOpen Sesame now uses Text Radio: wake, dictate, send, hear reply, sleep."
             textSize = 20f
         })
 
@@ -54,7 +54,7 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
-            text = "3. Allow Open Sesame to open Voice"
+            text = "3. Allow hands-free wake launch"
             setOnClickListener {
                 startActivity(
                     Intent(
@@ -169,6 +169,7 @@ class MainActivity : Activity() {
             EventStore.snapshot(this) +
             "\n\n" +
             WakeWordStore.snapshot(this) +
+            "\n\n" + TextRadioStore.snapshot(this) +
             "\nWake launch allowed: " + Settings.canDrawOverlays(this) +
             "\n\n" + BootProof.snapshot(this) +
             "\n\n" + NavigationStateStore.snapshot(this) +

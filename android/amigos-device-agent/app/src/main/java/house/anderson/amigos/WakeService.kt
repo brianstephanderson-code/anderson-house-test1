@@ -37,6 +37,7 @@ class WakeService : Service() {
     companion object {
         const val ACTION_START = "house.anderson.amigos.WAKE_START"
         const val ACTION_STOP = "house.anderson.amigos.WAKE_STOP"
+        const val ACTION_REARM = "house.anderson.amigos.WAKE_REARM"
         private const val CHANNEL_ID = "hey_tomo_listener"
         private const val NOTIFICATION_ID = 7311
         private const val PREFS = "hey_tomo"
@@ -67,6 +68,18 @@ class WakeService : Service() {
             setArmed(false)
             stopSelf()
             return START_NOT_STICKY
+        }
+
+        if (intent?.action == ACTION_REARM) {
+            if (!WakeService.isArmed(this)) return START_NOT_STICKY
+            if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                return START_NOT_STICKY
+            }
+            handoffRunning.set(false)
+            ensureChannel()
+            startForegroundForCapabilities()
+            startListening()
+            return START_STICKY
         }
 
         if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -224,44 +237,35 @@ class WakeService : Service() {
         if (!handoffRunning.compareAndSet(false, true)) return
 
         WakeWordStore.record(this, detected = true, error = false)
-        val event = DeviceEvent(source = "wake_word", packageName = packageName)
+        val event = DeviceEvent(source = "wake_word_text_radio", packageName = packageName)
         LocalBridgeSender.send(event)
         DeviceEventBus.publish(event)
 
-        // Important: our microphone is fully released before ChatGPT Voice starts.
+        // Release Open Sesame's microphone before handing it to FUTO.
         try { Thread.sleep(300L) } catch (_: InterruptedException) {}
-        GptVoiceLauncher.launch(this)
 
+        val launched = TextRadioLauncher.launch(this)
+        if (!launched) {
+            TextRadioStore.fail(this, "Text Radio capture could not open")
+            handoffRunning.set(false)
+            startListening()
+            return
+        }
+
+        // Recovery fence: a cancelled recognizer or lost UI event must never leave
+        // Open Sesame permanently disarmed.
         Thread({
             try {
-                val audio = getSystemService(AudioManager::class.java)
-                val start = System.currentTimeMillis()
-                var voiceSeen = false
-                var quietSince = 0L
-
-                // Wait for ChatGPT voice to become active, then wait until it really ends.
-                while (serviceAlive.get() && WakeService.isArmed(this)) {
-                    val now = System.currentTimeMillis()
-                    val active = isCommunicationCaptureActive(audio)
-
-                    if (active) {
-                        voiceSeen = true
-                        quietSince = 0L
-                    } else if (voiceSeen) {
-                        if (quietSince == 0L) quietSince = now
-                        if (now - quietSince >= 1500L) break
-                    } else if (now - start >= 12000L) {
-                        // Launch failed or voice never took the mic: restore Hey Tomo.
-                        break
-                    }
-
-                    try { Thread.sleep(250L) } catch (_: InterruptedException) { break }
-                }
-            } finally {
-                handoffRunning.set(false)
-                if (serviceAlive.get() && WakeService.isArmed(this)) startListening()
+                Thread.sleep(150000L)
+            } catch (_: InterruptedException) {
+                return@Thread
             }
-        }, "hey-tomo-reacquire").start()
+            if (serviceAlive.get() && WakeService.isArmed(this) &&
+                handoffRunning.compareAndSet(true, false)) {
+                TextRadioStore.fail(this, "Text Radio handoff timed out")
+                startListening()
+            }
+        }, "text-radio-watchdog").start()
     }
 
     private fun isCommunicationCaptureActive(audio: AudioManager): Boolean {

@@ -18,7 +18,7 @@ jobs:
         working-directory: android/amigos-device-agent
     env:
       AMIGOS_KEYSTORE_B64: ${{ secrets.AMIGOS_KEYSTORE_B64 }}
-      AMIGOS_STORE_PASSWORD: ${{ secrets.AMIGOS_STORE_PASSWORD }}
+      AMIGOS_KEYSTORE_PASSWORD: ${{ secrets.AMIGOS_KEYSTORE_PASSWORD }}
       AMIGOS_KEY_PASSWORD: ${{ secrets.AMIGOS_KEY_PASSWORD }}
       AMIGOS_KEY_ALIAS: ${{ secrets.AMIGOS_KEY_ALIAS }}
     steps:
@@ -32,6 +32,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
+
+      - name: Fetch pinned wake-word dependencies
+        run: bash tools/fetch_wake_deps.sh
 
       - name: Restore stable signing keystore
         if: ${{ env.AMIGOS_KEYSTORE_B64 != '' }}
