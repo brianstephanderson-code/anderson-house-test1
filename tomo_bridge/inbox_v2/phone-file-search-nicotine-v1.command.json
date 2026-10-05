@@ -1,0 +1,11 @@
+{
+  "id": "phone-file-search-nicotine-v1",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/phone_file_search_v1.py",
+  "args": [
+    "nicotine",
+    "--root",
+    "home"
+  ],
+  "timeout": 120
+}
