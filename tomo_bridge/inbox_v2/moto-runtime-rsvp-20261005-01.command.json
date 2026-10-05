@@ -1,0 +1,6 @@
+{
+  "id": "moto-runtime-rsvp-20261005-01",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/diagnose_moto_runtime_20261005.py",
+  "timeout": 120
+}
