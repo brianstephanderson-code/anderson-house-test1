@@ -9,9 +9,10 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.ScrollView
+import android.widget.TextView
 import android.os.Handler
 import android.os.Looper
 
@@ -19,9 +20,12 @@ class MainActivity : Activity() {
     companion object {
         private const val REQ_MIC = 301
         private const val REQ_LOCATION = 302
+        private const val REQ_FILE_TREE = 303
     }
 
     private lateinit var proofText: TextView
+    private lateinit var fileQuery: EditText
+    private lateinit var fileResults: TextView
     private val ui = Handler(Looper.getMainLooper())
     private val ticker = object : Runnable {
         override fun run() {
@@ -89,6 +93,29 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
+            text = "6. Choose searchable phone folder"
+            setOnClickListener { chooseFileTree() }
+        })
+
+        fileQuery = EditText(this).apply {
+            hint = "Search chosen folder, e.g. nicotine"
+            setSingleLine(true)
+        }
+        layout.addView(fileQuery)
+
+        layout.addView(Button(this).apply {
+            text = "Search chosen folder"
+            setOnClickListener { runPhoneFileSearch() }
+        })
+
+        fileResults = TextView(this).apply {
+            textSize = 16f
+            setPadding(0, 20, 0, 20)
+            text = "PHONE FILE SEARCH\nChoose a folder, then enter a word or phrase."
+        }
+        layout.addView(fileResults)
+
+        layout.addView(Button(this).apply {
             text = "Stop Open Sesame"
             setOnClickListener {
                 startService(Intent(this@MainActivity, WakeService::class.java).setAction(WakeService.ACTION_STOP))
@@ -122,6 +149,44 @@ class MainActivity : Activity() {
     override fun onPause() {
         ui.removeCallbacks(ticker)
         super.onPause()
+    }
+
+    private fun chooseFileTree() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PREFIX_URI_PERMISSION)
+        }
+        startActivityForResult(intent, REQ_FILE_TREE)
+    }
+
+    @Deprecated("Kept for Android 11 compatibility in this small standalone Activity")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_FILE_TREE && resultCode == RESULT_OK) {
+            val uri = data?.data ?: return
+            try {
+                PhoneFileAccess.grant(this, uri, data.flags)
+                fileResults.text = "Folder granted. You can search it now."
+            } catch (t: Throwable) {
+                fileResults.text = "Could not keep folder permission: ${t.message ?: "unknown error"}"
+            }
+            refreshProof()
+        }
+    }
+
+    private fun runPhoneFileSearch() {
+        val query = fileQuery.text?.toString().orEmpty().trim()
+        if (query.isEmpty()) {
+            fileResults.text = "Type a word or phrase first."
+            return
+        }
+
+        fileResults.text = "Searching..."
+        Thread {
+            val result = PhoneFileSearch.search(this, query)
+            runOnUiThread { fileResults.text = result }
+        }.start()
     }
 
     private fun ensureReadyAndStart() {
@@ -173,6 +238,7 @@ class MainActivity : Activity() {
             "\nWake launch allowed: " + Settings.canDrawOverlays(this) +
             "\n\n" + BootProof.snapshot(this) +
             "\n\n" + NavigationStateStore.snapshot(this) +
-            "\n\n" + LocationTracker.snapshot(this)
+            "\n\n" + LocationTracker.snapshot(this) +
+            "\n\n" + PhoneFileAccess.snapshot(this)
     }
 }
