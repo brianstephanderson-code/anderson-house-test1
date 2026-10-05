@@ -1,0 +1,18 @@
+name: Test Remote Termux File Search
+
+on:
+  push:
+    paths:
+      - "tomo_bridge/termux_listener_v2.py"
+      - ".github/workflows/tomo-remote-file-search-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile listener
+        run: python -m py_compile tomo_bridge/termux_listener_v2.py
