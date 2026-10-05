@@ -25,7 +25,12 @@ object LocalBridgeSender {
                     put("source", event.source)
                     put("packageName", event.packageName)
                     put("whenMs", event.whenMs)
-                    if (event.source == "notification" || event.source == "navigation" || event.source == "location") {
+                    if (
+                        event.source == "notification" ||
+                        event.source == "navigation" ||
+                        event.source == "location" ||
+                        event.source == "file_search"
+                    ) {
                         if (event.title != null) put("title", event.title)
                         if (event.text != null) put("text", event.text)
                     }
@@ -46,7 +51,7 @@ object LocalBridgeSender {
                 connection.inputStream.use { it.readBytes() }
                 connection.disconnect()
             } catch (_: Exception) {
-                // Local bridge may be restarting. EventStore remains the on-device proof.
+                // Local bridge may be restarting. On-device search results remain visible.
             }
         }
     }
