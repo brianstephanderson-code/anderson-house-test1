@@ -1,0 +1,19 @@
+{
+  "id": "phone-file-search-adelle-nicotine-20261005",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/phone_file_search.py",
+  "args": [
+    "--query",
+    "nicotine",
+    "--root",
+    "~",
+    "--name-any",
+    "adelle",
+    "davis",
+    "--context",
+    "4",
+    "--max-matches",
+    "100"
+  ],
+  "timeout": 180
+}
