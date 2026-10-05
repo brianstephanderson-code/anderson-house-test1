@@ -33,6 +33,9 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Fetch pinned wake-word dependencies
+        run: bash tools/fetch_wake_deps.sh
+
       - name: Restore stable signing keystore
         if: ${{ env.AMIGOS_KEYSTORE_B64 != '' }}
         run: |
