@@ -2121,8 +2121,18 @@ echo CLEANUP_VERIFIED
     git("add", "-A", "tomo_bridge/inbox_v2", "tomo_bridge/outbox_v2", "tomo_bridge/archive_v2", check=False)
     git("commit", "-m", f"Termux v2 result: {cmd_id}", check=False)
 
-    # The repo is shared with cloud workers, so main can advance while a phone job
-    # is running. Publish the result robustly instead of silently losing a rejected push.
+    # Publish every phone result to a dedicated branch first.  Main receives
+    # frequent heartbeat commits, so using a separate result branch avoids races.
+    result_branch_push = git(
+        "push", "--force", "origin", "HEAD:refs/heads/moto-results", check=False
+    )
+    if result_branch_push.returncode != 0:
+        print(
+            f"result branch publish failed for {cmd_id}: "
+            f"{(result_branch_push.stderr or result_branch_push.stdout or '').strip()}"
+        )
+
+    # Also try to publish on main for compatibility with existing workers.
     published = False
     last_error = ""
     for attempt in range(3):
@@ -2139,7 +2149,7 @@ echo CLEANUP_VERIFIED
             break
 
     if not published:
-        print(f"result publish pending for {cmd_id}: {last_error}")
+        print(f"main publish pending for {cmd_id}: {last_error}")
 
 class LocalEventHandler(BaseHTTPRequestHandler):
     server_version = "ThreeAmigosLocalEvent/1.0"
