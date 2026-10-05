@@ -169,6 +169,7 @@ class MainActivity : Activity() {
             EventStore.snapshot(this) +
             "\n\n" +
             WakeWordStore.snapshot(this) +
+            "\n\n" + TextRadioStore.snapshot(this) +
             "\nWake launch allowed: " + Settings.canDrawOverlays(this) +
             "\n\n" + BootProof.snapshot(this) +
             "\n\n" + NavigationStateStore.snapshot(this) +
