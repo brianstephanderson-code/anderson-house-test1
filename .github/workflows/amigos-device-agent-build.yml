@@ -21,6 +21,8 @@ jobs:
       AMIGOS_KEYSTORE_PASSWORD: ${{ secrets.AMIGOS_KEYSTORE_PASSWORD }}
       AMIGOS_KEY_PASSWORD: ${{ secrets.AMIGOS_KEY_PASSWORD }}
       AMIGOS_KEY_ALIAS: ${{ secrets.AMIGOS_KEY_ALIAS }}
+      AMIGOS_VERSION_CODE: 2026100502
+      AMIGOS_VERSION_NAME: 1.2.2026100502
     steps:
       - uses: actions/checkout@v4
 
