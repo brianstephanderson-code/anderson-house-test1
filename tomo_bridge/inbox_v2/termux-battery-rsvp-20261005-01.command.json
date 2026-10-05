@@ -1,0 +1,6 @@
+{
+  "id": "termux-battery-rsvp-20261005-01",
+  "action": "run_repo_python",
+  "path": "tomo_bridge/upgrades/probe_termux_battery_rsvp_20261005.py",
+  "timeout": 120
+}
