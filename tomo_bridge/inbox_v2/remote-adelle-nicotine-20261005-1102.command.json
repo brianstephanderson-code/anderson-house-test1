@@ -1,0 +1,12 @@
+{
+  "id": "remote-adelle-nicotine-20261005-1102",
+  "action": "search_termux_files",
+  "query": "nicotine",
+  "name_terms": [
+    "adele",
+    "adelle",
+    "davis"
+  ],
+  "max_files": 12000,
+  "max_hits": 120
+}
