@@ -24,6 +24,80 @@ ALLOWED_ROOTS = [
 CODEX_TERMUX = "codex-termux"
 PNPM_BIN = Path.home() / ".local" / "share" / "pnpm" / "bin"
 
+TEXT_EXTENSIONS = {
+    ".txt", ".md", ".html", ".htm", ".csv", ".json", ".xml", ".log",
+    ".sh", ".py", ".kt", ".java"
+}
+
+def search_termux_files(raw_query, raw_name_terms=None, max_files=12000, max_hits=120):
+    query = str(raw_query or "").strip()
+    if not query:
+        raise ValueError("search_termux_files requires query")
+    if len(query) > 200:
+        raise ValueError("query too long")
+
+    name_terms = raw_name_terms or []
+    if isinstance(name_terms, str):
+        name_terms = [name_terms]
+    name_terms = [str(x).strip().lower() for x in name_terms if str(x).strip()]
+    if len(name_terms) > 20:
+        raise ValueError("too many name terms")
+
+    home = Path.home().resolve()
+    skip_parts = {".git", "__pycache__", ".cache"}
+    files_seen = 0
+    filename_hits = []
+    content_hits = []
+
+    for p in home.rglob("*"):
+        if files_seen >= int(max_files) or len(content_hits) >= int(max_hits):
+            break
+        try:
+            if any(part in skip_parts for part in p.parts):
+                continue
+            if not p.is_file():
+                continue
+        except OSError:
+            continue
+
+        files_seen += 1
+        lower_name = p.name.lower()
+
+        if name_terms and any(term in lower_name for term in name_terms):
+            filename_hits.append(str(p))
+            if len(filename_hits) > int(max_hits):
+                filename_hits = filename_hits[-int(max_hits):]
+
+        if p.suffix.lower() not in TEXT_EXTENSIONS:
+            continue
+        if name_terms and not any(term in lower_name for term in name_terms):
+            continue
+
+        try:
+            with p.open("r", encoding="utf-8", errors="replace") as fh:
+                for line_no, line in enumerate(fh, 1):
+                    if query.lower() in line.lower():
+                        excerpt = " ".join(line.strip().split())[:700]
+                        content_hits.append({
+                            "path": str(p),
+                            "line": line_no,
+                            "excerpt": excerpt,
+                        })
+                        if len(content_hits) >= int(max_hits):
+                            break
+        except OSError:
+            continue
+
+    return {
+        "query": query,
+        "name_terms": name_terms,
+        "files_seen": files_seen,
+        "filename_hits": filename_hits,
+        "content_hits": content_hits,
+        "truncated": files_seen >= int(max_files) or len(content_hits) >= int(max_hits),
+    }
+
+
 def git(*args, check=True):
     return subprocess.run(["git", *args], cwd=REPO, text=True, capture_output=True, check=check)
 
@@ -78,6 +152,15 @@ def process(path):
         if action == "git_sync":
             r = git("pull", "--ff-only", "origin", "main")
             result.update(ok=True, stdout=r.stdout, stderr=r.stderr)
+
+        elif action == "search_termux_files":
+            search_result = search_termux_files(
+                cmd.get("query"),
+                cmd.get("name_terms"),
+                max_files=int(cmd.get("max_files", 12000)),
+                max_hits=int(cmd.get("max_hits", 120)),
+            )
+            result.update(ok=True, **search_result)
 
         elif action == "run_repo_python":
             script = safe_python_path(cmd["path"])
@@ -2077,7 +2160,7 @@ class LocalEventHandler(BaseHTTPRequestHandler):
 
             source = str(event.get("source", ""))[:32]
             package_name = str(event.get("packageName", ""))[:256]
-            if source not in {"accessibility", "notification"} or not package_name:
+            if source not in {"accessibility", "notification", "navigation", "location", "file_search"} or not package_name:
                 raise ValueError("invalid source/package")
 
             PRIVATE_EVENT_DIR.mkdir(parents=True, exist_ok=True)
@@ -2149,7 +2232,7 @@ def main():
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
     print(f"Local event inlet: http://{LOCAL_EVENT_HOST}:{LOCAL_EVENT_PORT}/event")
-    print("Actions: git_sync, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_message_snapshot, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, search_termux_files, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_message_snapshot, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     threading.Thread(target=local_event_loop, daemon=True).start()
