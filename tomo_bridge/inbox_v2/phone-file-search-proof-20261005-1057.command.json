@@ -1,0 +1,8 @@
+{
+  "id": "phone-file-search-proof-20261005-1057",
+  "action": "codex_exec",
+  "workdir": "/data/data/com.termux/files/home/anderson-house-mailbox",
+  "allow_write": false,
+  "timeout": 180,
+  "prompt": "PHONE FILE SEARCH PROOF. Search the Termux home directory /data/data/com.termux/files/home recursively for files whose names contain Adele, Adelle, or Davis (case-insensitive). Then search the likely Adelle Davis book text files for the word 'nicotine' case-insensitively. Do not modify anything. Report: (1) matching book file paths, (2) each nicotine hit with filename, line number, and a short surrounding excerpt, (3) if there are no hits, say so plainly. Keep output concise."
+}
