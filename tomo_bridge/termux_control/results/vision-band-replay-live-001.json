@@ -1,0 +1,10 @@
+{
+  "job_id": "vision-band-replay-live-001",
+  "action": "run_vetted",
+  "started_utc": "2026-10-06T06:12:25Z",
+  "ok": false,
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"/data/data/com.termux/files/home/anderson-house-mailbox/warehouse/vision-band/test_endpoint_replay.py\", line 55, in <module>\n    assert payload == b\"VISION_BAND_SIMULATED_CAPTURE\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+  "finished_utc": "2026-10-06T06:12:27Z"
+}

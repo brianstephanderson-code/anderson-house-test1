@@ -1,0 +1,6 @@
+{
+  "job_id": "vision-band-replay-live-001",
+  "action": "run_vetted",
+  "script": "vision_band_replay.sh",
+  "timeout": 120
+}
