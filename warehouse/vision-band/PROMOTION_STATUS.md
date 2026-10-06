@@ -51,3 +51,14 @@ WEARABLE HARDWARE: NOT YET BUILT / NOT YET PHYSICALLY REPLAYED
 
 TERMUX V2 VISION ACTIONS: GREEN
 PHONE DEPLOYMENT OF UPDATED V2 LISTENER: PENDING
+
+
+## Native Live v2 Bridge Proof
+- vision_mode active returned HTTP 200 / ok true.
+- vision_capture returned HTTP 200 / ok true.
+- Real JPEG returned at 1920x1080.
+- JPEG size: 319288 bytes.
+- SHA-256: 3483bad324442c38a21303fbd777e1a2d55ff13508354324e4f6d2474632b0f5.
+- Capture stored privately on the phone; public result contains metadata only.
+
+NATIVE LIVE V2 BRIDGE CAPTURE: GREEN
