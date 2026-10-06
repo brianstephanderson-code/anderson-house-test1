@@ -2233,6 +2233,28 @@ def push_wake_loop(wake_event):
             print("push wake reconnect:", e)
             time.sleep(3)
 
+
+def import_remote_inbox_without_checkout():
+    """Fetch queued command files from origin/main without modifying the worktree."""
+    git("fetch", "origin", "main", check=False)
+    listing = git(
+        "ls-tree", "-r", "--name-only", "origin/main", "tomo_bridge/inbox_v2",
+        check=False,
+    )
+    if listing.returncode != 0:
+        return
+    for rel in (listing.stdout or "").splitlines():
+        if not rel.endswith(".command.json"):
+            continue
+        local_path = REPO / rel
+        if local_path.exists():
+            continue
+        blob = git("show", f"origin/main:{rel}", check=False)
+        if blob.returncode != 0:
+            continue
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        local_path.write_text(blob.stdout, encoding="utf-8")
+
 def main():
     INBOX.mkdir(parents=True, exist_ok=True)
     OUTBOX.mkdir(parents=True, exist_ok=True)
@@ -2248,7 +2270,8 @@ def main():
     threading.Thread(target=local_event_loop, daemon=True).start()
     while True:
         try:
-            git("pull", "--ff-only", "origin", "main", check=False)
+            # Do not require a clean worktree just to receive commands.
+            import_remote_inbox_without_checkout()
             for path in sorted(INBOX.glob("*.command.json")):
                 process(path)
         except Exception as e:
