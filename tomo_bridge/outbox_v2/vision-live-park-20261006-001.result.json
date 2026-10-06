@@ -1,0 +1,11 @@
+{
+  "action": "vision_mode",
+  "bridge_version": "v2",
+  "http": 200,
+  "id": "vision-live-park-20261006-001",
+  "mode": {
+    "mode": "parked",
+    "ok": true
+  },
+  "ok": true
+}
