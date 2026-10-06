@@ -212,11 +212,9 @@ class VisionCaptureActivity : Activity() {
         try {
             status.text = "VISION CAPTURE GREEN\n\nOpening ChatGPT with this image…"
             startActivity(share)
-            TextRadioStore.complete(this)
-            startService(
-                Intent(this, WakeService::class.java)
-                    .setAction(WakeService.ACTION_REARM)
-            )
+            // Leave Text Radio in READY_TO_SEND so Accessibility can send the
+            // dictated prompt with the shared image, then read the reply aloud
+            // and re-arm Open Sesame through the normal Text Radio loop.
             finish()
         } catch (t: Throwable) {
             status.text = "VISION DEGRADED\n\nCould not hand image to ChatGPT: ${t.javaClass.simpleName}"
