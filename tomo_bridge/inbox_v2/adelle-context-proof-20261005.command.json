@@ -1,0 +1,8 @@
+{
+  "id": "adelle-context-proof-20261005",
+  "action": "codex_exec",
+  "workdir": "/data/data/com.termux/files/home",
+  "allow_write": false,
+  "timeout": 120,
+  "prompt": "Read only. Print lines 14078-14098 from 'Lets Get Well - Adelle Davis 1_djvu.txt', then lines 4065-4088 from 'Lets have healthy children - Adelle Davis_djvu.txt'. Do not modify any files."
+}
