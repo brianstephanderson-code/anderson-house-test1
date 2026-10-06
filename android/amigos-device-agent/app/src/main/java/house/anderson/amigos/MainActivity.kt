@@ -19,6 +19,7 @@ class MainActivity : Activity() {
     companion object {
         private const val REQ_MIC = 301
         private const val REQ_LOCATION = 302
+        private const val REQ_VISION_CAMERA = 303
     }
 
     private lateinit var proofText: TextView
@@ -96,6 +97,21 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
+            text = "7. Start Vision Endpoint"
+            setOnClickListener { ensureVisionEndpointStarted() }
+        })
+
+        layout.addView(Button(this).apply {
+            text = "8. Stop Vision Endpoint"
+            setOnClickListener {
+                startService(
+                    Intent(this@MainActivity, VisionEndpointService::class.java)
+                        .setAction(VisionEndpointService.ACTION_STOP)
+                )
+            }
+        })
+
+        layout.addView(Button(this).apply {
             text = "Stop Open Sesame"
             setOnClickListener {
                 startService(Intent(this@MainActivity, WakeService::class.java).setAction(WakeService.ACTION_STOP))
@@ -149,6 +165,16 @@ class MainActivity : Activity() {
         startWakeService()
     }
 
+    private fun ensureVisionEndpointStarted() {
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.CAMERA), REQ_VISION_CAMERA)
+            return
+        }
+        val i = Intent(this, VisionEndpointService::class.java)
+            .setAction(VisionEndpointService.ACTION_START)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(i) else startService(i)
+    }
+
     private fun startWakeService() {
         val i = Intent(this, WakeService::class.java).setAction(WakeService.ACTION_START)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(i) else startService(i)
@@ -167,6 +193,9 @@ class MainActivity : Activity() {
         if (requestCode == REQ_LOCATION && grantResults.any { it == PackageManager.PERMISSION_GRANTED }) {
             startWakeService()
             refreshProof()
+        }
+        if (requestCode == REQ_VISION_CAMERA && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+            ensureVisionEndpointStarted()
         }
     }
 
