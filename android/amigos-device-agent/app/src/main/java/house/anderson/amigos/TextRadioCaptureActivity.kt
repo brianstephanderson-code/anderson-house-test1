@@ -66,6 +66,22 @@ class TextRadioCaptureActivity : Activity() {
             return
         }
 
+        if (VisionVoiceCommand.isVisionRequest(transcript)) {
+            try {
+                startActivity(
+                    Intent(this, VisionCaptureActivity::class.java).apply {
+                        putExtra(VisionCaptureActivity.EXTRA_SEND_TO_CHATGPT, true)
+                        putExtra(VisionCaptureActivity.EXTRA_PROMPT, transcript)
+                    }
+                )
+                finish()
+                return
+            } catch (_: Throwable) {
+                failAndRearm("Vision capture could not open")
+                return
+            }
+        }
+
         TextRadioStore.transcriptReady(this, transcript)
 
         val launch = packageManager.getLaunchIntentForPackage(CHATGPT_PACKAGE)
