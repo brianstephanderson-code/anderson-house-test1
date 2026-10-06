@@ -89,6 +89,13 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
+            text = "6. Test Vision Eye"
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, VisionCaptureActivity::class.java))
+            }
+        })
+
+        layout.addView(Button(this).apply {
             text = "Stop Open Sesame"
             setOnClickListener {
                 startService(Intent(this@MainActivity, WakeService::class.java).setAction(WakeService.ACTION_STOP))
