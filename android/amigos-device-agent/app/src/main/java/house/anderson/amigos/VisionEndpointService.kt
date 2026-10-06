@@ -14,6 +14,9 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
+import android.graphics.SurfaceTexture
+import android.view.Surface
 import android.media.ImageReader
 import android.os.Build
 import android.os.Handler
@@ -258,12 +261,23 @@ class VisionEndpointService : Service() {
         var device: CameraDevice? = null
         var reader: ImageReader? = null
         var session: CameraCaptureSession? = null
+        var previewTexture: SurfaceTexture? = null
+        var previewSurface: Surface? = null
 
         try {
             val manager = getSystemService(CameraManager::class.java)
-            val cameraId = manager.cameraIdList.firstOrNull { id ->
+
+            // Pick the primary rear camera rather than whichever rear ID happens
+            // to be listed first. Multi-camera phones can expose macro/depth
+            // cameras before the main sensor.
+            val rearIds = manager.cameraIdList.filter { id ->
                 manager.getCameraCharacteristics(id)
                     .get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+            }
+            val cameraId = rearIds.maxByOrNull { id ->
+                val px = manager.getCameraCharacteristics(id)
+                    .get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE)
+                (px?.width?.toLong() ?: 0L) * (px?.height?.toLong() ?: 0L)
             } ?: manager.cameraIdList.firstOrNull() ?: error("no camera")
 
             val characteristics = manager.getCameraCharacteristics(cameraId)
@@ -277,6 +291,15 @@ class VisionEndpointService : Service() {
                 ?: error("no JPEG size")
 
             reader = ImageReader.newInstance(size.width, size.height, ImageFormat.JPEG, 2)
+
+            // Camera2 needs a live repeating stream so autofocus, auto-exposure,
+            // and auto-white-balance can converge before the JPEG is requested.
+            // A tiny off-screen SurfaceTexture gives the 3A algorithms real
+            // frames without needing a visible camera preview.
+            previewTexture = SurfaceTexture(0).apply {
+                setDefaultBufferSize(640, 480)
+            }
+            previewSurface = Surface(previewTexture)
 
             val openLatch = CountDownLatch(1)
             var openError: Throwable? = null
@@ -304,7 +327,7 @@ class VisionEndpointService : Service() {
             val sessionLatch = CountDownLatch(1)
             var sessionError: Throwable? = null
             opened.createCaptureSession(
-                listOf(reader!!.surface),
+                listOf(previewSurface!!, reader!!.surface),
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(s: CameraCaptureSession) {
                         session = s
@@ -321,6 +344,34 @@ class VisionEndpointService : Service() {
             if (!sessionLatch.await(6, TimeUnit.SECONDS)) error("session timeout")
             sessionError?.let { throw it }
             val configured = session ?: error("session unavailable")
+
+            // Warm the camera for up to ~2.5 seconds before the still capture.
+            // This fixes the dark/blurry "first frame" behavior seen through the
+            // Tomo endpoint while the stock Camera app is sharp from the same spot.
+            val settleLatch = CountDownLatch(1)
+            var previewFrames = 0
+            val previewRequest = opened.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
+                addTarget(previewSurface!!)
+                set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
+                set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO)
+            }.build()
+            configured.setRepeatingRequest(
+                previewRequest,
+                object : CameraCaptureSession.CaptureCallback() {
+                    override fun onCaptureCompleted(
+                        session: CameraCaptureSession,
+                        request: CaptureRequest,
+                        result: android.hardware.camera2.TotalCaptureResult
+                    ) {
+                        previewFrames += 1
+                        if (previewFrames >= 20) settleLatch.countDown()
+                    }
+                },
+                handler
+            )
+            settleLatch.await(2500, TimeUnit.MILLISECONDS)
+            try { configured.stopRepeating() } catch (_: Throwable) {}
 
             val imageLatch = CountDownLatch(1)
             var jpeg: ByteArray? = null
@@ -339,6 +390,10 @@ class VisionEndpointService : Service() {
 
             val request = opened.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE).apply {
                 addTarget(reader!!.surface)
+                set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
+                set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO)
+                set(CaptureRequest.JPEG_QUALITY, 95.toByte())
             }.build()
             configured.capture(request, object : CameraCaptureSession.CaptureCallback() {}, handler)
 
@@ -349,6 +404,8 @@ class VisionEndpointService : Service() {
             try { session?.close() } catch (_: Throwable) {}
             try { device?.close() } catch (_: Throwable) {}
             try { reader?.close() } catch (_: Throwable) {}
+            try { previewSurface?.release() } catch (_: Throwable) {}
+            try { previewTexture?.release() } catch (_: Throwable) {}
             cameraThread.quitSafely()
             captureActive = false
             updateNotification(
