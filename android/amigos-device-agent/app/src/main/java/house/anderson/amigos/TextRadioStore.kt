@@ -11,6 +11,7 @@ object TextRadioStore {
     private const val KEY_GENERATION_SEEN = "generation_seen"
     private const val KEY_LAST_ERROR = "last_error"
     private const val KEY_CYCLE_COUNT = "cycle_count"
+    private const val KEY_VISION_PENDING = "vision_pending"
 
     const val PHASE_IDLE = "idle"
     const val PHASE_CAPTURING = "capturing"
@@ -35,9 +36,22 @@ object TextRadioStore {
     fun transcriptReady(context: Context, transcript: String) {
         prefs(context).edit()
             .putString(KEY_TRANSCRIPT, transcript.trim())
+            .putBoolean(KEY_VISION_PENDING, false)
             .putString(KEY_PHASE, PHASE_READY_TO_SEND)
             .apply()
     }
+
+    @Synchronized
+    fun visionTranscriptReady(context: Context, transcript: String) {
+        prefs(context).edit()
+            .putString(KEY_TRANSCRIPT, transcript.trim())
+            .putBoolean(KEY_VISION_PENDING, true)
+            .putString(KEY_PHASE, PHASE_READY_TO_SEND)
+            .apply()
+    }
+
+    fun visionPending(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_VISION_PENDING, false)
 
     fun transcript(context: Context): String =
         prefs(context).getString(KEY_TRANSCRIPT, "") ?: ""
@@ -52,6 +66,7 @@ object TextRadioStore {
             .putLong(KEY_SENT_AT, System.currentTimeMillis())
             .putInt(KEY_BASELINE_READ_ALOUD, baselineReadAloud)
             .putBoolean(KEY_GENERATION_SEEN, false)
+            .putBoolean(KEY_VISION_PENDING, false)
             .remove(KEY_TRANSCRIPT)
             .apply()
     }
@@ -84,6 +99,7 @@ object TextRadioStore {
             .putString(KEY_PHASE, PHASE_IDLE)
             .remove(KEY_TRANSCRIPT)
             .putBoolean(KEY_GENERATION_SEEN, false)
+            .putBoolean(KEY_VISION_PENDING, false)
             .apply()
     }
 
@@ -93,6 +109,7 @@ object TextRadioStore {
             .putString(KEY_PHASE, PHASE_IDLE)
             .putString(KEY_LAST_ERROR, message.take(240))
             .remove(KEY_TRANSCRIPT)
+            .putBoolean(KEY_VISION_PENDING, false)
             .apply()
     }
 
@@ -101,6 +118,7 @@ object TextRadioStore {
         return "Text Radio phase: " + phase(context) + "\n" +
             "Completed spoken replies: " + p.getLong(KEY_CYCLE_COUNT, 0L) + "\n" +
             "Generation seen: " + p.getBoolean(KEY_GENERATION_SEEN, false) + "\n" +
+            "Vision handoff pending: " + p.getBoolean(KEY_VISION_PENDING, false) + "\n" +
             "Last error: " + (p.getString(KEY_LAST_ERROR, "none") ?: "none")
     }
 }
