@@ -2,7 +2,9 @@ package house.anderson.amigos
 
 import android.Manifest
 import android.app.Activity
+import android.content.ClipData
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.camera2.CameraCaptureSession
@@ -29,6 +31,9 @@ import java.util.Locale
 class VisionCaptureActivity : Activity() {
     companion object {
         private const val REQ_CAMERA = 401
+        const val EXTRA_SEND_TO_CHATGPT = "vision_send_to_chatgpt"
+        const val EXTRA_PROMPT = "vision_prompt"
+        private const val CHATGPT_PACKAGE = "com.openai.chatgpt"
     }
 
     private lateinit var status: TextView
@@ -105,6 +110,9 @@ class VisionCaptureActivity : Activity() {
                     runOnUiThread {
                         status.setBackgroundColor(Color.rgb(0, 100, 0))
                         status.text = "VISION CAPTURE GREEN\n\nSaved one real image:\n$uri"
+                        if (intent.getBooleanExtra(EXTRA_SEND_TO_CHATGPT, false)) {
+                            shareToChatGPT(uri, intent.getStringExtra(EXTRA_PROMPT).orEmpty())
+                        }
                     }
                 } catch (t: Throwable) {
                     runOnUiThread {
@@ -189,6 +197,37 @@ class VisionCaptureActivity : Activity() {
         values.put(MediaStore.Images.Media.IS_PENDING, 0)
         contentResolver.update(uri, values, null, null)
         return uri
+    }
+
+    private fun shareToChatGPT(uri: android.net.Uri, prompt: String) {
+        val safePrompt = prompt.trim().ifBlank { "Look at this." }
+        val share = Intent(Intent.ACTION_SEND).apply {
+            type = "image/jpeg"
+            setPackage(CHATGPT_PACKAGE)
+            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_TEXT, safePrompt)
+            clipData = ClipData.newUri(contentResolver, "Vision capture", uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            status.text = "VISION CAPTURE GREEN\n\nOpening ChatGPT with this image…"
+            startActivity(share)
+            TextRadioStore.complete(this)
+            startService(
+                Intent(this, WakeService::class.java)
+                    .setAction(WakeService.ACTION_REARM)
+            )
+            finish()
+        } catch (t: Throwable) {
+            status.text = "VISION DEGRADED\n\nCould not hand image to ChatGPT: ${t.javaClass.simpleName}"
+            TextRadioStore.fail(this, "Vision image handoff to ChatGPT failed")
+            try {
+                startService(
+                    Intent(this, WakeService::class.java)
+                        .setAction(WakeService.ACTION_REARM)
+                )
+            } catch (_: Throwable) {}
+        }
     }
 
     override fun onDestroy() {
