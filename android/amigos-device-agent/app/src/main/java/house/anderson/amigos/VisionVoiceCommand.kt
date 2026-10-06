@@ -3,8 +3,6 @@ package house.anderson.amigos
 object VisionVoiceCommand {
     private val exact = setOf(
         "look at this",
-        "tomo look at this",
-        "tommy look at this",
         "take a look at this",
         "what am i looking at",
         "what is this",
@@ -17,9 +15,18 @@ object VisionVoiceCommand {
             .replace(Regex("[^a-z0-9 ]+"), " ")
             .replace(Regex("\\s+"), " ")
             .trim()
-        if (normalized in exact) return true
-        return normalized.startsWith("look at this ") ||
-            normalized.startsWith("tomo look at this ") ||
-            normalized.startsWith("take a look at this ")
+
+        val withoutName = normalized
+            .removePrefix("tomo ")
+            .removePrefix("tommy ")
+            .removePrefix("tomo, ")
+            .trim()
+
+        if (withoutName in exact) return true
+
+        return withoutName.startsWith("look at this ") ||
+            withoutName.startsWith("take a look at this ") ||
+            withoutName.startsWith("what am i looking at ") ||
+            withoutName.startsWith("what is this ")
     }
 }
