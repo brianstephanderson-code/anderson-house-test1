@@ -1,0 +1,15 @@
+{
+  "action": "vision_capture",
+  "bridge_version": "v2",
+  "bytes": 36914,
+  "capture_id": "44431723-d66d-4229-af55-84b54e57c2b8",
+  "height": 1080,
+  "http": 200,
+  "id": "vision-live-capture-20261006-001",
+  "mime": "image/jpeg",
+  "ok": true,
+  "private_local_saved": true,
+  "request_id": "vision-live-capture-20261006-001",
+  "sha256": "bd07f5391c049a94acdb9c5ccdf08ada9536894b33c704a9ea12241386cc81a6",
+  "width": 1920
+}
