@@ -200,12 +200,10 @@ class VisionCaptureActivity : Activity() {
     }
 
     private fun shareToChatGPT(uri: android.net.Uri, prompt: String) {
-        val safePrompt = prompt.trim().ifBlank { "Look at this." }
         val share = Intent(Intent.ACTION_SEND).apply {
             type = "image/jpeg"
             setPackage(CHATGPT_PACKAGE)
             putExtra(Intent.EXTRA_STREAM, uri)
-            putExtra(Intent.EXTRA_TEXT, safePrompt)
             clipData = ClipData.newUri(contentResolver, "Vision capture", uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
