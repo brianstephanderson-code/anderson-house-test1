@@ -1,0 +1,7 @@
+{
+  "id": "vision-phone-probe-v2-001",
+  "action": "run_repo_python",
+  "path": "research/vision_band_phone_probe.py",
+  "args": [],
+  "timeout": 60
+}
