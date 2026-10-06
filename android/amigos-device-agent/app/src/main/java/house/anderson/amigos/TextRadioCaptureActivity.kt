@@ -67,6 +67,7 @@ class TextRadioCaptureActivity : Activity() {
         }
 
         if (VisionVoiceCommand.isVisionRequest(transcript)) {
+            TextRadioStore.transcriptReady(this, transcript)
             try {
                 startActivity(
                     Intent(this, VisionCaptureActivity::class.java).apply {
