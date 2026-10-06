@@ -35,10 +35,11 @@ class TextRadioAutomation(
     private fun scheduleSend() {
         if (sendScheduled) return
         sendScheduled = true
+        val delay = if (TextRadioStore.visionPending(service)) 2200L else 350L
         handler.postDelayed({
             sendScheduled = false
             attemptSend()
-        }, 350L)
+        }, delay)
     }
 
     private fun attemptSend() {
