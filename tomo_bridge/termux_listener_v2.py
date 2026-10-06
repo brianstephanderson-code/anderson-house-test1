@@ -2,6 +2,7 @@
 import json, os, subprocess, time, threading, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from vision_actions import vision_status, vision_mode, vision_capture
 
 REPO = Path.home() / "anderson-house-mailbox"
 INBOX = REPO / "tomo_bridge" / "inbox_v2"
@@ -150,8 +151,23 @@ def process(path):
 
     try:
         if action == "git_sync":
-            r = git("pull", "--ff-only", "origin", "main")
-            result.update(ok=True, stdout=r.stdout, stderr=r.stderr)
+            fetch = git("fetch", "origin", "main", check=False)
+            if fetch.returncode != 0:
+                result.update(ok=False, returncode=fetch.returncode, stdout=fetch.stdout, stderr=fetch.stderr)
+            else:
+                r = git("merge", "--ff-only", "origin/main", check=False)
+                result.update(ok=(r.returncode == 0), returncode=r.returncode, stdout=r.stdout, stderr=r.stderr)
+
+        elif action == "vision_status":
+            result.update(**vision_status())
+
+        elif action == "vision_mode":
+            mode = str(cmd.get("mode", "")).strip().lower()
+            result.update(**vision_mode(mode))
+
+        elif action == "vision_capture":
+            note = str(cmd.get("note", "")).strip()
+            result.update(**vision_capture(cmd_id, note))
 
         elif action == "search_termux_files":
             search_result = search_termux_files(
@@ -2264,7 +2280,7 @@ def main():
     print(f"Push wake: {WAKE_TOPIC}")
     print(f"Fallback poll every {POLL_SECONDS}s")
     print(f"Local event inlet: http://{LOCAL_EVENT_HOST}:{LOCAL_EVENT_PORT}/event")
-    print("Actions: git_sync, search_termux_files, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_message_snapshot, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
+    print("Actions: git_sync, vision_status, vision_mode, vision_capture, search_termux_files, run_repo_python, codex_exec, android_launch, android_guarded_text_cycle, android_guarded_open_text_cycle, android_guarded_find_edittext_cycle, android_guarded_find_edittext_submit, android_guarded_whatsapp_self_draft, android_guarded_whatsapp_draft, android_guarded_whatsapp_self_repair_draft, android_whatsapp_search_inspect, android_whatsapp_notification_summary, android_whatsapp_notification_inspect, android_whatsapp_message_snapshot, android_whatsapp_read_unread_summary, android_guarded_whatsapp_scroll_draft_and_send, android_guarded_whatsapp_scroll_send, android_guarded_whatsapp_scroll_draft, android_guarded_whatsapp_search_draft, android_guarded_whatsapp_search_replace_and_send, android_guarded_whatsapp_replace_and_send, android_guarded_whatsapp_current_chat_send, android_guarded_whatsapp_send_text, android_guarded_whatsapp_self_send_text, android_guarded_whatsapp_self_send, android_guarded_markor_cycle, repo_status")
     wake_event = threading.Event()
     threading.Thread(target=push_wake_loop, args=(wake_event,), daemon=True).start()
     threading.Thread(target=local_event_loop, daemon=True).start()
