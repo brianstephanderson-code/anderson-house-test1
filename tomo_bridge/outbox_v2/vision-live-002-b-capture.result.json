@@ -1,12 +1,15 @@
 {
   "action": "vision_capture",
   "bridge_version": "v2",
-  "capture": {
-    "detail": "IllegalStateException: image timeout",
-    "error": "camera_error",
-    "ok": false
-  },
-  "http": 500,
+  "bytes": 413765,
+  "capture_id": "0ecf00a7-1d41-4df3-8d1b-7a79fe57a3ce",
+  "height": 1080,
+  "http": 200,
   "id": "vision-live-002-b-capture",
-  "ok": false
+  "mime": "image/jpeg",
+  "ok": true,
+  "private_local_saved": true,
+  "request_id": "vision-live-002-b-capture",
+  "sha256": "34b97299f87a35f0fd1eded136dd528cfc20617591255bd34135c67f2b8c0793",
+  "width": 1920
 }
