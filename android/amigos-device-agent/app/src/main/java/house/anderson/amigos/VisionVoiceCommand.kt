@@ -24,7 +24,11 @@ object VisionVoiceCommand {
 
         if (withoutName in exact) return true
 
-        return withoutName.startsWith("look at this ") ||
+        // Speech recognizers often prepend or duplicate filler words (for example
+        // "Tonight, tell me... Tomo, what am I looking at?"). Treat the core
+        // Vision phrases as intent markers anywhere in the normalized transcript.
+        return exact.any { phrase -> withoutName.contains(phrase) } ||
+            withoutName.startsWith("look at this ") ||
             withoutName.startsWith("take a look at this ") ||
             withoutName.startsWith("what am i looking at ") ||
             withoutName.startsWith("what is this ")
