@@ -1,0 +1,11 @@
+{
+  "action": "vision_mode",
+  "bridge_version": "v2",
+  "http": 200,
+  "id": "vision-live-002-a-active",
+  "mode": {
+    "mode": "active",
+    "ok": true
+  },
+  "ok": true
+}
