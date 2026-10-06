@@ -6,23 +6,39 @@ Date: 2026-10-06
 - Endpoint simulator exists.
 - Bridge client exists.
 - Automated replay exists.
-- GitHub Actions Vision Band Replay has completed GREEN multiple times.
-- Allowlisted Termux replay action exists.
-- Allowlisted vision status/active/parked/capture actions exist.
+- GitHub Actions Vision Band Replay completed GREEN multiple times.
+- Allowlisted Vision bridge actions exist.
 - Signed Three Amigos Device Agent build completed successfully.
-- Physical Android phone camera capture completed successfully on device.
-- The Device Agent visibly reported:
-  VISION CAPTURE GREEN
-- One real JPEG was saved through Android MediaStore.
-
-## Pending
-- Full remote bridge replay using the real phone camera as the Vision endpoint is still pending.
-- The physical camera proof confirms SENSOR/CAPTURE only; it does not yet prove the entire Three Amigos -> bridge -> capture -> return path.
+- Physical Android phone camera capture completed successfully.
+- Local Android Vision endpoint is live on 127.0.0.1:8787.
+- Real phone replay verified:
+  - POST /ping -> 200
+  - initial state -> parked
+  - capture while parked -> 409 parked_mode
+  - POST /mode active -> 200
+  - real camera capture -> 200
+  - returned image/jpeg
+  - image size -> 1920x1080
+  - JPEG payload -> 225337 bytes
+  - JPEG SHA-256 -> 394f7f385f513816616e33460caa9fb7bf9b3baf04f881624377c818ad0d0109
+  - status recorded last_capture_ms
+  - POST /mode parked -> 200
+  - capture after park -> 409 parked_mode
+  - overall -> VISION_PHONE_REAL_ENDPOINT_REPLAY_GREEN
 
 ## Gate
 CI/SIMULATION: GREEN
 SIGNED ANDROID BUILD: GREEN
 PHYSICAL PHONE CAMERA: GREEN
-LIVE PHONE BRIDGE: PENDING
-WEARABLE CAMERA HARDWARE: NOT REQUIRED FOR PHONE-SUBSTITUTE TEST
-PRODUCTION: HELD UNTIL REAL CAMERA IS DRIVEN THROUGH THE VISION ENDPOINT CONTRACT
+REAL PHONE VISION ENDPOINT: GREEN
+PARKED PRIVACY GATE: GREEN
+ACTIVE CAPTURE: GREEN
+JPEG RETURN PATH: GREEN
+PHONE-AS-VISION-BAND SUBSTITUTE: GREEN
+
+## Remaining
+The phone substitute is now end-to-end proven.
+Future XIAO/wearable hardware should implement the same endpoint contract and then run the same replay before promotion.
+
+PRODUCTION STATUS FOR PHONE SUBSTITUTE: GREEN
+WEARABLE HARDWARE: NOT YET BUILT / NOT YET PHYSICALLY REPLAYED
