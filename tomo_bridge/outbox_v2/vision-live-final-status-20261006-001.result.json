@@ -1,16 +1,7 @@
 {
   "action": "vision_status",
   "bridge_version": "v2",
-  "http": 200,
+  "error": "URLError: <urlopen error [Errno 111] Connection refused>",
   "id": "vision-live-final-status-20261006-001",
-  "ok": true,
-  "status": {
-    "active_indicator": false,
-    "battery_percent": null,
-    "camera": "ready",
-    "device": "android-phone-vision-v1",
-    "last_capture_ms": 1791285846787,
-    "rssi": null,
-    "state": "active"
-  }
+  "ok": false
 }
