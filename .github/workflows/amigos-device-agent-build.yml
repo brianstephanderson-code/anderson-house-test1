@@ -17,6 +17,8 @@ jobs:
       run:
         working-directory: android/amigos-device-agent
     env:
+      AMIGOS_VERSION_CODE: "63"
+      AMIGOS_VERSION_NAME: "1.1.63-vision-test"
       AMIGOS_KEYSTORE_B64: ${{ secrets.AMIGOS_KEYSTORE_B64 }}
       AMIGOS_KEYSTORE_PASSWORD: ${{ secrets.AMIGOS_KEYSTORE_PASSWORD }}
       AMIGOS_KEY_PASSWORD: ${{ secrets.AMIGOS_KEY_PASSWORD }}
