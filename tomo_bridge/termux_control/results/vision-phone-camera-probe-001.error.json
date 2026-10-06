@@ -1,0 +1,4 @@
+{
+  "ok": false,
+  "error": "TimeoutExpired(['bash', '/data/data/com.termux/files/home/anderson-house-mailbox/tomo_bridge/termux_control/actions/vision_phone_camera_probe.sh'], 60)"
+}
