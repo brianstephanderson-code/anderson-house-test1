@@ -52,4 +52,11 @@ android {
 
 dependencies {
     implementation(files("libs/sherpa-onnx-1.13.4-classes.jar"))
+
+    val cameraXVersion = "1.4.2"
+    implementation("androidx.camera:camera-core:$cameraXVersion")
+    implementation("androidx.camera:camera-camera2:$cameraXVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
+    implementation("androidx.camera:camera-view:$cameraXVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 }
