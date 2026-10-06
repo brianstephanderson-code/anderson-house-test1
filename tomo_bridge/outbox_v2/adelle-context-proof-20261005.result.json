@@ -1,0 +1,7 @@
+{
+  "action": "codex_exec",
+  "bridge_version": "v2",
+  "error": "ValueError: workdir outside allow-list",
+  "id": "adelle-context-proof-20261005",
+  "ok": false
+}
