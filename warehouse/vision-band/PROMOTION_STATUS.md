@@ -42,3 +42,12 @@ Future XIAO/wearable hardware should implement the same endpoint contract and th
 
 PRODUCTION STATUS FOR PHONE SUBSTITUTE: GREEN
 WEARABLE HARDWARE: NOT YET BUILT / NOT YET PHYSICALLY REPLAYED
+
+
+## Bridge Function Promotion
+- Privacy-safe Termux v2 Vision actions added: vision_status, vision_mode, vision_capture.
+- Simulator replay for these v2 actions completed successfully in GitHub Actions.
+- Photo bytes remain local/private; public results contain metadata only.
+
+TERMUX V2 VISION ACTIONS: GREEN
+PHONE DEPLOYMENT OF UPDATED V2 LISTENER: PENDING
