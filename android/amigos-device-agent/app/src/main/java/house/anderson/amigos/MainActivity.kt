@@ -112,7 +112,7 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
-            text = "9. Barge-In REPLAY"
+            text = "9. Barge-In REPLAY (isolated test)"
             setOnClickListener {
                 startActivity(Intent(this@MainActivity, BargeInReplayActivity::class.java))
             }
