@@ -12,8 +12,8 @@ android {
         minSdk = 30
         targetSdk = 35
         ndk { abiFilters += "arm64-v8a" }
-        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "2001").toInt()
-        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "live-over-listener-v1"
+        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "2002").toInt()
+        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "live-over-diagnostics-v1"
     }
 
     signingConfigs {
