@@ -22,6 +22,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
     private var accumulatedTranscript = ""
     private var finishingTurn = false
     private var recognitionStarted = false
+    private var consecutiveErrors = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,8 +73,13 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
         }
     }
 
-    override fun onReadyForSpeech(params: Bundle?) = Unit
-    override fun onBeginningOfSpeech() = Unit
+    override fun onReadyForSpeech(params: Bundle?) {
+        consecutiveErrors = 0
+        TextRadioStore.recognizerState(this, "ready")
+    }
+    override fun onBeginningOfSpeech() {
+        TextRadioStore.recognizerState(this, "speech_started")
+    }
     override fun onRmsChanged(rmsdB: Float) = Unit
     override fun onBufferReceived(buffer: ByteArray?) = Unit
 
@@ -86,6 +92,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
 
         val partial = firstResult(partialResults)
         if (partial.isBlank()) return
+        TextRadioStore.recognizerState(this, "partial", partial = partial)
 
         val (clean, ended) = stripTerminalOver(partial)
         if (!ended) return
@@ -105,6 +112,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
         if (finishingTurn) return
 
         val heard = firstResult(results)
+        if (heard.isNotBlank()) TextRadioStore.recognizerState(this, "result", partial = heard)
         if (heard.isBlank()) {
             scheduleRestart()
             return
@@ -127,9 +135,17 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
         recognitionStarted = false
         if (finishingTurn) return
 
-        // Errors such as NO_MATCH / SPEECH_TIMEOUT often simply mean a pause.
-        // Preserve the accumulated words and reopen the live listener.
-        scheduleRestart()
+        consecutiveErrors += 1
+        TextRadioStore.recognizerState(this, "error", error = error)
+
+        // A couple of timeout/no-match callbacks can simply mean a pause.
+        // Repeated errors mean this device's live RecognitionService is not
+        // usable for the current handoff, so expose the exact code quickly.
+        if (consecutiveErrors >= 3) {
+            failAndRearm("Live recognizer failed repeatedly; code " + error)
+        } else {
+            scheduleRestart()
+        }
     }
 
     override fun onEvent(eventType: Int, params: Bundle?) = Unit
