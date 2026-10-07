@@ -3,6 +3,7 @@ package house.anderson.amigos
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -214,12 +215,33 @@ class TextRadioAutomation(
     }
 
     private fun rearmWake() {
-        try {
-            service.startService(
-                Intent(service, WakeService::class.java)
-                    .setAction(WakeService.ACTION_REARM)
-            )
-        } catch (_: Throwable) {}
+        val intent = Intent(service, WakeService::class.java)
+            .setAction(WakeService.ACTION_REARM)
+
+        fun dispatchRearm() {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    service.startForegroundService(intent)
+                } else {
+                    service.startService(intent)
+                }
+            } catch (_: Throwable) {
+                try { service.startService(intent) } catch (_: Throwable) {}
+            }
+        }
+
+        dispatchRearm()
+
+        // Android may accept the service start while the previous microphone handoff
+        // is still winding down. Give it one automatic recovery retry instead of
+        // making the user manually stop/start Open Sesame for the next turn.
+        handler.postDelayed({
+            if (WakeService.isArmed(service) &&
+                !WakeRuntime.engineReady &&
+                !WakeRuntime.captureActive) {
+                dispatchRearm()
+            }
+        }, 1800L)
     }
 
     private fun findComposer(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
