@@ -36,6 +36,16 @@ object TextRadioStore {
     }
 
     @Synchronized
+    fun releaseForReplay(context: Context) {
+        prefs(context).edit()
+            .putString(KEY_PHASE, PHASE_IDLE)
+            .putString(KEY_RECOGNIZER_STATE, "released_for_replay")
+            .remove(KEY_TRANSCRIPT)
+            .putBoolean(KEY_VISION_PENDING, false)
+            .apply()
+    }
+
+    @Synchronized
     fun transcriptReady(context: Context, transcript: String) {
         prefs(context).edit()
             .putString(KEY_TRANSCRIPT, transcript.trim())
@@ -133,6 +143,7 @@ object TextRadioStore {
             "Last error: " + (p.getString(KEY_LAST_ERROR, "none") ?: "none") + "\n" +
             "Recognizer state: " + (p.getString(KEY_RECOGNIZER_STATE, "none") ?: "none") + "\n" +
             "Recognizer error code: " + p.getInt(KEY_RECOGNIZER_ERROR, 0) + "\n" +
-            "Last partial: " + (p.getString(KEY_LAST_PARTIAL, "none") ?: "none")
+            "Last partial: " + (p.getString(KEY_LAST_PARTIAL, "none") ?: "none") + "\n" +
+            "Text Radio mic active: " + TextRadioRuntime.captureActive
     }
 }
