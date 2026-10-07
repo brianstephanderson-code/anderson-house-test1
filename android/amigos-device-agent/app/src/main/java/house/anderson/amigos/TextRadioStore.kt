@@ -12,12 +12,15 @@ object TextRadioStore {
     private const val KEY_LAST_ERROR = "last_error"
     private const val KEY_CYCLE_COUNT = "cycle_count"
     private const val KEY_VISION_PENDING = "vision_pending"
+    private const val KEY_REPLAY_COUNT = "speakback_replay_count"
+    private const val KEY_REPLAY_REQUESTED_AT = "speakback_replay_requested_at"
 
     const val PHASE_IDLE = "idle"
     const val PHASE_CAPTURING = "capturing"
     const val PHASE_READY_TO_SEND = "ready_to_send"
     const val PHASE_WAITING_REPLY = "waiting_reply"
     const val PHASE_SPEAKING = "speaking"
+    const val PHASE_REPLAY_SPEAK = "replay_speak"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -94,6 +97,27 @@ object TextRadioStore {
     }
 
     @Synchronized
+    fun requestSpeakBackReplay(context: Context) {
+        prefs(context).edit()
+            .putString(KEY_PHASE, PHASE_REPLAY_SPEAK)
+            .putLong(KEY_REPLAY_REQUESTED_AT, System.currentTimeMillis())
+            .remove(KEY_LAST_ERROR)
+            .apply()
+    }
+
+    fun replayRequestedAt(context: Context): Long =
+        prefs(context).getLong(KEY_REPLAY_REQUESTED_AT, 0L)
+
+    @Synchronized
+    fun markReplaySpeaking(context: Context) {
+        val p = prefs(context)
+        p.edit()
+            .putString(KEY_PHASE, PHASE_SPEAKING)
+            .putLong(KEY_REPLAY_COUNT, p.getLong(KEY_REPLAY_COUNT, 0L) + 1L)
+            .apply()
+    }
+
+    @Synchronized
     fun complete(context: Context) {
         prefs(context).edit()
             .putString(KEY_PHASE, PHASE_IDLE)
@@ -117,6 +141,7 @@ object TextRadioStore {
         val p = prefs(context)
         return "Text Radio phase: " + phase(context) + "\n" +
             "Completed spoken replies: " + p.getLong(KEY_CYCLE_COUNT, 0L) + "\n" +
+            "Speak-back replay starts: " + p.getLong(KEY_REPLAY_COUNT, 0L) + "\n" +
             "Generation seen: " + p.getBoolean(KEY_GENERATION_SEEN, false) + "\n" +
             "Vision handoff pending: " + p.getBoolean(KEY_VISION_PENDING, false) + "\n" +
             "Last error: " + (p.getString(KEY_LAST_ERROR, "none") ?: "none")
