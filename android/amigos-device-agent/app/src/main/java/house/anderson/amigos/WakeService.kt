@@ -79,6 +79,12 @@ class WakeService : Service() {
             releaseCapture()
             captureThread?.interrupt()
             captureThread = null
+            DeviceEventBus.publish(
+                DeviceEvent(
+                    source = MicHandoffEvents.WAKE_RELEASED,
+                    packageName = packageName
+                )
+            )
             stopSelf()
             return START_NOT_STICKY
         }
@@ -254,9 +260,8 @@ class WakeService : Service() {
         LocalBridgeSender.send(event)
         DeviceEventBus.publish(event)
 
-        // Release Open Sesame's microphone before handing it to FUTO.
-        try { Thread.sleep(300L) } catch (_: InterruptedException) {}
-
+        // The recorder is already released in the capture loop's finally block.
+        // Hand off immediately; do not rely on an arbitrary sleep.
         val launched = TextRadioLauncher.launch(this)
         if (!launched) {
             TextRadioStore.fail(this, "Text Radio capture could not open")
