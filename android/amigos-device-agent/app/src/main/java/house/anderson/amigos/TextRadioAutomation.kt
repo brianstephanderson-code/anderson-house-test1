@@ -2,6 +2,7 @@ package house.anderson.amigos
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
@@ -122,7 +123,10 @@ class TextRadioAutomation(
             return
         }
 
-        val target = readAloud.last()
+        val target = newestVisibleNode(readAloud) ?: run {
+            scheduleInspect()
+            return
+        }
         if (clickNodeOrParent(target)) {
             TextRadioStore.markSpeaking(service)
 
@@ -223,6 +227,14 @@ class TextRadioAutomation(
         labels: List<String>
     ): AccessibilityNodeInfo? =
         findMatchingNodes(root, labels).lastOrNull()
+
+    private fun newestVisibleNode(nodes: List<AccessibilityNodeInfo>): AccessibilityNodeInfo? {
+        return nodes.maxByOrNull { node ->
+            val rect = Rect()
+            node.getBoundsInScreen(rect)
+            rect.bottom * 10000 + rect.top
+        }
+    }
 
     private fun clickNodeOrParent(node: AccessibilityNodeInfo): Boolean {
         var current: AccessibilityNodeInfo? = node
