@@ -33,7 +33,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         }
 
         layout.addView(TextView(this).apply {
-            text = "BARGE-IN REPLAY v2\n\nREPLAY ONLY — borrows the microphone, then returns it to Open Sesame."
+            text = "BARGE-IN REPLAY v3\n\nISOLATED REPLAY — this does NOT send anything to ChatGPT. It only proves: listen while local test speech plays, stop on your voice, capture the interruption, then return the microphone to Open Sesame."
             textSize = 20f
         })
 
@@ -92,7 +92,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         recognizer = SpeechRecognizer.createSpeechRecognizer(this).also { sr ->
             sr.setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
-                    status.text = "Listening while Tomo speaks. Interrupt naturally."
+                    status.text = "Listener READY. Starting local test speech now — interrupt naturally."\n                    speakReplayOnlyWhenListenerReady()
                 }
 
                 override fun onBeginningOfSpeech() {
@@ -154,11 +154,15 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
             return
         }
 
+    }
+
+    private fun speakReplayOnlyWhenListenerReady() {
+        if (interrupted.get()) return
         tts?.speak(
-            "The camera bridge is working through several small functions, and I will keep talking until you interrupt me naturally. The purpose of this sentence is to be long enough for you to cut in anywhere you like.",
+            "This is an isolated barge in replay. I am only a local test voice. Keep listening to me, then interrupt me naturally with any words you like. The moment your voice is detected, this test speech should stop.",
             TextToSpeech.QUEUE_FLUSH,
             null,
-            "barge_in_replay"
+            "barge_in_replay_v3"
         )
     }
 
