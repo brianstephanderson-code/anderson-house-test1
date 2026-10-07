@@ -160,6 +160,7 @@ class TextRadioAutomation(
         val target = newestVisibleNode(readAloud)
         if (target != null && clickNodeOrParent(target)) {
             TextRadioStore.markSpeaking(service)
+            scheduleSpeakStartRetry()
             monitorPlaybackAndRearm()
         } else {
             TextRadioStore.fail(service, "Reply arrived but Read aloud could not be started")
@@ -199,11 +200,30 @@ class TextRadioAutomation(
 
         if (clickNodeOrParent(target)) {
             TextRadioStore.markReplaySpeaking(service)
+            scheduleSpeakStartRetry()
             monitorPlaybackAndRearm()
         } else {
             TextRadioStore.fail(service, "Speak-back replay found Read aloud but could not press it")
             rearmWake()
         }
+    }
+
+    private fun scheduleSpeakStartRetry() {
+        handler.postDelayed({
+            try {
+                val audio = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                if (audio.isMusicActive) return@postDelayed
+
+                val root = service.rootInActiveWindow ?: return@postDelayed
+                val readAloud = findMatchingNodes(root, READ_ALOUD_LABELS)
+                val target = newestVisibleNode(readAloud) ?: return@postDelayed
+
+                // One safety retry only. If the first Read Aloud tap was swallowed
+                // by the UI, press the newest visible control once more.
+                clickNodeOrParent(target)
+            } catch (_: Throwable) {
+            }
+        }, 2200L)
     }
 
     private fun monitorPlaybackAndRearm() {
