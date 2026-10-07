@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -18,6 +19,13 @@ class TextRadioAutomation(
         private val SEND_LABELS = listOf("send", "send message")
         private val READ_ALOUD_LABELS = listOf("read aloud", "read out loud")
         private val STOP_LABELS = listOf("stop", "stop generating")
+        private val PLAYBACK_STOP_LABELS = listOf(
+            "stop",
+            "pause",
+            "stop reading",
+            "stop read aloud",
+            "pause read aloud"
+        )
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -31,6 +39,30 @@ class TextRadioAutomation(
             TextRadioStore.PHASE_READY_TO_SEND -> scheduleSend()
             TextRadioStore.PHASE_WAITING_REPLY -> scheduleInspect()
         }
+    }
+
+    fun onWakeBargeIn() {
+        if (TextRadioStore.phase(service) != TextRadioStore.PHASE_SPEAKING) return
+        handler.post { stopPlaybackForBargeIn() }
+    }
+
+    private fun stopPlaybackForBargeIn() {
+        if (TextRadioStore.phase(service) != TextRadioStore.PHASE_SPEAKING) return
+
+        val root = service.rootInActiveWindow
+        val target = root?.let { findBestClickable(it, PLAYBACK_STOP_LABELS) }
+        val clicked = target?.let { clickNodeOrParent(it) } ?: false
+        if (clicked) return
+
+        try {
+            val audio = service.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audio.dispatchMediaKeyEvent(
+                KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE)
+            )
+            audio.dispatchMediaKeyEvent(
+                KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PAUSE)
+            )
+        } catch (_: Throwable) {}
     }
 
     private fun scheduleSend() {
