@@ -3,198 +3,76 @@ package house.anderson.amigos
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
 import java.util.Locale
 
-class TextRadioCaptureActivity : Activity(), RecognitionListener {
+class TextRadioCaptureActivity : Activity() {
     companion object {
+        private const val REQ_SPEECH = 4401
+        private const val FUTO_PACKAGE = "org.futo.voiceinput"
         private const val CHATGPT_PACKAGE = "com.openai.chatgpt"
-        private const val END_WORD = "over"
-        private const val RESTART_DELAY_MS = 250L
     }
 
-    private val handler = Handler(Looper.getMainLooper())
-    private var recognizer: SpeechRecognizer? = null
-    private var accumulatedTranscript = ""
-    private var finishingTurn = false
-    private var recognitionStarted = false
-    private var consecutiveErrors = 0
+    private var launched = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        accumulatedTranscript = savedInstanceState
-            ?.getString("accumulatedTranscript")
-            .orEmpty()
-
-        TextRadioStore.beginCapture(this)
-
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            failAndRearm("Speech recognition is not available on this device")
-            return
+        launched = savedInstanceState?.getBoolean("launched", false) ?: false
+        if (!launched) {
+            launched = true
+            TextRadioStore.beginCapture(this)
+            launchRecognizer()
         }
-
-        recognizer = SpeechRecognizer.createSpeechRecognizer(this).also {
-            it.setRecognitionListener(this)
-        }
-        startListening()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("accumulatedTranscript", accumulatedTranscript)
+        outState.putBoolean("launched", launched)
         super.onSaveInstanceState(outState)
     }
 
-    private fun startListening() {
-        if (finishingTurn || isFinishing || isDestroyed) return
-
+    private fun launchRecognizer() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE,
-                Locale.getDefault().toLanguageTag()
-            )
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
         }
+        if (isInstalled(FUTO_PACKAGE)) intent.setPackage(FUTO_PACKAGE)
 
         try {
-            recognitionStarted = true
-            recognizer?.startListening(intent)
-        } catch (_: Throwable) {
-            failAndRearm("Live speech listener could not start")
+            startActivityForResult(intent, REQ_SPEECH)
+        } catch (t: Throwable) {
+            failAndRearm("Speech recognizer could not start")
         }
     }
 
-    override fun onReadyForSpeech(params: Bundle?) {
-        consecutiveErrors = 0
-        TextRadioStore.recognizerState(this, "ready")
-    }
-    override fun onBeginningOfSpeech() {
-        TextRadioStore.recognizerState(this, "speech_started")
-    }
-    override fun onRmsChanged(rmsdB: Float) = Unit
-    override fun onBufferReceived(buffer: ByteArray?) = Unit
+    @Deprecated("Legacy result callback retained for Android 11 compatibility")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQ_SPEECH) return
 
-    override fun onEndOfSpeech() {
-        recognitionStarted = false
-    }
-
-    override fun onPartialResults(partialResults: Bundle?) {
-        if (finishingTurn) return
-
-        val partial = firstResult(partialResults)
-        if (partial.isBlank()) return
-        TextRadioStore.recognizerState(this, "partial", partial = partial)
-
-        val (clean, ended) = stripTerminalOver(partial)
-        if (!ended) return
-
-        // OVER is our radio-style end-of-turn marker. The moment it appears as the
-        // terminal word in live recognition, finish the turn without waiting for an
-        // external recognizer UI to close.
-        finishingTurn = true
-        try { recognizer?.stopListening() } catch (_: Throwable) {}
-
-        val transcript = joinTranscript(accumulatedTranscript, clean)
-        completeTurn(transcript)
-    }
-
-    override fun onResults(results: Bundle?) {
-        recognitionStarted = false
-        if (finishingTurn) return
-
-        val heard = firstResult(results)
-        if (heard.isNotBlank()) TextRadioStore.recognizerState(this, "result", partial = heard)
-        if (heard.isBlank()) {
-            scheduleRestart()
+        if (resultCode != RESULT_OK) {
+            failAndRearm("Speech capture cancelled")
             return
         }
 
-        val (clean, ended) = stripTerminalOver(heard)
-        accumulatedTranscript = joinTranscript(accumulatedTranscript, clean)
-
-        if (ended) {
-            finishingTurn = true
-            completeTurn(accumulatedTranscript)
-        } else {
-            // A normal pause is not the end of the user's turn. Keep what was heard,
-            // restart the listener, and wait for the explicit word OVER.
-            scheduleRestart()
-        }
-    }
-
-    override fun onError(error: Int) {
-        recognitionStarted = false
-        if (finishingTurn) return
-
-        consecutiveErrors += 1
-        TextRadioStore.recognizerState(this, "error", error = error)
-
-        // A couple of timeout/no-match callbacks can simply mean a pause.
-        // Repeated errors mean this device's live RecognitionService is not
-        // usable for the current handoff, so expose the exact code quickly.
-        if (consecutiveErrors >= 3) {
-            failAndRearm("Live recognizer failed repeatedly; code " + error)
-        } else {
-            scheduleRestart()
-        }
-    }
-
-    override fun onEvent(eventType: Int, params: Bundle?) = Unit
-
-    private fun scheduleRestart() {
-        if (finishingTurn || isFinishing || isDestroyed) return
-        handler.removeCallbacksAndMessages(null)
-        handler.postDelayed({
-            if (!finishingTurn && !isFinishing && !isDestroyed && !recognitionStarted) {
-                startListening()
-            }
-        }, RESTART_DELAY_MS)
-    }
-
-    private fun firstResult(bundle: Bundle?): String =
-        bundle
-            ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+        val transcript = data
+            ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             ?.firstOrNull()
             ?.trim()
             .orEmpty()
 
-    private fun stripTerminalOver(text: String): Pair<String, Boolean> {
-        val match = Regex("""(?i)(?:^|\s)over[.!?,;:]*\s*$""").find(text)
-            ?: return text.trim() to false
-        return text.substring(0, match.range.first).trim() to true
-    }
-
-    private fun joinTranscript(first: String, second: String): String =
-        listOf(first.trim(), second.trim())
-            .filter { it.isNotBlank() }
-            .joinToString(" ")
-            .trim()
-
-    private fun completeTurn(transcript: String) {
-        val cleanTranscript = transcript.trim()
-        accumulatedTranscript = ""
-
-        if (cleanTranscript.isBlank()) {
-            failAndRearm("Nothing was spoken before OVER")
+        if (transcript.isBlank()) {
+            failAndRearm("Speech capture returned no text")
             return
         }
 
-        if (VisionVoiceCommand.isVisionRequest(cleanTranscript)) {
-            TextRadioStore.visionTranscriptReady(this, cleanTranscript)
+        if (VisionVoiceCommand.isVisionRequest(transcript)) {
+            TextRadioStore.visionTranscriptReady(this, transcript)
             try {
                 startActivity(
                     Intent(this, VisionCaptureActivity::class.java).apply {
                         putExtra(VisionCaptureActivity.EXTRA_SEND_TO_CHATGPT, true)
-                        putExtra(VisionCaptureActivity.EXTRA_PROMPT, cleanTranscript)
+                        putExtra(VisionCaptureActivity.EXTRA_PROMPT, transcript)
                     }
                 )
                 finish()
@@ -205,7 +83,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
             }
         }
 
-        TextRadioStore.transcriptReady(this, cleanTranscript)
+        TextRadioStore.transcriptReady(this, transcript)
 
         val launch = packageManager.getLaunchIntentForPackage(CHATGPT_PACKAGE)
         if (launch == null) {
@@ -226,9 +104,15 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
         }
     }
 
+    private fun isInstalled(packageName: String): Boolean =
+        try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (_: Throwable) {
+            false
+        }
+
     private fun failAndRearm(message: String) {
-        finishingTurn = true
-        accumulatedTranscript = ""
         TextRadioStore.fail(this, message)
         try {
             startService(
@@ -237,13 +121,5 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
             )
         } catch (_: Throwable) {}
         finish()
-    }
-
-    override fun onDestroy() {
-        handler.removeCallbacksAndMessages(null)
-        try { recognizer?.cancel() } catch (_: Throwable) {}
-        try { recognizer?.destroy() } catch (_: Throwable) {}
-        recognizer = null
-        super.onDestroy()
     }
 }
