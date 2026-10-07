@@ -12,8 +12,8 @@ android {
         minSdk = 30
         targetSdk = 35
         ndk { abiFilters += "arm64-v8a" }
-        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "2005").toInt()
-        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "composer-retry-v1"
+        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "2006").toInt()
+        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "bargein-handoff-v4"
     }
 
     signingConfigs {
