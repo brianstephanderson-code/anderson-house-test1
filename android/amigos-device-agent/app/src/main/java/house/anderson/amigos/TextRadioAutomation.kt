@@ -36,7 +36,7 @@ class TextRadioAutomation(
     private fun scheduleSend() {
         if (sendScheduled) return
         sendScheduled = true
-        val delay = if (TextRadioStore.visionPending(service)) 2200L else 350L
+        val delay = if (TextRadioStore.visionPending(service)) 2200L else 650L
         handler.postDelayed({
             sendScheduled = false
             attemptSend()
@@ -45,9 +45,15 @@ class TextRadioAutomation(
 
     private fun attemptSend() {
         if (TextRadioStore.phase(service) != TextRadioStore.PHASE_READY_TO_SEND) return
-        val root = service.rootInActiveWindow ?: return
+        val root = service.rootInActiveWindow ?: run {
+            scheduleSend()
+            return
+        }
         val transcript = TextRadioStore.transcript(service)
-        if (transcript.isBlank()) return
+        if (transcript.isBlank()) {
+            scheduleSend()
+            return
+        }
 
         val composer = findComposer(root) ?: run {
             scheduleSend()
@@ -196,12 +202,47 @@ class TextRadioAutomation(
     private fun findComposer(root: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         val all = mutableListOf<AccessibilityNodeInfo>()
         collect(root, all)
-        return all.lastOrNull { node ->
-            node.isVisibleToUser &&
-                node.isEnabled &&
-                (node.isEditable ||
-                    node.className?.toString()?.contains("EditText", ignoreCase = true) == true)
+
+        fun supportsSetText(node: AccessibilityNodeInfo): Boolean =
+            node.actionList.any { it.id == AccessibilityNodeInfo.ACTION_SET_TEXT }
+
+        fun score(node: AccessibilityNodeInfo): Int {
+            if (!node.isVisibleToUser || !node.isEnabled) return Int.MIN_VALUE
+
+            val className = node.className?.toString().orEmpty()
+            val label = listOf(
+                node.text?.toString(),
+                node.contentDescription?.toString(),
+                node.hintText?.toString(),
+                node.viewIdResourceName
+            ).filterNotNull().joinToString(" ").lowercase()
+
+            var score = 0
+            if (node.isEditable) score += 100
+            if (supportsSetText(node)) score += 80
+            if (className.contains("EditText", ignoreCase = true)) score += 70
+            if (node.isFocusable) score += 15
+            if (node.isFocused) score += 10
+            if (label.contains("message")) score += 40
+            if (label.contains("chatgpt")) score += 30
+            if (label.contains("composer")) score += 30
+            if (label.contains("prompt")) score += 20
+            if (label.contains("send")) score -= 40
+
+            val rect = Rect()
+            node.getBoundsInScreen(rect)
+            // The ChatGPT composer normally lives near the bottom of the screen.
+            score += (rect.bottom / 100).coerceAtMost(30)
+            return score
         }
+
+        return all
+            .asSequence()
+            .filter { it.isVisibleToUser && it.isEnabled }
+            .map { it to score(it) }
+            .filter { (_, s) -> s >= 80 }
+            .maxByOrNull { (_, s) -> s }
+            ?.first
     }
 
     private fun findMatchingNodes(
