@@ -12,8 +12,8 @@ android {
         minSdk = 30
         targetSdk = 35
         ndk { abiFilters += "arm64-v8a" }
-        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "1003").toInt()
-        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "replay-speakback-replydetect-1"
+        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "1004").toInt()
+        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "replay-speakback-scroll-1"
     }
 
     signingConfigs {
