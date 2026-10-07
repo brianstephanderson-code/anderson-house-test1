@@ -255,10 +255,35 @@ class TextRadioAutomation(
                 }
             } finally {
                 playbackMonitorRunning.set(false)
-                TextRadioStore.complete(service)
-                rearmWake()
+                finishConversationCycle()
             }
         }, "text-radio-playback").start()
+    }
+
+    private fun finishConversationCycle() {
+        // Clean up every bit of per-turn automation state before Open Sesame
+        // takes the next turn.
+        sendScheduled = false
+        inspectScheduled = false
+        replaySpeakScheduled = false
+        replyScrollAttempts = 0
+        TextRadioStore.complete(service)
+        rearmWake()
+
+        // Final safety fence. If Android swallowed the first re-arm and we are
+        // still idle a few seconds later, ask once more. Never disturb a new turn
+        // that has already started capturing or sending.
+        handler.postDelayed({
+            val phase = TextRadioStore.phase(service)
+            val safeToRecover =
+                phase == TextRadioStore.PHASE_IDLE &&
+                WakeService.isArmed(service) &&
+                !WakeRuntime.engineReady &&
+                !WakeRuntime.captureActive
+            if (safeToRecover) {
+                rearmWake()
+            }
+        }, 5000L)
     }
 
     private fun rearmWake() {
