@@ -15,6 +15,17 @@ class AmigosAccessibilityService : AccessibilityService() {
 
     private val textRadio by lazy { TextRadioAutomation(this) }
 
+    private val deviceEventListener: (DeviceEvent) -> Unit = { event ->
+        if (event.source == "wake_word_text_radio") {
+            textRadio.onWakeBargeIn()
+        }
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        DeviceEventBus.subscribe(deviceEventListener)
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         val pkg = event.packageName?.toString() ?: return
@@ -57,6 +68,11 @@ class AmigosAccessibilityService : AccessibilityService() {
         try {
             startService(Intent(this, WakeService::class.java).setAction(WakeService.ACTION_REARM))
         } catch (_: Throwable) {}
+    }
+
+    override fun onDestroy() {
+        DeviceEventBus.unsubscribe(deviceEventListener)
+        super.onDestroy()
     }
 
     override fun onInterrupt() = Unit
