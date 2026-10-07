@@ -29,6 +29,7 @@ class TextRadioAutomation(
     private var sendScheduled = false
     private var inspectScheduled = false
     private var replaySpeakScheduled = false
+    private var replyScrollAttempts = 0
     private val playbackMonitorRunning = AtomicBoolean(false)
 
     fun onAccessibilityEvent(packageName: String) {
@@ -79,6 +80,7 @@ class TextRadioAutomation(
             val sendNode = latestRoot?.let { findBestClickable(it, SEND_LABELS) }
             val sent = sendNode?.let { clickNodeOrParent(it) } ?: false
             if (sent) {
+                replyScrollAttempts = 0
                 TextRadioStore.markWaitingForReply(service, baseline)
                 scheduleInspect()
             } else {
@@ -106,12 +108,19 @@ class TextRadioAutomation(
         val stopVisible = findMatchingNodes(root, STOP_LABELS).isNotEmpty()
         val sendVisible = findBestClickable(root, SEND_LABELS) != null
         val age = System.currentTimeMillis() - TextRadioStore.sentAt(service)
+        val generationSeenBefore = TextRadioStore.generationSeen(service)
 
-        // ChatGPT does not always expose the generating control with a readable
-        // "Stop" label. While a reply is streaming, the normal Send control also
-        // disappears/replaces itself. Treat either signal as proof that generation
-        // actually started, so long/web answers cannot slip past speak-back.
-        if (stopVisible || (!sendVisible && age >= 500L)) {
+        // A visible Stop control is the clearest proof that ChatGPT is still generating.
+        if (stopVisible) {
+            TextRadioStore.markGenerationSeen(service)
+            scheduleInspect()
+            return
+        }
+
+        // Some ChatGPT builds do not expose a readable Stop label. A missing Send
+        // control is useful only as the FIRST proof that generation started. Once
+        // generation has been seen, do not let this check trap us forever.
+        if (!generationSeenBefore && !sendVisible && age >= 500L) {
             TextRadioStore.markGenerationSeen(service)
             scheduleInspect()
             return
@@ -127,6 +136,17 @@ class TextRadioAutomation(
                 age >= 700L
 
         if (!replyReady) {
+            // Long replies can leave the newest Read Aloud control below the visible
+            // part of the chat. Once generation is known to have happened, nudge the
+            // conversation downward and inspect again.
+            if (generationSeen && age >= 700L && readAloud.isEmpty() && replyScrollAttempts < 8) {
+                if (scrollConversationForward(root)) {
+                    replyScrollAttempts += 1
+                    handler.postDelayed({ scheduleInspect() }, 350L)
+                    return
+                }
+            }
+
             if (age > 120000L) {
                 TextRadioStore.fail(service, "Timed out waiting for ChatGPT reply / Read aloud")
                 rearmWake()
@@ -277,6 +297,23 @@ class TextRadioAutomation(
                 haystack == label || haystack.contains(label)
             }
         }
+    }
+
+    private fun scrollConversationForward(root: AccessibilityNodeInfo): Boolean {
+        val all = mutableListOf<AccessibilityNodeInfo>()
+        collect(root, all)
+        val candidates = all.filter { node ->
+            node.isVisibleToUser &&
+                node.isEnabled &&
+                (node.isScrollable ||
+                    (node.actionList?.any { it.id == AccessibilityNodeInfo.ACTION_SCROLL_FORWARD } == true))
+        }
+        for (node in candidates.asReversed()) {
+            if (node.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun findBestClickable(
