@@ -2,6 +2,7 @@ package house.anderson.amigos
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
@@ -156,8 +157,8 @@ class TextRadioAutomation(
             return
         }
 
-        val target = readAloud.last()
-        if (clickNodeOrParent(target)) {
+        val target = newestVisibleNode(readAloud)
+        if (target != null && clickNodeOrParent(target)) {
             TextRadioStore.markSpeaking(service)
             monitorPlaybackAndRearm()
         } else {
@@ -190,7 +191,7 @@ class TextRadioAutomation(
             return
         }
         val readAloud = findMatchingNodes(root, READ_ALOUD_LABELS)
-        val target = readAloud.lastOrNull()
+        val target = newestVisibleNode(readAloud)
         if (target == null) {
             scheduleReplaySpeak()
             return
@@ -314,6 +315,17 @@ class TextRadioAutomation(
             }
         }
         return false
+    }
+
+    private fun newestVisibleNode(nodes: List<AccessibilityNodeInfo>): AccessibilityNodeInfo? {
+        return nodes.maxByOrNull { node ->
+            val rect = Rect()
+            node.getBoundsInScreen(rect)
+            // Latest ChatGPT controls are visually lowest in the conversation.
+            // Prefer screen position instead of accessibility-tree traversal order,
+            // which can point at an older message.
+            (rect.bottom.toLong() shl 32) + rect.top.toLong()
+        }
     }
 
     private fun findBestClickable(
