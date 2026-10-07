@@ -22,6 +22,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
     private var recognizer: SpeechRecognizer? = null
     private val interrupted = AtomicBoolean(false)
     private var borrowedMic = false
+    private var listenerReady = false
     private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +34,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         }
 
         layout.addView(TextView(this).apply {
-            text = "BARGE-IN REPLAY v3\n\nISOLATED REPLAY — this does NOT send anything to ChatGPT. It only proves: listen while local test speech plays, stop on your voice, capture the interruption, then return the microphone to Open Sesame."
+            text = "BARGE-IN REPLAY v4\n\nISOLATED REPLAY — this does NOT send anything to ChatGPT. It proves microphone handoff, local speech, interruption, capture, and safe return to Open Sesame."
             textSize = 20f
         })
 
@@ -73,25 +74,60 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
             return
         }
 
+        handler.removeCallbacksAndMessages(null)
         stopRecognizerOnly()
         interrupted.set(false)
+        listenerReady = false
 
-        // Open Sesame normally owns the microphone. The replay must explicitly
-        // borrow it or Android can leave SpeechRecognizer with no usable input.
+        // Ask any active Text Radio capture to surrender explicitly.
+        DeviceEventBus.publish(
+            DeviceEvent(
+                source = MicHandoffEvents.RELEASE_FOR_REPLAY,
+                packageName = packageName
+            )
+        )
+
+        // Pause Open Sesame without changing the user's armed preference.
         pauseOpenSesame()
-        status.text = "Borrowing microphone from Open Sesame…"
+
+        status.text = "Requesting microphone release…\nWake active: " +
+            WakeRuntime.captureActive + "\nText Radio active: " +
+            TextRadioRuntime.captureActive
+
+        waitForMicFree(System.currentTimeMillis())
+    }
+
+    private fun waitForMicFree(startedAt: Long) {
+        if (isFinishing || isDestroyed) return
+
+        val wakeBusy = WakeRuntime.captureActive
+        val textBusy = TextRadioRuntime.captureActive
+
+        if (!wakeBusy && !textBusy) {
+            status.text = "Microphone FREE. Starting replay listener…"
+            startReplayAfterMicHandoff()
+            return
+        }
+
+        if (System.currentTimeMillis() - startedAt >= 4000L) {
+            status.text =
+                "MIC HANDOFF BLOCKED\nWake active: " + wakeBusy +
+                "\nText Radio active: " + textBusy +
+                "\nReplay did not steal the microphone."
+            rearmOpenSesame()
+            return
+        }
 
         handler.postDelayed({
-            if (!isFinishing && !isDestroyed) {
-                startReplayAfterMicHandoff()
-            }
-        }, 600L)
+            waitForMicFree(startedAt)
+        }, 100L)
     }
 
     private fun startReplayAfterMicHandoff() {
         recognizer = SpeechRecognizer.createSpeechRecognizer(this).also { sr ->
             sr.setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
+                    listenerReady = true
                     status.text = "Listener READY. Starting local test speech now — interrupt naturally."
                     speakReplayOnlyWhenListenerReady()
                 }
@@ -155,16 +191,29 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
             return
         }
 
+        handler.postDelayed({
+            if (!listenerReady && recognizer != null && !isFinishing && !isDestroyed) {
+                status.text =
+                    "LISTENER NOT READY\nWake active: " + WakeRuntime.captureActive +
+                    "\nText Radio active: " + TextRadioRuntime.captureActive +
+                    "\nRecognizer never became ready."
+                stopRecognizerOnly()
+                rearmOpenSesame()
+            }
+        }, 4000L)
     }
 
     private fun speakReplayOnlyWhenListenerReady() {
         if (interrupted.get()) return
-        tts?.speak(
+        val result = tts?.speak(
             "This is an isolated barge in replay. I am only a local test voice. Keep listening to me, then interrupt me naturally with any words you like. The moment your voice is detected, this test speech should stop.",
             TextToSpeech.QUEUE_FLUSH,
             null,
-            "barge_in_replay_v3"
+            "barge_in_replay_v4"
         )
+        if (result == TextToSpeech.ERROR) {
+            status.text = "Listener READY, but local TTS failed to start."
+        }
     }
 
     private fun pauseOpenSesame() {
@@ -203,6 +252,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         try { recognizer?.cancel() } catch (_: Throwable) {}
         try { recognizer?.destroy() } catch (_: Throwable) {}
         recognizer = null
+        listenerReady = false
     }
 
     override fun onDestroy() {
