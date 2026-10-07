@@ -38,6 +38,7 @@ class WakeService : Service() {
         const val ACTION_START = "house.anderson.amigos.WAKE_START"
         const val ACTION_STOP = "house.anderson.amigos.WAKE_STOP"
         const val ACTION_REARM = "house.anderson.amigos.WAKE_REARM"
+        const val ACTION_PAUSE = "house.anderson.amigos.WAKE_PAUSE"
         private const val CHANNEL_ID = "hey_tomo_listener"
         private const val NOTIFICATION_ID = 7311
         private const val PREFS = "hey_tomo"
@@ -66,6 +67,18 @@ class WakeService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
             setArmed(false)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        // Temporary microphone handoff. Keep the user's armed preference intact so
+        // another function can borrow the mic and then restore Open Sesame.
+        if (intent?.action == ACTION_PAUSE) {
+            handoffRunning.set(false)
+            captureRunning.set(false)
+            releaseCapture()
+            captureThread?.interrupt()
+            captureThread = null
             stopSelf()
             return START_NOT_STICKY
         }
