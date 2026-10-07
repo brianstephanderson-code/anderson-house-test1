@@ -31,13 +31,22 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
     private var consecutiveErrors = 0
     private var usingExternalFallback = false
 
+    private val handoffListener: (DeviceEvent) -> Unit = { event ->
+        if (event.source == MicHandoffEvents.RELEASE_FOR_REPLAY) {
+            runOnUiThread { releaseForReplay() }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        DeviceEventBus.subscribe(handoffListener)
 
         accumulatedTranscript = savedInstanceState
             ?.getString("accumulatedTranscript")
             .orEmpty()
 
+        TextRadioRuntime.captureActive = true
         TextRadioStore.beginCapture(this)
 
         val component = findFutoRecognitionService()
@@ -99,6 +108,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
 
         try {
             recognitionStarted = true
+            TextRadioRuntime.captureActive = true
             recognizer?.startListening(intent)
         } catch (_: Throwable) {
             launchExternalRecognizer()
@@ -127,6 +137,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
         }
 
         try {
+            TextRadioRuntime.captureActive = true
             startActivityForResult(intent, REQ_SPEECH)
             TextRadioStore.recognizerState(this, "external_fallback")
         } catch (_: Throwable) {
@@ -136,6 +147,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
 
     override fun onReadyForSpeech(params: Bundle?) {
         consecutiveErrors = 0
+        TextRadioRuntime.captureActive = true
         TextRadioStore.recognizerState(this, "ready")
     }
 
@@ -218,6 +230,39 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
         }, RESTART_DELAY_MS)
     }
 
+    private fun releaseForReplay() {
+        if (finishingTurn || isFinishing || isDestroyed) return
+
+        if (usingExternalFallback) {
+            TextRadioStore.recognizerState(this, "release_blocked_external_fallback")
+            DeviceEventBus.publish(
+                DeviceEvent(
+                    source = MicHandoffEvents.TEXT_RADIO_RELEASE_BLOCKED,
+                    packageName = packageName,
+                    text = "external_fallback"
+                )
+            )
+            return
+        }
+
+        finishingTurn = true
+        recognitionStarted = false
+        handler.removeCallbacksAndMessages(null)
+        try { recognizer?.cancel() } catch (_: Throwable) {}
+        try { recognizer?.destroy() } catch (_: Throwable) {}
+        recognizer = null
+
+        TextRadioRuntime.captureActive = false
+        TextRadioStore.releaseForReplay(this)
+        DeviceEventBus.publish(
+            DeviceEvent(
+                source = MicHandoffEvents.TEXT_RADIO_RELEASED,
+                packageName = packageName
+            )
+        )
+        finish()
+    }
+
     private fun firstResult(bundle: Bundle?): String =
         bundle
             ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -226,7 +271,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
             .orEmpty()
 
     private fun stripTerminalOver(text: String): Pair<String, Boolean> {
-        val match = Regex("""(?i)(?:^|\\s)over[.!?,;:]*\\s*$""").find(text)
+        val match = Regex("""(?i)(?:^|\s)over[.!?,;:]*\s*$""").find(text)
             ?: return text.trim() to false
         return text.substring(0, match.range.first).trim() to true
     }
@@ -266,6 +311,8 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
     private fun completeTurn(transcript: String) {
         val cleanTranscript = transcript.trim()
         accumulatedTranscript = ""
+
+        TextRadioRuntime.captureActive = false
 
         if (cleanTranscript.isBlank()) {
             failAndRearm("Nothing was spoken before OVER")
@@ -313,6 +360,7 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
     private fun failAndRearm(message: String) {
         finishingTurn = true
         accumulatedTranscript = ""
+        TextRadioRuntime.captureActive = false
         TextRadioStore.fail(this, message)
         try {
             startService(
@@ -324,10 +372,12 @@ class TextRadioCaptureActivity : Activity(), RecognitionListener {
     }
 
     override fun onDestroy() {
+        DeviceEventBus.unsubscribe(handoffListener)
         handler.removeCallbacksAndMessages(null)
         try { recognizer?.cancel() } catch (_: Throwable) {}
         try { recognizer?.destroy() } catch (_: Throwable) {}
         recognizer = null
+        TextRadioRuntime.captureActive = false
         super.onDestroy()
     }
 }
