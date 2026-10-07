@@ -2,7 +2,10 @@ package house.anderson.amigos
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -18,6 +21,8 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var recognizer: SpeechRecognizer? = null
     private val interrupted = AtomicBoolean(false)
+    private var borrowedMic = false
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +33,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         }
 
         layout.addView(TextView(this).apply {
-            text = "BARGE-IN REPLAY v1\n\nREPLAY ONLY — does not alter Open Sesame production behavior."
+            text = "BARGE-IN REPLAY v2\n\nREPLAY ONLY — borrows the microphone, then returns it to Open Sesame."
             textSize = 20f
         })
 
@@ -71,6 +76,19 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         stopRecognizerOnly()
         interrupted.set(false)
 
+        // Open Sesame normally owns the microphone. The replay must explicitly
+        // borrow it or Android can leave SpeechRecognizer with no usable input.
+        pauseOpenSesame()
+        status.text = "Borrowing microphone from Open Sesame…"
+
+        handler.postDelayed({
+            if (!isFinishing && !isDestroyed) {
+                startReplayAfterMicHandoff()
+            }
+        }, 600L)
+    }
+
+    private fun startReplayAfterMicHandoff() {
         recognizer = SpeechRecognizer.createSpeechRecognizer(this).also { sr ->
             sr.setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
@@ -91,6 +109,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
                 override fun onError(error: Int) {
                     status.text = "Recognizer ended with code " + error + ". Replay can be retried."
                     stopRecognizerOnly()
+                    rearmOpenSesame()
                 }
 
                 override fun onResults(results: Bundle?) {
@@ -99,8 +118,9 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
                         ?.firstOrNull()
                         .orEmpty()
                     val label = if (interrupted.get()) "GREEN candidate" else "No barge-in detected"
-                    status.text = label + "\nCaptured: " + heard
+                    status.text = label + "\nCaptured: " + heard + "\nOpen Sesame re-armed."
                     stopRecognizerOnly()
+                    rearmOpenSesame()
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) {
@@ -130,6 +150,7 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         } catch (err: Throwable) {
             status.text = "Could not start recognition: " + err.javaClass.simpleName
             stopRecognizerOnly()
+            rearmOpenSesame()
             return
         }
 
@@ -141,10 +162,36 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         )
     }
 
+    private fun pauseOpenSesame() {
+        if (!WakeService.isArmed(this)) {
+            borrowedMic = false
+            return
+        }
+        borrowedMic = true
+        try {
+            startService(Intent(this, WakeService::class.java).setAction(WakeService.ACTION_PAUSE))
+        } catch (_: Throwable) {}
+    }
+
+    private fun rearmOpenSesame() {
+        if (!borrowedMic) return
+        borrowedMic = false
+        val intent = Intent(this, WakeService::class.java).setAction(WakeService.ACTION_REARM)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } catch (_: Throwable) {}
+    }
+
     private fun stopReplay(message: String) {
+        handler.removeCallbacksAndMessages(null)
         try { tts?.stop() } catch (_: Throwable) {}
         stopRecognizerOnly()
-        status.text = message
+        rearmOpenSesame()
+        status.text = message + "\nOpen Sesame re-armed."
     }
 
     private fun stopRecognizerOnly() {
@@ -154,7 +201,9 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
     }
 
     override fun onDestroy() {
+        handler.removeCallbacksAndMessages(null)
         stopRecognizerOnly()
+        rearmOpenSesame()
         try { tts?.stop() } catch (_: Throwable) {}
         try { tts?.shutdown() } catch (_: Throwable) {}
         tts = null
