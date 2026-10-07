@@ -104,7 +104,14 @@ class TextRadioAutomation(
         }
 
         val stopVisible = findMatchingNodes(root, STOP_LABELS).isNotEmpty()
-        if (stopVisible) {
+        val sendVisible = findBestClickable(root, SEND_LABELS) != null
+        val age = System.currentTimeMillis() - TextRadioStore.sentAt(service)
+
+        // ChatGPT does not always expose the generating control with a readable
+        // "Stop" label. While a reply is streaming, the normal Send control also
+        // disappears/replaces itself. Treat either signal as proof that generation
+        // actually started, so long/web answers cannot slip past speak-back.
+        if (stopVisible || (!sendVisible && age >= 500L)) {
             TextRadioStore.markGenerationSeen(service)
             scheduleInspect()
             return
@@ -113,7 +120,6 @@ class TextRadioAutomation(
         val readAloud = findMatchingNodes(root, READ_ALOUD_LABELS)
         val baseline = TextRadioStore.baselineReadAloud(service)
         val generationSeen = TextRadioStore.generationSeen(service)
-        val age = System.currentTimeMillis() - TextRadioStore.sentAt(service)
 
         val replyReady =
             readAloud.isNotEmpty() &&
