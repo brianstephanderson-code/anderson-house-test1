@@ -112,6 +112,13 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
+            text = "9. Barge-In REPLAY"
+            setOnClickListener {
+                startActivity(Intent(this@MainActivity, BargeInReplayActivity::class.java))
+            }
+        })
+
+        layout.addView(Button(this).apply {
             text = "Stop Open Sesame"
             setOnClickListener {
                 startService(Intent(this@MainActivity, WakeService::class.java).setAction(WakeService.ACTION_STOP))
