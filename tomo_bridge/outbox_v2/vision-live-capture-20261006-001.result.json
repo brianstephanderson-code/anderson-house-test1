@@ -1,7 +1,15 @@
 {
   "action": "vision_capture",
   "bridge_version": "v2",
-  "error": "URLError: <urlopen error [Errno 111] Connection refused>",
+  "bytes": 335915,
+  "capture_id": "40f75bd3-a952-4eec-bd1f-7594f45a05d9",
+  "height": 1080,
+  "http": 200,
   "id": "vision-live-capture-20261006-001",
-  "ok": false
+  "mime": "image/jpeg",
+  "ok": true,
+  "private_local_saved": true,
+  "request_id": "vision-live-capture-20261006-001",
+  "sha256": "46502ca0e196a138976f8464deb2687f031a5392efaaa96b21336b10ce179360",
+  "width": 1920
 }
