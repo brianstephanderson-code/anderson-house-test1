@@ -20,6 +20,7 @@ class MainActivity : Activity() {
         private const val REQ_MIC = 301
         private const val REQ_LOCATION = 302
         private const val REQ_VISION_CAMERA = 303
+        private const val CHATGPT_PACKAGE = "com.openai.chatgpt"
     }
 
     private lateinit var proofText: TextView
@@ -119,6 +120,11 @@ class MainActivity : Activity() {
         })
 
         layout.addView(Button(this).apply {
+            text = "10. ChatGPT Speak-Back REPLAY"
+            setOnClickListener { startSpeakBackReplay() }
+        })
+
+        layout.addView(Button(this).apply {
             text = "Stop Open Sesame"
             setOnClickListener {
                 startService(Intent(this@MainActivity, WakeService::class.java).setAction(WakeService.ACTION_STOP))
@@ -170,6 +176,23 @@ class MainActivity : Activity() {
             return
         }
         startWakeService()
+    }
+
+    private fun startSpeakBackReplay() {
+        val launch = packageManager.getLaunchIntentForPackage(CHATGPT_PACKAGE)
+        if (launch == null) {
+            TextRadioStore.fail(this, "ChatGPT app not found for speak-back replay")
+            refreshProof()
+            return
+        }
+
+        TextRadioStore.requestSpeakBackReplay(this)
+        launch.addFlags(
+            Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_SINGLE_TOP
+        )
+        startActivity(launch)
     }
 
     private fun ensureVisionEndpointStarted() {
