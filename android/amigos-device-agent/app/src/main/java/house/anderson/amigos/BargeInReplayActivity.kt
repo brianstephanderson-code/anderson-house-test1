@@ -92,7 +92,8 @@ class BargeInReplayActivity : Activity(), TextToSpeech.OnInitListener {
         recognizer = SpeechRecognizer.createSpeechRecognizer(this).also { sr ->
             sr.setRecognitionListener(object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
-                    status.text = "Listener READY. Starting local test speech now — interrupt naturally."\n                    speakReplayOnlyWhenListenerReady()
+                    status.text = "Listener READY. Starting local test speech now — interrupt naturally."
+                    speakReplayOnlyWhenListenerReady()
                 }
 
                 override fun onBeginningOfSpeech() {
