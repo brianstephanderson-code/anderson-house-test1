@@ -3,108 +3,182 @@ package house.anderson.amigos
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import java.util.Locale
 
-class TextRadioCaptureActivity : Activity() {
+class TextRadioCaptureActivity : Activity(), RecognitionListener {
     companion object {
-        private const val REQ_SPEECH = 4401
-        private const val FUTO_PACKAGE = "org.futo.voiceinput"
         private const val CHATGPT_PACKAGE = "com.openai.chatgpt"
         private const val END_WORD = "over"
+        private const val RESTART_DELAY_MS = 250L
     }
 
-    private var launched = false
+    private val handler = Handler(Looper.getMainLooper())
+    private var recognizer: SpeechRecognizer? = null
     private var accumulatedTranscript = ""
+    private var finishingTurn = false
+    private var recognitionStarted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        launched = savedInstanceState?.getBoolean("launched", false) ?: false
-        accumulatedTranscript = savedInstanceState?.getString("accumulatedTranscript").orEmpty()
 
-        if (!launched) {
-            launched = true
-            TextRadioStore.beginCapture(this)
-            launchRecognizer()
+        accumulatedTranscript = savedInstanceState
+            ?.getString("accumulatedTranscript")
+            .orEmpty()
+
+        TextRadioStore.beginCapture(this)
+
+        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+            failAndRearm("Speech recognition is not available on this device")
+            return
         }
+
+        recognizer = SpeechRecognizer.createSpeechRecognizer(this).also {
+            it.setRecognitionListener(this)
+        }
+        startListening()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putBoolean("launched", launched)
         outState.putString("accumulatedTranscript", accumulatedTranscript)
         super.onSaveInstanceState(outState)
     }
 
-    private fun launchRecognizer() {
+    private fun startListening() {
+        if (finishingTurn || isFinishing || isDestroyed) return
+
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
             putExtra(
-                RecognizerIntent.EXTRA_PROMPT,
-                if (accumulatedTranscript.isBlank()) "Speak, then say OVER when finished"
-                else "Continue, then say OVER when finished"
+                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             )
+            putExtra(
+                RecognizerIntent.EXTRA_LANGUAGE,
+                Locale.getDefault().toLanguageTag()
+            )
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
         }
-        if (isInstalled(FUTO_PACKAGE)) intent.setPackage(FUTO_PACKAGE)
 
         try {
-            startActivityForResult(intent, REQ_SPEECH)
+            recognitionStarted = true
+            recognizer?.startListening(intent)
         } catch (_: Throwable) {
-            failAndRearm("Speech recognizer could not start")
+            failAndRearm("Live speech listener could not start")
         }
     }
 
-    @Deprecated("Legacy result callback retained for Android 11 compatibility")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQ_SPEECH) return
+    override fun onReadyForSpeech(params: Bundle?) = Unit
+    override fun onBeginningOfSpeech() = Unit
+    override fun onRmsChanged(rmsdB: Float) = Unit
+    override fun onBufferReceived(buffer: ByteArray?) = Unit
 
-        if (resultCode != RESULT_OK) {
-            failAndRearm("Speech capture cancelled")
+    override fun onEndOfSpeech() {
+        recognitionStarted = false
+    }
+
+    override fun onPartialResults(partialResults: Bundle?) {
+        if (finishingTurn) return
+
+        val partial = firstResult(partialResults)
+        if (partial.isBlank()) return
+
+        val (clean, ended) = stripTerminalOver(partial)
+        if (!ended) return
+
+        // OVER is our radio-style end-of-turn marker. The moment it appears as the
+        // terminal word in live recognition, finish the turn without waiting for an
+        // external recognizer UI to close.
+        finishingTurn = true
+        try { recognizer?.stopListening() } catch (_: Throwable) {}
+
+        val transcript = joinTranscript(accumulatedTranscript, clean)
+        completeTurn(transcript)
+    }
+
+    override fun onResults(results: Bundle?) {
+        recognitionStarted = false
+        if (finishingTurn) return
+
+        val heard = firstResult(results)
+        if (heard.isBlank()) {
+            scheduleRestart()
             return
         }
 
-        val chunk = data
-            ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+        val (clean, ended) = stripTerminalOver(heard)
+        accumulatedTranscript = joinTranscript(accumulatedTranscript, clean)
+
+        if (ended) {
+            finishingTurn = true
+            completeTurn(accumulatedTranscript)
+        } else {
+            // A normal pause is not the end of the user's turn. Keep what was heard,
+            // restart the listener, and wait for the explicit word OVER.
+            scheduleRestart()
+        }
+    }
+
+    override fun onError(error: Int) {
+        recognitionStarted = false
+        if (finishingTurn) return
+
+        // Errors such as NO_MATCH / SPEECH_TIMEOUT often simply mean a pause.
+        // Preserve the accumulated words and reopen the live listener.
+        scheduleRestart()
+    }
+
+    override fun onEvent(eventType: Int, params: Bundle?) = Unit
+
+    private fun scheduleRestart() {
+        if (finishingTurn || isFinishing || isDestroyed) return
+        handler.removeCallbacksAndMessages(null)
+        handler.postDelayed({
+            if (!finishingTurn && !isFinishing && !isDestroyed && !recognitionStarted) {
+                startListening()
+            }
+        }, RESTART_DELAY_MS)
+    }
+
+    private fun firstResult(bundle: Bundle?): String =
+        bundle
+            ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
             ?.firstOrNull()
             ?.trim()
             .orEmpty()
 
-        if (chunk.isBlank()) {
-            failAndRearm("Speech capture returned no text")
-            return
-        }
+    private fun stripTerminalOver(text: String): Pair<String, Boolean> {
+        val match = Regex("""(?i)(?:^|\s)over[.!?,;:]*\s*$""").find(text)
+            ?: return text.trim() to false
+        return text.substring(0, match.range.first).trim() to true
+    }
 
-        val (cleanChunk, ended) = stripTerminalOver(chunk)
-        accumulatedTranscript = listOf(accumulatedTranscript, cleanChunk)
+    private fun joinTranscript(first: String, second: String): String =
+        listOf(first.trim(), second.trim())
             .filter { it.isNotBlank() }
             .joinToString(" ")
             .trim()
 
-        // Radio-style turn boundary:
-        // recognizer pauses may end a single capture, but we do not send to ChatGPT
-        // until the user explicitly finishes with the word "OVER".
-        if (!ended) {
-            launchRecognizer()
-            return
-        }
-
-        val transcript = accumulatedTranscript.trim()
+    private fun completeTurn(transcript: String) {
+        val cleanTranscript = transcript.trim()
         accumulatedTranscript = ""
 
-        if (transcript.isBlank()) {
+        if (cleanTranscript.isBlank()) {
             failAndRearm("Nothing was spoken before OVER")
             return
         }
 
-        if (VisionVoiceCommand.isVisionRequest(transcript)) {
-            TextRadioStore.visionTranscriptReady(this, transcript)
+        if (VisionVoiceCommand.isVisionRequest(cleanTranscript)) {
+            TextRadioStore.visionTranscriptReady(this, cleanTranscript)
             try {
                 startActivity(
                     Intent(this, VisionCaptureActivity::class.java).apply {
                         putExtra(VisionCaptureActivity.EXTRA_SEND_TO_CHATGPT, true)
-                        putExtra(VisionCaptureActivity.EXTRA_PROMPT, transcript)
+                        putExtra(VisionCaptureActivity.EXTRA_PROMPT, cleanTranscript)
                     }
                 )
                 finish()
@@ -115,7 +189,7 @@ class TextRadioCaptureActivity : Activity() {
             }
         }
 
-        TextRadioStore.transcriptReady(this, transcript)
+        TextRadioStore.transcriptReady(this, cleanTranscript)
 
         val launch = packageManager.getLaunchIntentForPackage(CHATGPT_PACKAGE)
         if (launch == null) {
@@ -136,21 +210,8 @@ class TextRadioCaptureActivity : Activity() {
         }
     }
 
-    private fun stripTerminalOver(text: String): Pair<String, Boolean> {
-        val match = Regex("""(?i)(?:^|\\s)over[.!?,;:]*\\s*$""").find(text)
-            ?: return text.trim() to false
-        return text.substring(0, match.range.first).trim() to true
-    }
-
-    private fun isInstalled(packageName: String): Boolean =
-        try {
-            packageManager.getPackageInfo(packageName, 0)
-            true
-        } catch (_: Throwable) {
-            false
-        }
-
     private fun failAndRearm(message: String) {
+        finishingTurn = true
         accumulatedTranscript = ""
         TextRadioStore.fail(this, message)
         try {
@@ -160,5 +221,13 @@ class TextRadioCaptureActivity : Activity() {
             )
         } catch (_: Throwable) {}
         finish()
+    }
+
+    override fun onDestroy() {
+        handler.removeCallbacksAndMessages(null)
+        try { recognizer?.cancel() } catch (_: Throwable) {}
+        try { recognizer?.destroy() } catch (_: Throwable) {}
+        recognizer = null
+        super.onDestroy()
     }
 }
