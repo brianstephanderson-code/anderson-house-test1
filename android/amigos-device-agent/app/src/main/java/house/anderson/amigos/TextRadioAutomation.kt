@@ -15,13 +15,19 @@ class TextRadioAutomation(
     companion object {
         private const val CHATGPT_PACKAGE = "com.openai.chatgpt"
         private val SEND_LABELS = listOf("send", "send message")
-        private val READ_ALOUD_LABELS = listOf("read aloud", "read out loud")
+        private val READ_ALOUD_LABELS = listOf(
+            "read aloud",
+            "read out loud",
+            "listen to response",
+            "listen"
+        )
         private val STOP_LABELS = listOf("stop", "stop generating")
     }
 
     private val handler = Handler(Looper.getMainLooper())
     private var sendScheduled = false
     private var inspectScheduled = false
+    private var replaySpeakScheduled = false
     private val playbackMonitorRunning = AtomicBoolean(false)
 
     fun onAccessibilityEvent(packageName: String) {
@@ -29,6 +35,7 @@ class TextRadioAutomation(
         when (TextRadioStore.phase(service)) {
             TextRadioStore.PHASE_READY_TO_SEND -> scheduleSend()
             TextRadioStore.PHASE_WAITING_REPLY -> scheduleInspect()
+            TextRadioStore.PHASE_REPLAY_SPEAK -> scheduleReplaySpeak()
         }
     }
 
@@ -114,7 +121,7 @@ class TextRadioAutomation(
 
         if (!replyReady) {
             if (age > 120000L) {
-                TextRadioStore.fail(service, "Timed out waiting for ChatGPT reply")
+                TextRadioStore.fail(service, "Timed out waiting for ChatGPT reply / Read aloud")
                 rearmWake()
             } else {
                 scheduleInspect()
@@ -128,6 +135,45 @@ class TextRadioAutomation(
             monitorPlaybackAndRearm()
         } else {
             TextRadioStore.fail(service, "Reply arrived but Read aloud could not be started")
+            rearmWake()
+        }
+    }
+
+    private fun scheduleReplaySpeak() {
+        if (replaySpeakScheduled) return
+        replaySpeakScheduled = true
+        handler.postDelayed({
+            replaySpeakScheduled = false
+            attemptReplaySpeak()
+        }, 450L)
+    }
+
+    private fun attemptReplaySpeak() {
+        if (TextRadioStore.phase(service) != TextRadioStore.PHASE_REPLAY_SPEAK) return
+
+        val age = System.currentTimeMillis() - TextRadioStore.replayRequestedAt(service)
+        if (age > 15000L) {
+            TextRadioStore.fail(service, "Speak-back replay could not find ChatGPT Read aloud")
+            rearmWake()
+            return
+        }
+
+        val root = service.rootInActiveWindow ?: run {
+            scheduleReplaySpeak()
+            return
+        }
+        val readAloud = findMatchingNodes(root, READ_ALOUD_LABELS)
+        val target = readAloud.lastOrNull()
+        if (target == null) {
+            scheduleReplaySpeak()
+            return
+        }
+
+        if (clickNodeOrParent(target)) {
+            TextRadioStore.markReplaySpeaking(service)
+            monitorPlaybackAndRearm()
+        } else {
+            TextRadioStore.fail(service, "Speak-back replay found Read aloud but could not press it")
             rearmWake()
         }
     }
