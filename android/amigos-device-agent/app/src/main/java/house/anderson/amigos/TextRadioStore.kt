@@ -12,6 +12,9 @@ object TextRadioStore {
     private const val KEY_LAST_ERROR = "last_error"
     private const val KEY_CYCLE_COUNT = "cycle_count"
     private const val KEY_VISION_PENDING = "vision_pending"
+    private const val KEY_RECOGNIZER_STATE = "recognizer_state"
+    private const val KEY_RECOGNIZER_ERROR = "recognizer_error"
+    private const val KEY_LAST_PARTIAL = "last_partial"
 
     const val PHASE_IDLE = "idle"
     const val PHASE_CAPTURING = "capturing"
@@ -48,6 +51,14 @@ object TextRadioStore {
             .putBoolean(KEY_VISION_PENDING, true)
             .putString(KEY_PHASE, PHASE_READY_TO_SEND)
             .apply()
+    }
+
+    @Synchronized
+    fun recognizerState(context: Context, state: String, error: Int? = null, partial: String? = null) {
+        val e = prefs(context).edit().putString(KEY_RECOGNIZER_STATE, state.take(120))
+        if (error != null) e.putInt(KEY_RECOGNIZER_ERROR, error)
+        if (partial != null) e.putString(KEY_LAST_PARTIAL, partial.take(120))
+        e.apply()
     }
 
     fun visionPending(context: Context): Boolean =
@@ -119,6 +130,9 @@ object TextRadioStore {
             "Completed spoken replies: " + p.getLong(KEY_CYCLE_COUNT, 0L) + "\n" +
             "Generation seen: " + p.getBoolean(KEY_GENERATION_SEEN, false) + "\n" +
             "Vision handoff pending: " + p.getBoolean(KEY_VISION_PENDING, false) + "\n" +
-            "Last error: " + (p.getString(KEY_LAST_ERROR, "none") ?: "none")
+            "Last error: " + (p.getString(KEY_LAST_ERROR, "none") ?: "none") + "\n" +
+            "Recognizer state: " + (p.getString(KEY_RECOGNIZER_STATE, "none") ?: "none") + "\n" +
+            "Recognizer error code: " + p.getInt(KEY_RECOGNIZER_ERROR, 0) + "\n" +
+            "Last partial: " + (p.getString(KEY_LAST_PARTIAL, "none") ?: "none")
     }
 }
