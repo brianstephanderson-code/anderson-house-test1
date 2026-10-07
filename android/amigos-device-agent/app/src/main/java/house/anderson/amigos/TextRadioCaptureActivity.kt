@@ -11,13 +11,17 @@ class TextRadioCaptureActivity : Activity() {
         private const val REQ_SPEECH = 4401
         private const val FUTO_PACKAGE = "org.futo.voiceinput"
         private const val CHATGPT_PACKAGE = "com.openai.chatgpt"
+        private const val END_WORD = "over"
     }
 
     private var launched = false
+    private var accumulatedTranscript = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         launched = savedInstanceState?.getBoolean("launched", false) ?: false
+        accumulatedTranscript = savedInstanceState?.getString("accumulatedTranscript").orEmpty()
+
         if (!launched) {
             launched = true
             TextRadioStore.beginCapture(this)
@@ -27,6 +31,7 @@ class TextRadioCaptureActivity : Activity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean("launched", launched)
+        outState.putString("accumulatedTranscript", accumulatedTranscript)
         super.onSaveInstanceState(outState)
     }
 
@@ -35,12 +40,17 @@ class TextRadioCaptureActivity : Activity() {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
+            putExtra(
+                RecognizerIntent.EXTRA_PROMPT,
+                if (accumulatedTranscript.isBlank()) "Speak, then say OVER when finished"
+                else "Continue, then say OVER when finished"
+            )
         }
         if (isInstalled(FUTO_PACKAGE)) intent.setPackage(FUTO_PACKAGE)
 
         try {
             startActivityForResult(intent, REQ_SPEECH)
-        } catch (t: Throwable) {
+        } catch (_: Throwable) {
             failAndRearm("Speech recognizer could not start")
         }
     }
@@ -55,14 +65,36 @@ class TextRadioCaptureActivity : Activity() {
             return
         }
 
-        val transcript = data
+        val chunk = data
             ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
             ?.firstOrNull()
             ?.trim()
             .orEmpty()
 
-        if (transcript.isBlank()) {
+        if (chunk.isBlank()) {
             failAndRearm("Speech capture returned no text")
+            return
+        }
+
+        val (cleanChunk, ended) = stripTerminalOver(chunk)
+        accumulatedTranscript = listOf(accumulatedTranscript, cleanChunk)
+            .filter { it.isNotBlank() }
+            .joinToString(" ")
+            .trim()
+
+        // Radio-style turn boundary:
+        // recognizer pauses may end a single capture, but we do not send to ChatGPT
+        // until the user explicitly finishes with the word "OVER".
+        if (!ended) {
+            launchRecognizer()
+            return
+        }
+
+        val transcript = accumulatedTranscript.trim()
+        accumulatedTranscript = ""
+
+        if (transcript.isBlank()) {
+            failAndRearm("Nothing was spoken before OVER")
             return
         }
 
@@ -104,6 +136,12 @@ class TextRadioCaptureActivity : Activity() {
         }
     }
 
+    private fun stripTerminalOver(text: String): Pair<String, Boolean> {
+        val match = Regex("""(?i)(?:^|\\s)over[.!?,;:]*\\s*$""").find(text)
+            ?: return text.trim() to false
+        return text.substring(0, match.range.first).trim() to true
+    }
+
     private fun isInstalled(packageName: String): Boolean =
         try {
             packageManager.getPackageInfo(packageName, 0)
@@ -113,6 +151,7 @@ class TextRadioCaptureActivity : Activity() {
         }
 
     private fun failAndRearm(message: String) {
+        accumulatedTranscript = ""
         TextRadioStore.fail(this, message)
         try {
             startService(
