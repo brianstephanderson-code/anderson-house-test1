@@ -125,6 +125,13 @@ class TextRadioAutomation(
         val target = readAloud.last()
         if (clickNodeOrParent(target)) {
             TextRadioStore.markSpeaking(service)
+
+            // Production conversation lane: once the real ChatGPT reply is speaking,
+            // immediately wake the local Open Sesame listener again. This gives us a
+            // reliable first barge-in bridge without borrowing the separate replay TTS.
+            // Saying "Open Sesame" during playback can now hand the mic back to the
+            // existing Text Radio capture path.
+            rearmWake()
             monitorPlaybackAndRearm()
         } else {
             TextRadioStore.fail(service, "Reply arrived but Read aloud could not be started")
@@ -161,8 +168,14 @@ class TextRadioAutomation(
                 }
             } finally {
                 playbackMonitorRunning.set(false)
-                TextRadioStore.complete(service)
-                rearmWake()
+
+                // If Open Sesame fired while playback was active, the capture activity
+                // has already moved Text Radio away from PHASE_SPEAKING. Do not let the
+                // old playback monitor erase that newer capture state.
+                if (TextRadioStore.phase(service) == TextRadioStore.PHASE_SPEAKING) {
+                    TextRadioStore.complete(service)
+                    rearmWake()
+                }
             }
         }, "text-radio-playback").start()
     }
