@@ -12,8 +12,8 @@ android {
         minSdk = 30
         targetSdk = 35
         ndk { abiFilters += "arm64-v8a" }
-        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "1001").toInt()
-        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "conversation-lane-bridge-1"
+        versionCode = (System.getenv("AMIGOS_VERSION_CODE") ?: "1002").toInt()
+        versionName = System.getenv("AMIGOS_VERSION_NAME") ?: "bargein-mic-handoff-v2"
     }
 
     signingConfigs {
