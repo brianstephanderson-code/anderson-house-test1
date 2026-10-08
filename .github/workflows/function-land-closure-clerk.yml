@@ -54,6 +54,12 @@ jobs:
             awk -F= -v k="$key" '$1==k {sub(/^[^=]*=/,""); print; exit}' "$file"
           }
 
+          valid_message_id() {
+            local id="$1"
+            [[ "${#id}" -ge 1 && "${#id}" -le 80 ]] || return 1
+            [[ "$id" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]
+          }
+
           set_field() {
             local file="$1" key="$2" value="$3"
             if grep -q "^$key=" "$file" 2>/dev/null; then
@@ -189,7 +195,7 @@ jobs:
             local receipt id manifest source returns archived_source archived_returns closed_at master kind
             for receipt in hive/bus/closed/*.closed; do
               id="$(value_of MESSAGE_ID "$receipt")"
-              [ -n "$id" ] || continue
+              valid_message_id "$id" || continue
               manifest="hive/warehouse/communications/$id.manifest"
               [ -e "$manifest" ] || continue
 
@@ -230,7 +236,7 @@ jobs:
             local file="$1" id to upper p f from returns=""
             id="$(value_of MESSAGE_ID "$file")"
             to="$(value_of TO "$file")"
-            [ -n "$id" ] || return 0
+            valid_message_id "$id" || return 0
             [ -e "hive/bus/closed/$id.closed" ] && return 0
 
             if [ -e "hive/bus/superseded/$id.superseded" ]; then
@@ -287,7 +293,7 @@ jobs:
             local file="$1" id to upper p f from returns=""
             id="$(value_of MESSAGE_ID "$file")"
             to="$(value_of TO "$file")"
-            [ -n "$id" ] || return 0
+            valid_message_id "$id" || return 0
             [ -e "hive/bus/closed/$id.closed" ] && return 0
 
             local exceptions=(hive/bus/uplink/"$id".*.exception.uplink)
