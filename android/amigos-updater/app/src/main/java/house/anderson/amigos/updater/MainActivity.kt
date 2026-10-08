@@ -2,8 +2,10 @@ package house.anderson.amigos.updater
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
@@ -30,7 +32,7 @@ class MainActivity : Activity() {
         }
 
         layout.addView(TextView(this).apply {
-            text = "Amigos Updater — installer proof v1\n\nThis helper will only arm itself for a verified Three Amigos Device Agent APK."
+            text = "Amigos Updater — installer proof v2\n\nThis helper will only arm itself for a verified Three Amigos Device Agent APK."
             textSize = 20f
         })
 
@@ -76,6 +78,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        verifyCompletedInstall()
         refresh()
     }
 
@@ -121,7 +124,13 @@ class MainActivity : Activity() {
                 return
             }
 
-            UpdaterState.arm(this, "Verified Device Agent APK. Installer launched.")
+            UpdaterState.arm(
+                this,
+                "Verified Device Agent APK. Installer launched.",
+                installed.lastUpdateTime,
+                versionCode(archive)
+            )
+
             val uri = FileProvider.getUriForFile(this, "$packageName.files", apk)
             val install = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
@@ -134,6 +143,34 @@ class MainActivity : Activity() {
             refresh()
         }
     }
+
+    private fun verifyCompletedInstall() {
+        if (!UpdaterState.isArmed(this)) return
+        if (UpdaterState.phase(this) != "installing") return
+
+        try {
+            val installed = packageManager.getPackageInfo(TARGET_PACKAGE, 0)
+            val baseline = UpdaterState.baselineUpdateTime(this)
+            val targetVersion = UpdaterState.targetVersion(this)
+            val installedVersion = versionCode(installed)
+
+            val replaced = installed.lastUpdateTime > baseline
+            val versionOkay = targetVersion < 0 || installedVersion >= targetVersion
+
+            if (replaced && versionOkay) {
+                UpdaterState.clear(
+                    this,
+                    "INSTALLED — GREEN ✅\nDevice Agent version $installedVersion is active."
+                )
+            }
+        } catch (_: Throwable) {
+            // Keep the updater armed. A later resume will verify again.
+        }
+    }
+
+    private fun versionCode(info: PackageInfo): Long =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.longVersionCode
+        else @Suppress("DEPRECATION") info.versionCode.toLong()
 
     private fun sha256(bytes: ByteArray): String =
         MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
