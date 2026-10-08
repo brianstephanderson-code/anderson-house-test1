@@ -7,10 +7,11 @@ on:
       - "replay/amigos-updater-v1"
     paths:
       - "android/amigos-updater/**"
+      - "warehouse/functions/github-apk-delivery/**"
       - ".github/workflows/amigos-updater-build.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -61,8 +62,21 @@ jobs:
             echo "SIGNED_BUILD=NO" >> "$GITHUB_ENV"
           fi
 
-      - name: Upload updater APK
+      - name: Upload Actions artifact
         uses: actions/upload-artifact@v4
         with:
           name: amigos-updater
           path: ${{ runner.temp }}/amigos-updater/amigos-updater.apk
+
+      - name: Publish stable APK download
+        if: ${{ env.SIGNED_BUILD == 'YES' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          bash ../../warehouse/functions/github-apk-delivery/publish_latest.sh             "$RUNNER_TEMP/amigos-updater/amigos-updater.apk"             "amigos-updater.apk"             "amigos-updater-latest"             "Amigos Updater — Latest Signed APK"
+
+      - name: Refuse stable publication of unsigned debug build
+        if: ${{ env.SIGNED_BUILD != 'YES' }}
+        run: echo "Debug APK retained as Actions artifact only; stable download not replaced."
