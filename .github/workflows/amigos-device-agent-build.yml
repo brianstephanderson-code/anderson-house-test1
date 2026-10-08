@@ -3,12 +3,16 @@ name: Build Three Amigos Device Agent
 on:
   workflow_dispatch:
   push:
+    branches:
+      - "replay/amigos-updater-v1"
+      - "replay/conversation-bargein-v1"
     paths:
       - "android/amigos-device-agent/**"
+      - "warehouse/functions/github-apk-delivery/**"
       - ".github/workflows/amigos-device-agent-build.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -62,8 +66,21 @@ jobs:
             echo "SIGNED_BUILD=NO" >> "$GITHUB_ENV"
           fi
 
-      - name: Upload APK
+      - name: Upload Actions artifact
         uses: actions/upload-artifact@v4
         with:
           name: three-amigos-device-agent
           path: ${{ runner.temp }}/amigos-apk/three-amigos-device-agent.apk
+
+      - name: Publish stable Device Agent APK
+        if: ${{ env.SIGNED_BUILD == 'YES' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          bash ../../warehouse/functions/github-apk-delivery/publish_latest.sh             "$RUNNER_TEMP/amigos-apk/three-amigos-device-agent.apk"             "three-amigos-device-agent.apk"             "three-amigos-device-agent-latest"             "Three Amigos Device Agent — Latest Signed APK"
+
+      - name: Refuse stable publication of unsigned build
+        if: ${{ env.SIGNED_BUILD != 'YES' }}
+        run: echo "Debug APK kept as Actions artifact only; stable release not replaced."
