@@ -6,6 +6,9 @@ import android.view.accessibility.AccessibilityNodeInfo
 
 class UpdaterAccessibilityService : AccessibilityService() {
     companion object {
+        @Volatile var instance: UpdaterAccessibilityService? = null
+            private set
+
         private val INSTALLER_PACKAGES = setOf(
             "com.google.android.packageinstaller",
             "com.android.packageinstaller",
@@ -14,6 +17,28 @@ class UpdaterAccessibilityService : AccessibilityService() {
         private val INSTALL_WORDS = listOf("update", "install", "continue")
         private val OPEN_WORDS = listOf("open")
         @Volatile private var lastClickAt = 0L
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        instance = this
+    }
+
+    override fun onDestroy() {
+        if (instance === this) instance = null
+        super.onDestroy()
+    }
+
+    fun requestLabAutoInstall() {
+        if (!UpdaterState.labAutoInstall(this)) return
+        if (UpdaterState.phase(this) != "ready") return
+
+        try {
+            UpdateEngine.launchReadyInstaller(this)
+            UpdaterNotifier.status(this, "LAB AUTO: installer launched")
+        } catch (t: Throwable) {
+            UpdaterNotifier.updateReady(this, UpdaterState.readyVersion(this))
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
