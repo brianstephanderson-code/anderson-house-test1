@@ -11,8 +11,8 @@ android {
         applicationId = "house.anderson.amigos.updater"
         minSdk = 30
         targetSdk = 35
-        versionCode = (System.getenv("AMIGOS_UPDATER_VERSION_CODE") ?: "1").toInt()
-        versionName = System.getenv("AMIGOS_UPDATER_VERSION_NAME") ?: "installer-proof-v1"
+        versionCode = (System.getenv("AMIGOS_UPDATER_VERSION_CODE") ?: "4").toInt()
+        versionName = System.getenv("AMIGOS_UPDATER_VERSION_NAME") ?: "brianless-v4"
     }
 
     signingConfigs {
@@ -44,4 +44,5 @@ android {
 
 dependencies {
     implementation("androidx.core:core:1.13.1")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 }
