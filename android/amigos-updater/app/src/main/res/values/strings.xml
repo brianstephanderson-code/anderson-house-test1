@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Amigos Updater</string>
+    <string name="accessibility_description">Installs only a verified Three Amigos Device Agent update after the updater has been armed.</string>
+</resources>
