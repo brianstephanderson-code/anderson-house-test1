@@ -1,0 +1,16 @@
+{
+  "action": "vision_status",
+  "bridge_version": "v2",
+  "http": 200,
+  "id": "sensor-highway-status-20261008-002",
+  "ok": true,
+  "status": {
+    "active_indicator": false,
+    "battery_percent": null,
+    "camera": "ready",
+    "device": "android-phone-vision-v1",
+    "last_capture_ms": 1791463109742,
+    "rssi": null,
+    "state": "parked"
+  }
+}
