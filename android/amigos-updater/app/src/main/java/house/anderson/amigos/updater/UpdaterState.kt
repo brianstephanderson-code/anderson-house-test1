@@ -9,13 +9,10 @@ object UpdaterState {
     private const val KEY_STATUS = "status"
     private const val KEY_BASELINE_UPDATE_TIME = "baseline_update_time"
     private const val KEY_TARGET_VERSION = "target_version"
+    private const val KEY_READY_VERSION = "ready_version"
+    private const val KEY_LAB_AUTO = "lab_auto_install"
 
-    fun arm(
-        context: Context,
-        status: String,
-        baselineUpdateTime: Long,
-        targetVersion: Long
-    ) {
+    fun arm(context: Context, status: String, baselineUpdateTime: Long, targetVersion: Long) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putBoolean(KEY_ARMED, true)
             .putString(KEY_PHASE, "installing")
@@ -37,6 +34,32 @@ object UpdaterState {
     fun targetVersion(context: Context): Long =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(KEY_TARGET_VERSION, -1L)
 
+    fun markReady(context: Context, version: Long) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putLong(KEY_READY_VERSION, version)
+            .putString(KEY_PHASE, "ready")
+            .putString(KEY_STATUS, "UPDATE READY ✅\nDevice Agent version $version verified.")
+            .apply()
+    }
+
+    fun readyVersion(context: Context): Long =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getLong(KEY_READY_VERSION, -1L)
+
+    fun clearReady(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .remove(KEY_READY_VERSION)
+            .apply()
+    }
+
+    fun labAutoInstall(context: Context): Boolean =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_LAB_AUTO, false)
+
+    fun setLabAutoInstall(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putBoolean(KEY_LAB_AUTO, enabled)
+            .apply()
+    }
+
     fun markInstalled(context: Context) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putString(KEY_PHASE, "installed")
@@ -51,6 +74,7 @@ object UpdaterState {
             .putString(KEY_STATUS, status)
             .remove(KEY_BASELINE_UPDATE_TIME)
             .remove(KEY_TARGET_VERSION)
+            .remove(KEY_READY_VERSION)
             .apply()
     }
 
