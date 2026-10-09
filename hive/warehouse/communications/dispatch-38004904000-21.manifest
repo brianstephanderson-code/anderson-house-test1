@@ -1,0 +1,9 @@
+MESSAGE_ID=dispatch-38004904000-21
+KIND=ORDER
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/dispatch-38004904000-21.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/dispatch-38004904000-21/dispatch-38004904000-21.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/dispatch-38004904000-21/dispatch-38004904000-21.cloudflare.uplink
+CORRELATION_ID=dispatch-38004904000-21
+CLOSED_UTC=2026-10-09T23:45:31Z
