@@ -244,6 +244,8 @@ class WakeService : Service() {
         // Release Open Sesame's microphone before handing it to FUTO.
         try { Thread.sleep(300L) } catch (_: InterruptedException) {}
 
+        // Reset stale state: only the capture activity may set CAPTURING.
+        TextRadioStore.complete(this)
         val launched = TextRadioLauncher.launch(this)
         if (!launched) {
             TextRadioStore.fail(this, "Text Radio capture could not open")
@@ -251,6 +253,18 @@ class WakeService : Service() {
             startListening()
             return
         }
+
+        // Detect silent background-activity launch denial on Android 11.
+        Thread({
+            try { Thread.sleep(6000L) } catch (_: InterruptedException) { return@Thread }
+            if (serviceAlive.get() && handoffRunning.get() &&
+                TextRadioStore.phase(this) == TextRadioStore.PHASE_IDLE) {
+                TextRadioStore.fail(this, "Android blocked Text Radio launch; tap notification")
+                showDictateFallback()
+                handoffRunning.set(false)
+                startListening()
+            }
+        }, "text-radio-launch-proof").start()
 
         // Recovery fence: a cancelled recognizer or lost UI event must never leave
         // Open Sesame permanently disarmed.
@@ -266,6 +280,26 @@ class WakeService : Service() {
                 startListening()
             }
         }, "text-radio-watchdog").start()
+    }
+
+    private fun showDictateFallback() {
+        val launch = PendingIntent.getActivity(
+            this, 2,
+            Intent(this, TextRadioCaptureActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        getSystemService(NotificationManager::class.java).notify(
+            7312,
+            Notification.Builder(this, CHANNEL_ID)
+                .setContentTitle("Open Sesame needs one tap")
+                .setContentText("Tap to open Text Radio after Android blocked automatic launch")
+                .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                .setContentIntent(launch)
+                .setAutoCancel(true)
+                .build()
+        )
     }
 
     private fun isCommunicationCaptureActive(audio: AudioManager): Boolean {

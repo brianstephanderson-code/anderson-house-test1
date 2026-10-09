@@ -17,6 +17,8 @@ jobs:
       run:
         working-directory: android/amigos-device-agent
     env:
+      AMIGOS_VERSION_CODE: "2100"
+      AMIGOS_VERSION_NAME: "0.2.100-repair11"
       AMIGOS_KEYSTORE_B64: ${{ secrets.AMIGOS_KEYSTORE_B64 }}
       AMIGOS_KEYSTORE_PASSWORD: ${{ secrets.AMIGOS_KEYSTORE_PASSWORD }}
       AMIGOS_KEY_PASSWORD: ${{ secrets.AMIGOS_KEY_PASSWORD }}
