@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Unit tests
         working-directory: hive/linux-bee
-        run: python3 -m unittest -v test_linux_bee.py
+        run: python3 -m unittest discover -v -p 'test_*.py'
       - name: Sensor message smoke test
         working-directory: hive/linux-bee
         run: |
