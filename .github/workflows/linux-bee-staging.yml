@@ -1,0 +1,24 @@
+name: Linux Bee Staging Verification
+on:
+  push:
+    branches:
+      - amigos-recovery-staging-20261009
+    paths:
+      - 'hive/linux-bee/**'
+      - '.github/workflows/linux-bee-staging.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit tests
+        working-directory: hive/linux-bee
+        run: python3 -m unittest -v test_linux_bee.py
+      - name: Sensor message smoke test
+        working-directory: hive/linux-bee
+        run: |
+          printf '%s\n' '{"device_id":"moto_1","sensor_type":"temperature","timestamp":"2026-10-09T12:00:00Z","payload":{"celsius":24.5}}' | python3 linux_bee.py | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["status"]=="ACCEPTED" and r["route"]=="sensor/temperature"; print("LINUX_BEE_SMOKE_PASS")'
