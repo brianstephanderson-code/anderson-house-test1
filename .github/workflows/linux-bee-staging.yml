@@ -22,3 +22,28 @@ jobs:
         working-directory: hive/linux-bee
         run: |
           printf '%s\n' '{"device_id":"moto_1","sensor_type":"temperature","timestamp":"2026-10-09T12:00:00Z","payload":{"celsius":24.5}}' | python3 linux_bee.py | python3 -c 'import json,sys; r=json.load(sys.stdin); assert r["status"]=="ACCEPTED" and r["route"]=="sensor/temperature"; print("LINUX_BEE_SMOKE_PASS")'
+      - name: Verify real Moto sensor reading from staging
+        working-directory: hive/linux-bee
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from linux_bee import process
+          saved = json.loads(Path("live-tests/moto-temperature-001.json").read_text())
+          assert saved["status"] == "ACCEPTED"
+          assert saved["device_id"] == "moto_1"
+          assert saved["route"] == "sensor/temperature"
+          assert saved["payload"]["source"] == "android_battery"
+          assert saved["payload"]["measurement"] == "battery_not_room"
+          assert saved["payload"]["celsius"] == 32.2
+          envelope = {
+              "device_id": saved["device_id"],
+              "sensor_type": "temperature",
+              "timestamp": saved["timestamp"],
+              "payload": saved["payload"],
+          }
+          result = process(envelope)
+          assert result["status"] == "ACCEPTED"
+          assert result["payload"]["celsius"] == 32.2
+          print("REAL_MOTO_CLOUD_PASS: 32.2 C")
+          PY
