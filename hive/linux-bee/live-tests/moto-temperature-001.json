@@ -1,0 +1,1 @@
+{"device_id": "moto_1", "payload": {"celsius": 32.2, "measurement": "battery_not_room", "source": "android_battery"}, "route": "sensor/temperature", "status": "ACCEPTED", "timestamp": "2026-10-10T02:17:54.702482+00:00"}
