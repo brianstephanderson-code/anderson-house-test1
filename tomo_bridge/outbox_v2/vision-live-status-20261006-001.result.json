@@ -1,7 +1,0 @@
-{
-  "action": "vision_status",
-  "bridge_version": "v2",
-  "error": "URLError: <urlopen error [Errno 111] Connection refused>",
-  "id": "vision-live-status-20261006-001",
-  "ok": false
-}
