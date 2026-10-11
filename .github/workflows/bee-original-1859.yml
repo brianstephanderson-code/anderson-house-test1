@@ -1,0 +1,44 @@
+name: Bee Flight 003 Original 1859 Source
+on:
+  push:
+    paths: ['.github/workflows/bee-original-1859.yml']
+  workflow_dispatch:
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch original publication evidence
+        run: |
+          mkdir -p warehouse/bee-flights
+          python - <<'PY'
+          import urllib.request,datetime,pathlib,json,hashlib,sys
+          root=pathlib.Path('warehouse/bee-flights')
+          url='https://dickens.stanford.edu/archive/tale/pdf/tale_01.pdf'
+          result={'flight':'003','question':'Find the first publication of A Tale of Two Cities by Charles Dickens, dated 30 April 1859','source_url':url,'checked_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'status':'RED','document_verification':'NOT VERIFIED'}
+          try:
+              req=urllib.request.Request(url,headers={'User-Agent':'ThreeAmigosBee/0.3'})
+              with urllib.request.urlopen(req,timeout=25) as response:
+                  raw=response.read(15_000_001)
+                  if len(raw)>15_000_000: raise ValueError('15MB safety cap exceeded')
+                  if not raw.startswith(b'%PDF-'): raise ValueError('Not a PDF')
+                  (root/'flight-003-original.pdf').write_bytes(raw)
+                  result.update(status='GREEN_TRANSPORT',http_status=response.status,source_bytes=len(raw),source_sha256=hashlib.sha256(raw).hexdigest(),source_file='warehouse/bee-flights/flight-003-original.pdf',document_verification='PENDING: confirm date/title against pages')
+          except Exception as e: result['error']=str(e)
+          (root/'flight-003-latest.json').write_text(json.dumps(result,indent=2)+'\n')
+          print(json.dumps(result,indent=2))
+          if result['status']!='GREEN_TRANSPORT':sys.exit(1)
+          PY
+      - name: Archive evidence
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add warehouse/bee-flights/flight-003-latest.json warehouse/bee-flights/flight-003-original.pdf
+          if ! git diff --cached --quiet; then
+            git commit -m 'Archive bee 003 first publication evidence'
+            git push
+          fi
