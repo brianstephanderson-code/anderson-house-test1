@@ -1,0 +1,11 @@
+{
+  "flight": "001",
+  "url": "https://api.crossref.org/works?query.title=A%20Tale%20of%20Two%20Cities&rows=1",
+  "checked_at_utc": "2026-10-11T06:04:47.247686+00:00",
+  "status": "GREEN",
+  "http_status": 200,
+  "records": 1,
+  "first_title": [
+    "Tale of Two Cities"
+  ]
+}
