@@ -1,0 +1,12 @@
+{
+  "flight": "003",
+  "question": "Find the first publication of A Tale of Two Cities by Charles Dickens, dated 30 April 1859",
+  "source_url": "https://dickens.stanford.edu/archive/tale/pdf/tale_01.pdf",
+  "checked_at_utc": "2026-10-11T11:30:34.901991+00:00",
+  "status": "GREEN_TRANSPORT",
+  "document_verification": "PENDING: confirm date/title against pages",
+  "http_status": 200,
+  "source_bytes": 1115124,
+  "source_sha256": "c4232fb51d0a934d0332ee6d4bf04d5679bf07bb5acafbc924517744fdeb3fc6",
+  "source_file": "warehouse/bee-flights/flight-003-original.pdf"
+}
