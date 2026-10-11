@@ -1,0 +1,23 @@
+name: Bee URL Proof Flight
+on:
+  push:
+    paths:
+      - '.github/workflows/bee-url-test.yml'
+  workflow_dispatch:
+jobs:
+  bee:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+    steps:
+      - name: Retrieve original source metadata
+        run: |
+          python - <<'PY'
+          import json, urllib.request
+          url='https://api.crossref.org/works?query.title=A%20Tale%20of%20Two%20Cities&rows=1'
+          request=urllib.request.Request(url,headers={'User-Agent':'ThreeAmigosBeeProof/0.1 (research proof)'})
+          with urllib.request.urlopen(request,timeout=15) as response:
+              data=json.load(response)
+              print(json.dumps({'url':url,'status':response.status,'records':len(data['message']['items']),'first_title':data['message']['items'][0].get('title',[])},indent=2))
+          PY
