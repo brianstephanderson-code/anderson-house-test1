@@ -1,0 +1,52 @@
+name: Bee Dickens Crossref Verification
+on:
+  push:
+    paths:
+      - '.github/workflows/bee-dickens-crossref.yml'
+  workflow_dispatch:
+jobs:
+  bee:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Search and verify title plus author
+        run: |
+          mkdir -p warehouse/bee-flights
+          python - <<'PY'
+          import urllib.parse, urllib.request, json, pathlib, datetime, hashlib, sys
+          root=pathlib.Path('warehouse/bee-flights')
+          params=urllib.parse.urlencode({'query.title':'A Tale of Two Cities','query.author':'Charles Dickens','rows':20})
+          url='https://api.crossref.org/works?'+params
+          report={'flight':'002','source':'Crossref','query_title':'A Tale of Two Cities','query_author':'Charles Dickens','url':url,'checked_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'status':'RED'}
+          try:
+              req=urllib.request.Request(url,headers={'User-Agent':'ThreeAmigosBeeProof/0.3 (research proof)'})
+              with urllib.request.urlopen(req,timeout=20) as resp:
+                  raw=resp.read(2_000_001)
+                  if len(raw)>2_000_000: raise ValueError('Response over 2MB limit')
+                  data=json.loads(raw)
+                  items=data['message']['items']
+                  (root/'flight-002-source.json').write_bytes(raw)
+                  def author_matches(item):
+                      return any(a.get('family','').casefold()=='dickens' and 'charles' in a.get('given','').casefold() for a in item.get('author',[]))
+                  def title_matches(item):
+                      return any(t.casefold().strip() in ('a tale of two cities','tale of two cities') for t in item.get('title',[]))
+                  matches=[{'title':i.get('title',[]),'authors':i.get('author',[]),'DOI':i.get('DOI'),'type':i.get('type'),'publisher':i.get('publisher')} for i in items if title_matches(i) and author_matches(i)]
+                  report.update(status='GREEN',http_status=resp.status,returned_records=len(items),verified_title_and_author_matches=len(matches),matches=matches,source_file='warehouse/bee-flights/flight-002-source.json',source_bytes=len(raw),source_sha256=hashlib.sha256(raw).hexdigest(),note='GREEN means retrieval and evidence saved; zero matching records is a valid search result.')
+          except Exception as e: report['error']=str(e)
+          (root/'flight-002-latest.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report,indent=2))
+          if report['status']!='GREEN': sys.exit(1)
+          PY
+      - name: Commit original response and verification
+        if: always()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add warehouse/bee-flights/flight-002-latest.json warehouse/bee-flights/flight-002-source.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record bee flight 002 Dickens Crossref search'
+            git push
+          fi
