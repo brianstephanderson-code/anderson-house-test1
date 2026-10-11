@@ -1,0 +1,176 @@
+{
+  "flight": "002",
+  "source": "Crossref",
+  "query_title": "A Tale of Two Cities",
+  "query_author": "Charles Dickens",
+  "url": "https://api.crossref.org/works?query.title=A+Tale+of+Two+Cities&query.author=Charles+Dickens&rows=20",
+  "checked_at_utc": "2026-10-11T11:23:58.824107+00:00",
+  "status": "GREEN",
+  "http_status": 200,
+  "returned_records": 20,
+  "verified_title_and_author_matches": 5,
+  "matches": [
+    {
+      "title": [
+        "A Tale of Two Cities"
+      ],
+      "authors": [
+        {
+          "given": "Charles",
+          "family": "Dickens",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "DOI": "10.5117/9781904633068",
+      "type": "monograph",
+      "publisher": "Amsterdam University Press"
+    },
+    {
+      "title": [
+        "A Tale of Two Cities"
+      ],
+      "authors": [
+        {
+          "given": "Charles",
+          "family": "Dickens",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "DOI": "10.1093/owc/9780199536238.001.0001",
+      "type": "edited-book",
+      "publisher": "Oxford University Press"
+    },
+    {
+      "title": [
+        "A Tale of Two Cities"
+      ],
+      "authors": [
+        {
+          "given": "Charles",
+          "family": "Dickens",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "vocabulary": "crossref",
+              "role": "author"
+            }
+          ]
+        }
+      ],
+      "DOI": "10.1097/acm.0000000000001838",
+      "type": "journal-article",
+      "publisher": "Oxford University Press (OUP)"
+    },
+    {
+      "title": [
+        "A Tale of Two Cities"
+      ],
+      "authors": [
+        {
+          "given": "Tom",
+          "family": "Taylor",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Charles",
+          "family": "Dickens",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        }
+      ],
+      "DOI": "10.1093/oseo/instance.00259042",
+      "type": "book-chapter",
+      "publisher": "Oxford University Press"
+    },
+    {
+      "title": [
+        "A Tale of Two Cities"
+      ],
+      "authors": [
+        {
+          "given": "Arthur",
+          "family": "Weisbach",
+          "sequence": "first",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Charles",
+          "family": "Dickens",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Helen J.",
+          "family": "Estes",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        },
+        {
+          "given": "Lee",
+          "family": "Wyndham",
+          "sequence": "additional",
+          "affiliation": [],
+          "role": [
+            {
+              "role": "author",
+              "vocabulary": "crossref"
+            }
+          ]
+        }
+      ],
+      "DOI": "10.2307/810244",
+      "type": "journal-article",
+      "publisher": "National Council of Teachers of English"
+    }
+  ],
+  "source_file": "warehouse/bee-flights/flight-002-source.json",
+  "source_bytes": 47097,
+  "source_sha256": "8f11870909060ee781659715ca03a9cd9d9be2a7ec945c5668e9715a17d12926",
+  "note": "GREEN means retrieval and evidence saved; zero matching records is a valid search result."
+}
