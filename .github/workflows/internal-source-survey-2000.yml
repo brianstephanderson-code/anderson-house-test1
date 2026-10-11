@@ -1,0 +1,30 @@
+name: Two thousand internal source survey
+on:
+  push:
+    paths:
+      - '.github/workflows/internal-source-survey-2000.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  survey:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            function-lane
+            controller
+            android
+            .github/workflows
+          sparse-checkout-cone-mode: true
+      - name: Collect deduplicated function declaration candidates
+        run: |
+          mkdir -p harvest
+          find function-lane controller android -type f \( -name '*.mjs' -o -name '*.js' -o -name '*.py' -o -name '*.kt' \) -print0 | xargs -0 grep -nE 'function |=>|^[[:space:]]*def |^[[:space:]]*fun ' > harvest/all.txt || true
+          sort -u harvest/all.txt | head -n 2000 > harvest/first-2000.txt
+          wc -l harvest/all.txt harvest/first-2000.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: internal-source-survey-2000
+          path: harvest/
