@@ -12,33 +12,37 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Retrieve source and record evidence
-        id: retrieval
+      - name: Retrieve full original response and verify
         run: |
           mkdir -p warehouse/bee-flights
           python - <<'PY'
-          import json, urllib.request, datetime, traceback, pathlib, sys
+          import datetime, hashlib, json, pathlib, sys, urllib.request
+          directory=pathlib.Path('warehouse/bee-flights')
           url='https://api.crossref.org/works?query.title=A%20Tale%20of%20Two%20Cities&rows=1'
           report={'flight':'001','url':url,'checked_at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'status':'RED'}
           try:
-              req=urllib.request.Request(url,headers={'User-Agent':'ThreeAmigosBeeProof/0.1 (research proof)'})
+              req=urllib.request.Request(url,headers={'User-Agent':'ThreeAmigosBeeProof/0.2 (research proof)'})
               with urllib.request.urlopen(req,timeout=15) as response:
-                  data=json.load(response)
+                  raw=response.read(2_000_001)
+                  if len(raw)>2_000_000: raise ValueError('Response exceeds 2MB safety cap')
+                  data=json.loads(raw)
                   items=data['message']['items']
-                  report.update(http_status=response.status,records=len(items),first_title=items[0].get('title',[]) if items else [],status='GREEN' if response.status==200 and items else 'RED')
-          except Exception as e:
-              report['error']=str(e)
-          pathlib.Path('warehouse/bee-flights/flight-001-latest.json').write_text(json.dumps(report,indent=2)+'\n')
+                  if response.status!=200 or not items: raise ValueError('No valid source records')
+                  (directory/'flight-001-source.json').write_bytes(raw)
+                  report.update(status='GREEN',http_status=response.status,records=len(items),first_title=items[0].get('title',[]),source_file='warehouse/bee-flights/flight-001-source.json',source_bytes=len(raw),source_sha256=hashlib.sha256(raw).hexdigest())
+          except Exception as exc:
+              report['error']=str(exc)
+          (directory/'flight-001-latest.json').write_text(json.dumps(report,indent=2)+'\n')
           print(json.dumps(report,indent=2))
           if report['status']!='GREEN': sys.exit(1)
           PY
-      - name: Commit evidence to warehouse even on retrieval failure
+      - name: Commit source and verification evidence
         if: always()
         run: |
-          git config user.name 'three-amigos-bee[bot]'
+          git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add warehouse/bee-flights/flight-001-latest.json
+          git add warehouse/bee-flights/flight-001-latest.json warehouse/bee-flights/flight-001-source.json
           if ! git diff --cached --quiet; then
-            git commit -m 'Record bee flight 001 retrieval evidence'
+            git commit -m 'Archive bee flight 001 original response and verification'
             git push
           fi
