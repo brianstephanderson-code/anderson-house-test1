@@ -1,0 +1,116 @@
+name: AI LAND Function Pack v0.2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-land-function-pack-v0.2.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - fn: cast_search
+            type: CLOUDFLARE_AI_CASTS
+            mode: query
+            value: "I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+          - fn: search_web_public
+            type: SEARCH_WEB_PUBLIC
+            mode: query
+            value: "Washington Irving Sleepy Hollow author purpose"
+          - fn: fetch_text
+            type: FETCH_TEXT
+            mode: url
+            value: "https://example.com/"
+          - fn: read_text_links
+            type: READ_TEXT_LINKS
+            mode: url
+            value: "https://example.com/"
+
+    steps:
+      - name: Send ${{ matrix.fn }} through AI LAND
+        shell: bash
+        env:
+          FN: ${{ matrix.fn }}
+          TYPE: ${{ matrix.type }}
+          MODE: ${{ matrix.mode }}
+          VALUE: ${{ matrix.value }}
+        run: |
+          set -euo pipefail
+
+          BASE='https://ah-word-count.brian-steph-anderson.workers.dev'
+
+          case "$MODE" in
+            query)
+              BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "type=$TYPE"                 --data-urlencode "query=$VALUE"                 --data-urlencode 'limit=5'                 "$BASE")"
+              ;;
+            url)
+              BODY="$(curl --fail --silent --show-error --get                 --data-urlencode "type=$TYPE"                 --data-urlencode "url=$VALUE"                 --data-urlencode 'max_chars=6000'                 --data-urlencode 'max_links=25'                 "$BASE")"
+              ;;
+            *)
+              echo "Unknown mode: $MODE" >&2
+              exit 1
+              ;;
+          esac
+
+          echo "$BODY" | jq .
+
+          case "$FN" in
+            cast_search)
+              echo "$BODY" | jq -e '
+                .ok == true and
+                .function == "CLOUDFLARE_AI_CASTS" and
+                .ai_answer_is_evidence == false and
+                (.casts | type == "array") and
+                (.casts | length >= 3)
+              ' >/dev/null
+              ;;
+            search_web_public)
+              echo "$BODY" | jq -e '
+                .ok == true and
+                .function == "SEARCH_WEB_PUBLIC" and
+                (.results | type == "array") and
+                (.results | length >= 1)
+              ' >/dev/null
+              ;;
+            fetch_text)
+              echo "$BODY" | jq -e '
+                .ok == true and
+                .function == "FETCH_TEXT" and
+                (.text | type == "string") and
+                (.text | length >= 100)
+              ' >/dev/null
+              ;;
+            read_text_links)
+              echo "$BODY" | jq -e '
+                .ok == true and
+                .function == "READ_TEXT_LINKS" and
+                (.text | type == "string") and
+                (.text | length >= 100) and
+                (.links | type == "array")
+              ' >/dev/null
+              ;;
+          esac
+
+          echo "AI_LAND_FUNCTION_GREEN fn=$FN"
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: replay
+    if: ${{ always() }}
+    steps:
+      - name: Gate pack
+        shell: bash
+        env:
+          RESULT: ${{ needs.replay.result }}
+        run: |
+          set -euo pipefail
+          test "$RESULT" = "success"
+          echo "AI_LAND_FUNCTION_PACK_V0_2_GREEN"
