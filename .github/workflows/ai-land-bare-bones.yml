@@ -20,7 +20,7 @@ jobs:
           set -euo pipefail
 
           JOB_ID="ai-land-smoke-${GITHUB_RUN_ID}"
-          QUERY="STATE: Three Amigos has one public test job. FUNCTION: produce useful search casts. COST: free-only. Return casts."
+          QUERY="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
 
           echo "JOB_ID=$JOB_ID"
           echo "STATE=THREE_AMIGOS_READY"
