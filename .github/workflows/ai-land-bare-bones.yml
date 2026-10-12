@@ -2,10 +2,16 @@ name: AI LAND Bare Bones Handshake
 
 on:
   workflow_dispatch:
+    inputs:
+      query:
+        description: "Public test query for AI LAND"
+        required: false
+        default: "I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
   push:
     branches: [main]
     paths:
       - ".github/workflows/ai-land-bare-bones.yml"
+      - "three_amigos/functions/ai_land_job_v0.1.json"
 
 permissions:
   contents: read
@@ -14,13 +20,49 @@ jobs:
   handshake:
     runs-on: ubuntu-latest
     steps:
-      - name: Send one Three Amigos job into AI LAND
+      - uses: actions/checkout@v5
+
+      - name: Build Three Amigos job envelope
+        id: envelope
         shell: bash
+        env:
+          INPUT_QUERY: ${{ github.event.inputs.query }}
         run: |
           set -euo pipefail
 
-          JOB_ID="ai-land-smoke-${GITHUB_RUN_ID}"
-          QUERY="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+          DEFAULT_QUERY="I want to go fishing in May for salmon within 200 kilometers of Perth on the beach. What is the best bait?"
+          QUERY="${INPUT_QUERY:-$DEFAULT_QUERY}"
+          JOB_ID="ai-land-${GITHUB_RUN_ID}"
+
+          jq \
+            --arg job_id "$JOB_ID" \
+            --arg query "$QUERY" \
+            '.job_id=$job_id | .input.query=$query' \
+            three_amigos/functions/ai_land_job_v0.1.json \
+            > /tmp/ai-land-job.json
+
+          jq . /tmp/ai-land-job.json
+
+          jq -e '
+            .version == "0.1" and
+            .state.source == "three-amigos" and
+            .state.privacy == "public" and
+            .state.cost == "free-only" and
+            .function == "cast_search" and
+            .verify.required == true and
+            (.input.query | length > 0)
+          ' /tmp/ai-land-job.json >/dev/null
+
+          echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
+          echo "query=$QUERY" >> "$GITHUB_OUTPUT"
+
+      - name: Send envelope through validated AI LAND doorway
+        shell: bash
+        env:
+          JOB_ID: ${{ steps.envelope.outputs.job_id }}
+          QUERY: ${{ steps.envelope.outputs.query }}
+        run: |
+          set -euo pipefail
 
           echo "JOB_ID=$JOB_ID"
           echo "STATE=THREE_AMIGOS_READY"
@@ -31,7 +73,6 @@ jobs:
             'https://ah-word-count.brian-steph-anderson.workers.dev')"
 
           echo "$BODY" | jq .
-
           echo "STATE=AI_LAND_RETURNED"
 
           echo "$BODY" | jq -e '
@@ -48,13 +89,15 @@ jobs:
             echo "## AI LAND Bare Bones Handshake"
             echo
             echo "- Job: `$JOB_ID`"
+            echo "- Job envelope: v0.1"
+            echo "- Function: cast_search"
             echo "- Three Amigos state: READY"
             echo "- AI LAND return: RECEIVED"
             echo "- Returned cast count: $CAST_COUNT"
             echo "- Verification: GREEN"
             echo "- Cost rule: free-only path"
             echo
-            echo "**PIPE:** THREE AMIGOS → CLOUDFLARE AI WORKER → RETURN → VERIFY → DONE"
+            echo "**PIPE:** THREE AMIGOS ENVELOPE → AI LAND → RETURN → VERIFY → DONE"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          echo "AI_LAND_HANDSHAKE_GREEN"
+          echo "AI_LAND_ENVELOPE_HANDSHAKE_GREEN"
