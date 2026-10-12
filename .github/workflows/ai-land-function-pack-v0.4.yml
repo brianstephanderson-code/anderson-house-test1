@@ -1,0 +1,128 @@
+name: AI LAND Function Pack v0.4
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-land-function-pack-v0.4.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  cloudflare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloudflare live function
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=FETCH_TEXT'             --data-urlencode 'url=https://example.com/'             --data-urlencode 'max_chars=2000'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "$BODY" | jq -e '.ok==true and .function=="FETCH_TEXT" and (.text|length)>=100' >/dev/null
+          echo AI_LAND_CLOUDFLARE_GREEN
+
+  google:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Resolve Google endpoint
+        id: endpoint
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          test -n "$URI"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Mint identity token
+        id: idtoken
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ steps.endpoint.outputs.uri }}
+          create_credentials_file: false
+
+      - name: Google live function
+        env:
+          URI: ${{ steps.endpoint.outputs.uri }}
+          ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(curl --fail --silent --show-error --get             -H "Authorization: Bearer $ID_TOKEN"             --data-urlencode 'text=Many hands work. Bees return!'             "$URI")"
+          echo "$BODY" | jq -e '.words==5 and .sentences==2 and .paragraphs==1 and .terminalPunctuation==true' >/dev/null
+          echo AI_LAND_GOOGLE_GREEN
+
+  parallel-compute:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Ray
+        run: python -m pip install --disable-pip-version-check 'ray==2.50.1'
+
+      - name: Discover reserve execute verify release
+        shell: bash
+        run: |
+          python - <<'PY'
+          import time, ray
+          from ray.util.placement_group import placement_group, placement_group_table, remove_placement_group
+          from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
+          ray.init(num_cpus=2, include_dashboard=False, log_to_driver=False)
+          capacity=ray.available_resources()
+          assert capacity.get("CPU",0)>=2, capacity
+          group=placement_group([{"CPU":1},{"CPU":1}],strategy="STRICT_PACK")
+          try:
+              ray.get(group.ready(),timeout=60)
+              @ray.remote(num_cpus=1)
+              def f(x):
+                  start=time.monotonic()
+                  time.sleep(1)
+                  return (x*2,start,time.monotonic())
+              futures=[f.options(scheduling_strategy=PlacementGroupSchedulingStrategy(placement_group=group,placement_group_bundle_index=i)).remote(i+1) for i in range(2)]
+              out=ray.get(futures,timeout=60)
+              assert [x[0] for x in out]==[2,4], out
+              assert max(x[1] for x in out)<min(x[2] for x in out), out
+          finally:
+              remove_placement_group(group)
+              for _ in range(30):
+                  if placement_group_table(group)["state"]=="REMOVED": break
+                  time.sleep(1)
+              assert placement_group_table(group)["state"]=="REMOVED"
+              ray.shutdown()
+          print("AI_LAND_PARALLEL_COMPUTE_GREEN")
+          PY
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: [cloudflare, google, parallel-compute]
+    if: ${{ always() }}
+    steps:
+      - name: Cross-provider gate
+        env:
+          CF: ${{ needs.cloudflare.result }}
+          GOOGLE: ${{ needs.google.result }}
+          PARALLEL: ${{ needs.parallel-compute.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CF" = success
+          test "$GOOGLE" = success
+          test "$PARALLEL" = success
+          echo "AI_LAND_V0_4_CROSS_PROVIDER_GREEN"
