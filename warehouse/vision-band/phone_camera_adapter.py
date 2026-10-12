@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 import json, os, subprocess, time, uuid
 
-HOST = os.environ.get("VISION_PHONE_HOST", "0.0.0.0")
+HOST = os.environ.get("VISION_PHONE_HOST", "127.0.0.1")
 PORT = int(os.environ.get("VISION_PHONE_PORT", "8787"))
 CAMERA_ID = os.environ.get("VISION_PHONE_CAMERA_ID", "0")
 ROOT = Path.home() / "anderson-house-mailbox" / "tomo_bridge" / "vision_phone_camera"
