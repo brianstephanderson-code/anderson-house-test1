@@ -1,0 +1,45 @@
+name: AI LAND Wilson Inlet Live Search
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-land-wilson-inlet-live.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  wilson-inlet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask Cloudflare AI LAND
+        shell: bash
+        run: |
+          set -euo pipefail
+          Q='Wilson Inlet Denmark Western Australia best time of year to fish from a kayak or small boat, including seasonal species and conditions'
+
+          CAST="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=CLOUDFLARE_AI_CASTS' \
+            --data-urlencode "query=$Q" \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+
+          echo "$CAST" | jq .
+          echo "$CAST" | jq -e '.ok==true and (.casts|length)>=3' >/dev/null
+
+          BEST_CAST="$(echo "$CAST" | jq -r '.casts[0]')"
+
+          SEARCH="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=SEARCH_END_TO_END_V1' \
+            --data-urlencode "query=$BEST_CAST" \
+            --data-urlencode 'limit=8' \
+            --data-urlencode 'read_limit=5' \
+            --data-urlencode 'max_chars=5000' \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+
+          echo "$SEARCH" | jq .
+          echo "$SEARCH" | jq -e '.ok==true and .function=="SEARCH_END_TO_END_V1" and (.evidence|length)>=1 and .sufficiency.sufficient==true' >/dev/null
+
+          echo "$SEARCH" > /tmp/wilson-inlet.json
+          jq '{query, candidate_count, sufficiency, doors, evidence:[.evidence[]|{url,source_door,chars,text}]}' /tmp/wilson-inlet.json
+          echo AI_LAND_WILSON_INLET_GREEN
