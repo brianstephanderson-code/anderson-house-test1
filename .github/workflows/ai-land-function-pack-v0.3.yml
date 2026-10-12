@@ -1,0 +1,67 @@
+name: AI LAND Function Pack v0.3
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-land-function-pack-v0.3.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-search:
+    runs-on: ubuntu-latest
+    steps:
+      - name: End-to-end search/read/verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_END_TO_END_V1'             --data-urlencode 'query=Washington Irving Sleepy Hollow author purpose'             --data-urlencode 'limit=5'             --data-urlencode 'read_limit=3'             --data-urlencode 'max_chars=4000'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "$BODY" > /tmp/search-e2e.json
+          node -e 'const fs=require("fs");const b=JSON.parse(fs.readFileSync("/tmp/search-e2e.json","utf8")); const s=b.stages||{}; if(!b.ok||b.function!=="SEARCH_END_TO_END_V1"||!s.cast||!s.collect||!s.shortlist||!s.read||!s.verify||!s.sufficient||!Array.isArray(b.evidence)||b.evidence.length<1||!b.evidence.every(x=>x.integrity_verified&&x.url&&x.source_door&&x.discovery_provenance&&x.reader_provenance&&typeof x.text==="string"&&x.text.length>=100)||!b.sufficiency?.sufficient) process.exit(1);'
+          echo AI_LAND_E2E_SEARCH_GREEN
+
+  streamed-search:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Multi-query streamed return-as-ready
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/benchmark.json <<'JSON'
+          {"type":"SEARCH_DISCOVER_STREAM","parent_ticket":"AI-LAND-V03","limit":3,"queries":["Washington Irving purpose writing The Legend of Sleepy Hollow","Washington Irving intent The Legend of Sleepy Hollow","why did Washington Irving write The Legend of Sleepy Hollow","Washington Irving Sleepy Hollow folklore purpose","Ichabod Crane satire Washington Irving purpose"]}
+          JSON
+          curl --fail --silent --show-error --no-buffer -X POST -H 'content-type: application/json' --data-binary @/tmp/benchmark.json 'https://ah-word-count.brian-steph-anderson.workers.dev' | tee /tmp/returns.ndjson
+          node -e 'const fs=require("fs"); const rows=fs.readFileSync("/tmp/returns.ndjson","utf8").trim().split(/\n/).map(JSON.parse); const kids=rows.filter(x=>x.type==="CHILD_RETURN"); const done=rows.find(x=>x.type==="PARENT_COMPLETE"); if(kids.length!==5||kids.some(x=>!x.ok)||!done||done.expected!==5||done.received!==5) process.exit(1);'
+          echo AI_LAND_STREAMED_SEARCH_GREEN
+
+  official-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Official Library of Congress search door
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=SEARCH_DISCOVER_LOC'             --data-urlencode 'query=Washington Irving Sleepy Hollow'             --data-urlencode 'limit=5'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "$BODY"
+          node -e 'const b=JSON.parse(process.argv[1]); const allowed=new Set(["LIBRARY_OF_CONGRESS_JSON_API","LIBRARY_OF_CONGRESS_SRU_CATALOG"]); const official=x=>{try{const h=new URL(x.url).hostname.toLowerCase();return h==="loc.gov"||h.endsWith(".loc.gov");}catch{return false}}; const live=b.ok&&b.function==="SEARCH_DISCOVER_LOC"&&Array.isArray(b.results)&&b.results.length>0&&b.results.every(x=>x.url&&allowed.has(x.source_door)&&x.provenance&&official(x)); const soft=!b.ok&&b.function==="SEARCH_DISCOVER_LOC"&&b.blocked===true&&["HTTP_403","HTTP_429","ALL_OFFICIAL_LOC_ROUTES_FAILED"].includes(b.error)&&b.provenance; if(!live&&!soft) process.exit(1); console.log(live?"AI_LAND_LOC_GREEN":"AI_LAND_LOC_SOFT_BLOCKED");' "$BODY"
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: [e2e-search, streamed-search, official-source]
+    if: ${{ always() }}
+    steps:
+      - name: Gate pack
+        shell: bash
+        env:
+          E2E: ${{ needs.e2e-search.result }}
+          STREAM: ${{ needs.streamed-search.result }}
+          OFFICIAL: ${{ needs.official-source.result }}
+        run: |
+          set -euo pipefail
+          test "$E2E" = success
+          test "$STREAM" = success
+          test "$OFFICIAL" = success
+          echo AI_LAND_FUNCTION_PACK_V0_3_GREEN
