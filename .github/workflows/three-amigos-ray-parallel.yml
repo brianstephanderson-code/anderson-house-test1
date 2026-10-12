@@ -1,0 +1,51 @@
+name: Three Amigos Ray parallel capacity replay
+on:
+  push:
+    paths:
+      - '.github/workflows/three-amigos-ray-parallel.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  parallel-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Install Ray
+        run: python -m pip install --disable-pip-version-check 'ray==2.50.1'
+      - name: Reserve two slots and verify concurrent transformations
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, time
+          import ray
+          from ray.util.placement_group import placement_group, placement_group_table, remove_placement_group
+          from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
+          ray.init(num_cpus=2, include_dashboard=False, log_to_driver=False)
+          capacity = ray.available_resources()
+          assert capacity.get("CPU",0) >= 2, capacity
+          group = placement_group([{"CPU":1},{"CPU":1}], strategy="STRICT_PACK")
+          try:
+              ray.get(group.ready(),timeout=60)
+              assert placement_group_table(group)["state"]=="CREATED"
+              @ray.remote(num_cpus=1)
+              def transform(x):
+                  import time
+                  start=time.monotonic()
+                  time.sleep(2)
+                  return {"input":x,"output":x*2,"start":start,"end":time.monotonic()}
+              futures=[transform.options(scheduling_strategy=PlacementGroupSchedulingStrategy(placement_group=group,placement_group_bundle_index=i)).remote(i+1) for i in range(2)]
+              outputs=ray.get(futures,timeout=60)
+              assert [o["output"] for o in outputs]==[2,4],outputs
+              overlap=max(o["start"] for o in outputs)<min(o["end"] for o in outputs)
+              assert overlap, outputs
+              print(json.dumps({"capacity":capacity,"reservation":"CREATED","outputs":outputs,"overlap_verified":overlap}))
+          finally:
+              remove_placement_group(group)
+              for _ in range(30):
+                  if placement_group_table(group)["state"]=="REMOVED": break
+                  time.sleep(1)
+              assert placement_group_table(group)["state"]=="REMOVED"
+              ray.shutdown()
+          print("GREEN: DISCOVER -> RESERVE TWO -> PARALLEL EXECUTE -> VERIFY OVERLAP -> RELEASE")
+          PY
