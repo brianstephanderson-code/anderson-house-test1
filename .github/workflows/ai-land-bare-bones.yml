@@ -1,0 +1,60 @@
+name: AI LAND Bare Bones Handshake
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-land-bare-bones.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  handshake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send one Three Amigos job into AI LAND
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          JOB_ID="ai-land-smoke-${GITHUB_RUN_ID}"
+          QUERY="STATE: Three Amigos has one public test job. FUNCTION: produce useful search casts. COST: free-only. Return casts."
+
+          echo "JOB_ID=$JOB_ID"
+          echo "STATE=THREE_AMIGOS_READY"
+
+          BODY="$(curl --fail --silent --show-error --get \
+            --data-urlencode 'type=CLOUDFLARE_AI_CASTS' \
+            --data-urlencode "query=$QUERY" \
+            'https://ah-word-count.brian-steph-anderson.workers.dev')"
+
+          echo "$BODY" | jq .
+
+          echo "STATE=AI_LAND_RETURNED"
+
+          echo "$BODY" | jq -e '
+            .ok == true and
+            .function == "CLOUDFLARE_AI_CASTS" and
+            .ai_answer_is_evidence == false and
+            (.casts | type == "array") and
+            (.casts | length >= 3)
+          ' >/dev/null
+
+          CAST_COUNT="$(echo "$BODY" | jq '.casts | length')"
+
+          {
+            echo "## AI LAND Bare Bones Handshake"
+            echo
+            echo "- Job: `$JOB_ID`"
+            echo "- Three Amigos state: READY"
+            echo "- AI LAND return: RECEIVED"
+            echo "- Returned cast count: $CAST_COUNT"
+            echo "- Verification: GREEN"
+            echo "- Cost rule: free-only path"
+            echo
+            echo "**PIPE:** THREE AMIGOS → CLOUDFLARE AI WORKER → RETURN → VERIFY → DONE"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "AI_LAND_HANDSHAKE_GREEN"
