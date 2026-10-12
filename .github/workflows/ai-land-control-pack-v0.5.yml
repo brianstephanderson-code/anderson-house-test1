@@ -1,0 +1,121 @@
+name: AI LAND Control Pack v0.5
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-land-control-pack-v0.5.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  cloudflare-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Cloudflare free route
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(curl --fail --silent --show-error --get             --data-urlencode 'type=FETCH_TEXT'             --data-urlencode 'url=https://example.com/'             --data-urlencode 'max_chars=1000'             'https://ah-word-count.brian-steph-anderson.workers.dev')"
+          echo "$BODY" | jq -e '.ok==true and .function=="FETCH_TEXT"' >/dev/null
+          echo CLOUDFLARE_HEALTH_GREEN
+
+  google-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Resolve endpoint
+        id: endpoint
+        env:
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION || 'us-east1' }}
+          FUNCTION_NAME: ${{ vars.GCP_FUNCTION_NAME || 'ahhello' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          URI="$(gcloud functions describe "$FUNCTION_NAME" --gen2 --region "$REGION" --project "$PROJECT_ID" --format='value(serviceConfig.uri)')"
+          test -n "$URI"
+          echo "uri=$URI" >> "$GITHUB_OUTPUT"
+
+      - name: Mint identity token
+        id: idtoken
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: id_token
+          id_token_audience: ${{ steps.endpoint.outputs.uri }}
+          create_credentials_file: false
+
+      - name: Probe Google free route
+        env:
+          URI: ${{ steps.endpoint.outputs.uri }}
+          ID_TOKEN: ${{ steps.idtoken.outputs.id_token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BODY="$(curl --fail --silent --show-error --get             -H "Authorization: Bearer $ID_TOKEN"             --data-urlencode 'text=Many hands work. Bees return!'             "$URI")"
+          echo "$BODY" | jq -e '.words==5 and .sentences==2' >/dev/null
+          echo GOOGLE_HEALTH_GREEN
+
+  router:
+    runs-on: ubuntu-latest
+    needs: [cloudflare-health, google-health]
+    if: ${{ always() }}
+    steps:
+      - name: Apply health + free-only routing policy
+        env:
+          CF: ${{ needs.cloudflare-health.result }}
+          GOOGLE: ${{ needs.google-health.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          route() {
+            CF_STATE="$1"
+            GOOGLE_STATE="$2"
+
+            if [ "$CF_STATE" = success ]; then
+              echo cloudflare
+            elif [ "$GOOGLE_STATE" = success ]; then
+              echo google
+            else
+              echo BLOCK
+            fi
+          }
+
+          # Live health decision.
+          LIVE="$(route "$CF" "$GOOGLE")"
+          test "$LIVE" != BLOCK
+
+          # Replay fallback behavior.
+          test "$(route failure success)" = google
+          test "$(route success failure)" = cloudflare
+
+          # Cost gate: if no approved free route is healthy, STOP.
+          test "$(route failure failure)" = BLOCK
+
+          {
+            echo "## AI LAND Router v0.5"
+            echo
+            echo "- Cloudflare health: $CF"
+            echo "- Google health: $GOOGLE"
+            echo "- Selected live route: $LIVE"
+            echo "- Fallback replay: GREEN"
+            echo "- Free-only stop gate: GREEN"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "AI_LAND_ROUTER_GREEN route=$LIVE"
