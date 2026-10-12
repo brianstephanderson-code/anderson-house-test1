@@ -1,0 +1,82 @@
+name: AI LAND Resilience Pack v0.6
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ai-land-resilience-pack-v0.6.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  resilience:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Replay retry timeout circuit-break and receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, time, hashlib
+
+          def call_provider(name, attempt):
+              # deterministic replay:
+              # primary fails twice; backup succeeds immediately.
+              if name == "primary":
+                  if attempt <= 2:
+                      raise TimeoutError("simulated timeout")
+                  return {"provider": name, "value": 42}
+              return {"provider": name, "value": 42}
+
+          failures = {"primary": 0, "backup": 0}
+          circuit_open = {"primary": False, "backup": False}
+
+          def run_with_retry(name, max_attempts=2):
+              if circuit_open[name]:
+                  raise RuntimeError("circuit-open")
+              last = None
+              for attempt in range(1, max_attempts + 1):
+                  try:
+                      return call_provider(name, attempt)
+                  except TimeoutError as e:
+                      failures[name] += 1
+                      last = str(e)
+                      time.sleep(0.05)
+              if failures[name] >= 2:
+                  circuit_open[name] = True
+              raise RuntimeError(last or "failed")
+
+          selected = None
+          result = None
+
+          try:
+              result = run_with_retry("primary", max_attempts=2)
+              selected = "primary"
+          except Exception:
+              result = run_with_retry("backup", max_attempts=2)
+              selected = "backup"
+
+          assert selected == "backup"
+          assert circuit_open["primary"] is True
+          assert result["value"] == 42
+
+          payload = {
+              "job_id": "ai-land-v0.6-replay",
+              "selected_provider": selected,
+              "result": result,
+              "failures": failures,
+              "circuit_open": circuit_open,
+              "status": "verified"
+          }
+          canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+          receipt = hashlib.sha256(canonical.encode()).hexdigest()
+          assert len(receipt) == 64
+
+          print(json.dumps({"payload": payload, "receipt_sha256": receipt}, indent=2))
+          print("AI_LAND_RETRY_GREEN")
+          print("AI_LAND_TIMEOUT_GREEN")
+          print("AI_LAND_CIRCUIT_BREAK_GREEN")
+          print("AI_LAND_RESULT_RECEIPT_GREEN")
+          PY
