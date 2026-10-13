@@ -4,5 +4,5 @@
   "id": "moto-handshake-20261010-001",
   "ok": true,
   "stderr": "",
-  "stdout": " D tomo_bridge/termux_control/jobs/inbox/vision-phone-camera-probe-001.json\n?? .s20_mailbox.lock\n?? tomo_bridge/inbox_v2/moto-handshake-20261010-001.command.json\n?? tomo_bridge/inbox_v2/sensor-highway-status-20261008-001.command.json\n?? tomo_bridge/inbox_v2/sensor-highway-status-20261008-002.command.json\n?? tomo_bridge/inbox_v2/vision-live-002-a-active.command.json\n?? tomo_bridge/termux_control/jobs/done/vision-phone-camera-probe-001.json\n?? tomo_bridge/termux_control/results/vision-phone-camera-probe-001.json\n?? tomo_bridge/vision_phone_camera/\n?? warehouse/__pycache__/\n?? warehouse/vision-band/__pycache__/\n?? work/\n?? workers/__pycache__/\n"
+  "stdout": " D tomo_bridge/termux_control/jobs/inbox/vision-phone-camera-probe-001.json\n?? .s20_mailbox.lock\n?? tomo_bridge/inbox_v2/moto-handshake-20261010-001.command.json\n?? tomo_bridge/inbox_v2/sensor-highway-status-20261008-001.command.json\n?? tomo_bridge/inbox_v2/sensor-highway-status-20261008-002.command.json\n?? tomo_bridge/inbox_v2/vision-live-002-a-active.command.json\n?? tomo_bridge/inbox_v2/vision-live-002-b-capture.command.json\n?? tomo_bridge/vision_phone_camera/\n?? warehouse/__pycache__/\n?? warehouse/vision-band/__pycache__/\n?? work/\n?? workers/__pycache__/\n"
 }
