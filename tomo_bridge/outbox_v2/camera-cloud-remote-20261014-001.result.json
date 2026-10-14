@@ -1,0 +1,9 @@
+{
+  "action": "run_repo_python",
+  "bridge_version": "v2",
+  "id": "camera-cloud-remote-20261014-001",
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "GREEN: CAMERA CAPTURED\nGREEN: PHOTOGRAPH RETRIEVED\nGREEN: PRIVATE R2 UPLOAD\nGREEN: PRIVATE MEDIA STORED\nmedia/07ee100c-295f-475a-8c7b-1517e3ce2c02.jpg\nGREEN: CAMERA-TO-CLOUD COMPLETE\n"
+}
