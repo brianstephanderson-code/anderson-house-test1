@@ -2,8 +2,8 @@
   "action": "run_repo_python",
   "bridge_version": "v2",
   "id": "camera-cloud-remote-20261014-001",
-  "ok": false,
-  "returncode": 1,
-  "stderr": "Traceback (most recent call last):\n  File \"/data/data/com.termux/files/home/anderson-house-mailbox/tomo_bridge/upgrades/amigos-camera-cloud.py\", line 16, in <module>\n    with urllib.request.urlopen(req, timeout=30) as r:\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/data/data/com.termux/files/usr/lib/python3.14/urllib/request.py\", line 187, in urlopen\n    return opener.open(url, data, timeout)\n           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\n  File \"/data/data/com.termux/files/usr/lib/python3.14/urllib/request.py\", line 493, in open\n    response = meth(req, response)\n  File \"/data/data/com.termux/files/usr/lib/python3.14/urllib/request.py\", line 602, in http_response\n    response = self.parent.error(\n        'http', request, response, code, msg, hdrs)\n  File \"/data/data/com.termux/files/usr/lib/python3.14/urllib/request.py\", line 531, in error\n    return self._call_chain(*args)\n           ~~~~~~~~~~~~~~~~^^^^^^^\n  File \"/data/data/com.termux/files/usr/lib/python3.14/urllib/request.py\", line 464, in _call_chain\n    result = func(*args)\n  File \"/data/data/com.termux/files/usr/lib/python3.14/urllib/request.py\", line 611, in http_error_default\n    raise HTTPError(req.full_url, code, msg, hdrs, fp)\nurllib.error.HTTPError: HTTP Error 500: Internal Server Error\n",
-  "stdout": ""
+  "ok": true,
+  "returncode": 0,
+  "stderr": "",
+  "stdout": "GREEN: CAMERA CAPTURED\nGREEN: PHOTOGRAPH RETRIEVED\nGREEN: PRIVATE R2 UPLOAD\nGREEN: PRIVATE MEDIA STORED\nmedia/bf8ed01c-fcdc-4a8c-9df1-7962cfccae67.jpg\nGREEN: CAMERA-TO-CLOUD COMPLETE\n"
 }
