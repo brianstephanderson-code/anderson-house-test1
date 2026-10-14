@@ -1,8 +1,8 @@
 {
   "action": "vision_capture",
   "bridge_version": "v2",
-  "bytes": 1684497,
-  "capture_id": "10739cec-2988-47c4-add5-4c6f33dcc112",
+  "bytes": 2956553,
+  "capture_id": "bc00cab3-f029-455c-adb3-3691e27dfd6f",
   "height": null,
   "http": 200,
   "id": "vision-live-002-b-capture",
@@ -10,6 +10,6 @@
   "ok": true,
   "private_local_saved": true,
   "request_id": "vision-live-002-b-capture",
-  "sha256": "f3087c5941fa7aa9e53aea8c819309a8d1540ae2d64138af39511a7ee762cf0d",
+  "sha256": "717a15347c1e8ebda1ed34d63e3406a99d17552a38695b724f01bdbe5492c98d",
   "width": null
 }
