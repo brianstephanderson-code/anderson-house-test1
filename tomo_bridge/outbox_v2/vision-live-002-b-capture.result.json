@@ -1,12 +1,15 @@
 {
   "action": "vision_capture",
   "bridge_version": "v2",
-  "capture": {
-    "detail": "touch: cannot touch '/data/data/com.termux/files/home/anderson-house-mailbox/tomo_bridge/vision_phone_camera/captures/93378502-84f6-4072-8c70-ed83658a4885.jpg': No space left on device",
-    "error": "camera_error",
-    "ok": false
-  },
-  "http": 500,
+  "bytes": 3912939,
+  "capture_id": "550395a5-18ff-4d89-863a-736b14427bea",
+  "height": null,
+  "http": 200,
   "id": "vision-live-002-b-capture",
-  "ok": false
+  "mime": "image/jpeg",
+  "ok": true,
+  "private_local_saved": true,
+  "request_id": "vision-live-002-b-capture",
+  "sha256": "2a0d2e84928c9ec8c938cabc7d0d85f9b2841ca72ffc70dee0d4ba514b671191",
+  "width": null
 }
