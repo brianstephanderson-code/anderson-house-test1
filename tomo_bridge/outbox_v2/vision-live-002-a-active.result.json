@@ -1,11 +1,7 @@
 {
   "action": "vision_mode",
   "bridge_version": "v2",
-  "http": 200,
+  "error": "URLError: <urlopen error [Errno 111] Connection refused>",
   "id": "vision-live-002-a-active",
-  "mode": {
-    "mode": "active",
-    "ok": true
-  },
-  "ok": true
+  "ok": false
 }
