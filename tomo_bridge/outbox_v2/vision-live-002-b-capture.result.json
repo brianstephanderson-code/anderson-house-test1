@@ -1,15 +1,7 @@
 {
   "action": "vision_capture",
   "bridge_version": "v2",
-  "bytes": 2251111,
-  "capture_id": "781717ae-4cd8-42f6-a232-e28e13d98584",
-  "height": null,
-  "http": 200,
+  "error": "OSError: [Errno 28] No space left on device: '/data/data/com.termux/files/home/.tomo_private_vision/ece6deba-bc55-43b6-a294-0fc430157b94.jpg'",
   "id": "vision-live-002-b-capture",
-  "mime": "image/jpeg",
-  "ok": true,
-  "private_local_saved": true,
-  "request_id": "vision-live-002-b-capture",
-  "sha256": "85e32f2baea94a32a191320a36b7b5f7dff1c883b7c92fa9ba48c3c7e61ce76f",
-  "width": null
+  "ok": false
 }

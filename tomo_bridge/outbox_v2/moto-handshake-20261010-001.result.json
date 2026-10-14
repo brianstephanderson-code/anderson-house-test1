@@ -1,8 +1,7 @@
 {
   "action": "repo_status",
   "bridge_version": "v2",
+  "error": "CalledProcessError: Command '['git', 'status', '--short']' returned non-zero exit status 128.",
   "id": "moto-handshake-20261010-001",
-  "ok": true,
-  "stderr": "",
-  "stdout": " D tomo_bridge/termux_control/jobs/inbox/vision-phone-camera-probe-001.json\n?? .s20_mailbox.lock\n?? tomo_bridge/upgrades/amigos-camera-cloud.py\n?? tomo_bridge/upgrades/amigos_camera_mic_pair.py\n?? tomo_bridge/vision_phone_camera/\n?? warehouse/__pycache__/\n?? warehouse/vision-band/__pycache__/\n?? work/\n?? workers/__pycache__/\n"
+  "ok": false
 }
