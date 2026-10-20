@@ -1,0 +1,9 @@
+MESSAGE_ID=dispatch-39343610376-71
+KIND=ORDER
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/dispatch-39343610376-71.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/dispatch-39343610376-71/dispatch-39343610376-71.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/dispatch-39343610376-71/dispatch-39343610376-71.google.uplink
+CORRELATION_ID=dispatch-39343610376-71
+CLOSED_UTC=2026-10-20T00:11:51Z
