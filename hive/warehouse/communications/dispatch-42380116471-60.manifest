@@ -1,0 +1,9 @@
+MESSAGE_ID=dispatch-42380116471-60
+KIND=ORDER
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/dispatch-42380116471-60.record
+SOURCE_ARCHIVE=hive/warehouse/communications/evidence/dispatch-42380116471-60/dispatch-42380116471-60.msg
+RETURN_ARCHIVES=hive/warehouse/communications/evidence/dispatch-42380116471-60/dispatch-42380116471-60.cloudflare.uplink
+CORRELATION_ID=dispatch-42380116471-60
+CLOSED_UTC=2026-11-07T14:25:57Z
