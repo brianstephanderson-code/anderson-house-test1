@@ -1,0 +1,6 @@
+MESSAGE_ID=dispatch-42795152977-10
+STATUS=CLOSED
+DISPOSITION=DONE
+MASTER_RECORD=hive/work/records/dispatch-42795152977-10.record
+WAREHOUSE=hive/warehouse/communications/dispatch-42795152977-10.manifest
+CLOSED_UTC=2026-11-10T10:20:57Z
